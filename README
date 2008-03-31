@@ -1,0 +1,223 @@
+exports:
+	struct.pack([fd], fmt, ...)
+	struct.unpack(fmt, <fd or string>)
+	struct.explode(int)
+	struct.implode(table)
+
+pack takes a format specifier and zero or more data objects and packs them
+into a buffer. If the first argument is a file descriptor, it will pack data
+directly into that rather than generating and returning a buffer.
+
+unpack takes a format specifier and a buffer or file to unpack from, and returns
+each unpacked value as a seperate return value.
+
+explode converts a bitmask into a list of booleans, and implode does the
+converse.
+	
+The format string consists of any number of field or control specifiers,
+seperated by whitespace. The format is thus:
+
+The Format String
+=================
+The format string contains any number of endianness controls, seek controls,
+format specifiers, and grouping/naming sequences, seperated by whitespace. Each
+of these is detailed below.
+
+Any entry in the format string can be prefixed with a number, or suffixed with
+a '*' followed by a number, to repeat it that many times. For simplicity this is
+permitted even for characters such as the endianness controls for which
+repetition is meaningless.
+
+In the documentation below, the convention is that A represents an address and W
+a width in bytes. Either can be written in base-10 (1234) or base-16 (0x1234)
+format.
+
+Endianness Controls
+-------------------
+The formats i, m, and u are affected by the endianness setting, which controls
+the order in which bytes are read and written within a field. The following
+characters in a format string adjust the endianness setting:
+
+<
+	Sets the endianness to little-endian (eg, Intel processors)
+>
+	Sets the endianness to big-endian (eg, PPC and Motorola processors)
+=
+	Sets the endianness to the native endianness.
+
+
+Seek Controls
+-------------
+These characters are used to seek to specific locations in the input or output.
+Note that they only work on buffers or file-like objects that support the seek()
+method; for streams which cannot be sought on, use the 'x' (skip/null-pad)
+data format instead.
+
+@A
+	Seek to absolute address A.
++A
+	Seek forward A bytes.
+-A
+	Seek backwards A bytes.
+aW
+	Align to word width W (ie, seek to the next address which is a multiple of W)
+
+
+Data Format Specifiers
+----------------------
+bW	Boolean.
+	Read: as uW, but returns true if the result is non-zero and false otherwise.
+	Write: as uW with input 1 if true and 0 otherwise.
+
+f
+	IEEE floating point. NOT IMPLEMENTED.
+	Valid widths are 4 (float) 8 (double) and 16 (quad)
+
+iW	Signed integer.
+	Read: a signed integer of width W bytes.
+	Write: a signed integer of width W bytes.
+	Floating point values will be truncated.
+	Affected by endianness.
+
+mW	Bitmask.
+	Read: as uW, but explodes the result into a list of booleans, one per bit.
+	Write: implodes the input value, then writes it as uW.
+	Affected by endianness.
+	See also: struct.implode, struct.explode.
+
+sW	String.
+	Read: reads exactly W bytes and returns them as a string.
+	Write: 
+
+uW	Unsigned integer.
+	Read: an unsigned integer of width W bytes.
+	Write: an unsigned integer of width W bytes.
+	Floating point values will be truncated.
+	Negative values will be taken absolute.
+	Affected by endianness.
+
+xW	Skip/pad.
+	Read: read and discard the next W bytes.
+	Write: write W zero bytes.
+
+zW	Null terminated string.
+	Read: reads exactly W bytes. Returns everything up to the first zero byte.
+	Write: writes exactly W bytes.
+	If the input is shorter than W, zero pads the output.
+	If as long or longer, truncates to W-1 and writes a zero byte at the end.
+
+
+Grouping and Naming
+-------------------
+A sequence of characters can be grouped by enclosing it in (...). This allows
+the entire group to be repeated as one; for example:
+	4(u4 i4)
+Would read, and return, eight 4-byte integers alternating unsigned and signed.
+
+Sequences can also be grouped using {...}, in which case the results are packed
+into a table:
+	4{u4 i4}
+Would read 8 4-byte integers as above, but return four tables each one containing
+two of the integers, and:
+	{ 4(u4 i4) }
+Would still read the same data, but would return it as a single table containing
+all eight values.
+
+Finally, the contents of a {...} block can be named, and will be stored in a
+table field with that name:
+	{ top:i4 bottom:i4 }
+Would read two signed ints, and return a table with two fields, "top" and "bottom".
+Named and unnamed fields can be intermixed; as in lua, the unnamed ones will be
+stored in integer indexes starting with 1.
+
+
+<kozure> I'd do: local stru = ("u4"):rep(4) .. " s124 u4 m1 " .. ("b"):rep(3) .. " u1" and use stru
+<kozure> it's clearer
+<rici> i think ToxicFrog's syntax is easier to read
+<rici> it's definitely easier to type
+<Spark> this is where i complain about not being able to do "u5":rep(4) again :)
+<Spark> u4, even
+<rici> yeah. it's ambiguous
+<ToxicFrog> u5 is also legal, but I've never needed it~
+<rici> ToxicFrog: can you do:  "(u3 b1)*4" ?
+<ToxicFrog> Not yet. Ask again tomorrow. >.>
+<Spark> heh
+* ToxicFrog adds it to the design notes
+<Spark> are you parsing from within lua?
+<ToxicFrog> Yes.
+<Spark> i wonder if someone will ever do a parser generator that emits lua code
+<ToxicFrog> ...although, on further consideration, would (...) return a table, or a bunch of seperate values?
+<kozure> you have a custom parser for the formats?
+<ToxicFrog> Yes. It's just some simple abuse of gmatch(), IIRC
+<kozure> I see. nice!
+<rici> Spark: i've done that.
+<rici> it's a patch to the lemon parser
+<ToxicFrog> Really, at this point it's just a lexer - there's no real parsing, since the grammar is FORMAT := endianness FIELDS; FIELDS := field FIELDS | epsilon
+<rici> ToxicFrog: i would say that "{}" would delimit a table, and "()" would just be repetition
+* ToxicFrog nods
+<rici> so you could have:   "{u3 b1}*4" --> four tables
+<ToxicFrog> It would be nice if I could come up with a clean syntax for -naming- fields
+<rici> "(u3 b1)*4" -> 8 values
+<ToxicFrog> So that you could do, say "{ width:u4 height:u4 heightpow:u2 }"
+<rici> "{(u3 b1)*4}" -> a table with 8 values
+<rici> that would work
+<kozure> yeah
+<ToxicFrog> ..which actually doesn't look half bad, now that I look at it
+<rici> you could use = instead of : to make the syntax more lua like
+<kozure> i was going to say that
+<kozure> :)
+<ToxicFrog> Yeah, but that carries with it an incorrect implication (that it's value assignment, not type assignment) and doesn't really get me anything, since I still need to parse it by hand because order is significant
+<rici> still quite easy to parse
+<rici> fair enough.
+<rici> yes, you couldn't use the lua parser for that.
+<rici> shame, really. sometimes it would be nice.
+<ToxicFrog> Still doesn't make the grammar too complicated, though, and %b makes life easier
+<rici> yeah
+<rici> although if you're code-generating, you can just handle the parenthetical things as you get them.
+<rici> {  injects a pushtable sort of thing.
+<rici> } pops the table
+<rici> etc.
+<ToxicFrog> Hadn't thought of that approach, but it's alluring
+<kozure> can you use commas to separate fields?
+<ToxicFrog> Actually, yes, that makes things relatively simple
+<ToxicFrog> kozure: not at present, but easy enough to add, since they aren't otherwise reserved
+<ToxicFrog> At the moment it just uses whitespace
+<Spark> stick with whitespace, it's better at being white than a comma is
+<rici> *shrug*
+<ToxicFrog> I was thinking I could add , and ; as optional delimiters, for people who like it that way
+<rici> [%s,;]
+<ToxicFrog> Like Lua itself.
+<kozure> bingo
+<Spark> true i suppose you just have to document it
+<Spark> but mixing up , and %s in the same string would look awful
+<kozure> "{window=u4, height=u4}"
+<kozure> [%s,;]+
+<rici> hmm
+<rici> you could almost do that with lua
+<ToxicFrog> [%s,;]%s*
+<ToxicFrog> ,,,,,,, is not a legal seperator
+<kozure> there you go
+<Spark> rici: would it be hard to make ldb execute the last command if it gets a "" as a command?
+<Spark> i'm actually using it to debug a real infinite loop now, it's going to be really useful
+<rici> Spark: should be easy
+<rici> i thought about doing something like that
+<rici> i'd like to add readline support sometime too
+<rici> ToxicFrog: you know, that's a token filter application
+<Spark> ah you don't have that
+<Spark> oh of course, it's a call
+<rici> suppose you turned a token like U4 into self:U(4)
+<Spark> i guess i could wrap it in rlwrap
+<rici> yeah, that's what i do
+<Spark> the whole of gdb, that is
+<rici> but if there were a readline binding, it could just be put into ldb_config
+<rici> ToxicFrog: then you could translate:  unpack {window = U4, height = U4}
+<rici> into:  function(self) return {window = self:U(4), height = self:U(4)} end
+<rici> and then you'd just have to define U etc. as methods in string.
+<rici> oh, no, it couldn't be string, you'd have to wrap the string object with a cursor
+<rici> but anyway.... hmmm
+<rici> Spark: yeah, i've got to get back to ldb hacking
+<ToxicFrog> Tempting, but I'd rather not much with the TF
+<rici> ToxicFrog: understood. it was just a thought.
+<ToxicFrog> Hmm. If I mandate that whitespace is required around {} and () as well, I can turn the format string into tokens just by using fmt:split("[%s;,]%s*")
+<-- jflm (n=jflm@145.Red-83-44-76.dynamicIP.rima-tde.net) has quit ("Leaving.")
+
