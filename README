@@ -69,7 +69,7 @@ bW	Boolean.
 	Read: as uW, but returns true if the result is non-zero and false otherwise.
 	Write: as uW with input 1 if true and 0 otherwise.
 
-f
+fW
 	IEEE floating point. NOT IMPLEMENTED.
 	Valid widths are 4 (float) 8 (double) and 16 (quad)
 
@@ -84,6 +84,14 @@ mW	Bitmask.
 	Write: implodes the input value, then writes it as uW.
 	Affected by endianness.
 	See also: struct.implode, struct.explode.
+
+pW	Fixed point rational.
+	Width is in the format "I.F"; the value before the dot is the number of
+	bytes in the integer part, and the value after, in the fractional part.
+	Read: a fixed point rational of I+F bytes.
+	Write: a fixed point rational of I+F bytes. Values which cannot be exactly
+	represented in the specified width are truncated.
+	Affected by endianness.
 
 sW	String.
 	Read: reads exactly W bytes and returns them as a string.

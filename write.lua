@@ -88,6 +88,7 @@ function write.z(fd, w, d)
 	return write.s(fd, w, d..string.char(0))
 end
 
+return write
 
 
 

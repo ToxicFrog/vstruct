@@ -3,25 +3,26 @@
 
 local common = {}
 
+-- determine if the host system is big-endian or not, by dumping an empty
+-- function and looking at the endianness flag
 local function bigendian()
 	return string.byte(string.dump(function() end)) == string.char(0x00)
 end
 
-
 -- seek controls
-common["@"] = function(fd, w)
+function common.seekto(fd, w)
 	fd:seek("set", w)
 end
 
-common["+"] = function(fd, w)
+function common.seekforward(fd, w)
 	fd:seek("cur", w)
 end
 
-common["-"] = function(fd, w)
+function common.seekback(fd, w)
 	fd:seek("cur", -w)
 end
 
-common["a"] = function(fd, w)
+function common.a(fd,w)
 	local a = fd:seek()
 	if a % w ~= 0 then
 		fd:seek("cur", w - (a % w))
@@ -29,15 +30,15 @@ common["a"] = function(fd, w)
 end
 
 -- endianness controls
-common["<"] = function(fd, w)
+function common.littleendian(fd, w)
 	struct.bigendian = false
 end
 
-common[">"] = function(fd, w)
+function common.bigendian(fd, w)
 	struct.bigendian = true
 end
 
-common["="] = function(fd, w)
+function common.hostendian(fd, w)
 	struct.bigendian = bigendian()
 end
 

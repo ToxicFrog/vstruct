@@ -3,6 +3,7 @@ local cursor = require "struct.cursor"
 local common = require "struct.common"
 local read = require "struct.read"
 local write = require "struct.write"
+local lexer = require "struct.lexer"
 
 struct = {}
 struct.bigendian = false	-- FIXME
@@ -43,26 +44,17 @@ function struct.unpack(fmt, source)
 	if type(source) == 'string' then
 		source = cursor(source)
 	end
-	
-	local R = {}
-	
-	local toks = { fmt:split('%s+') }
-	for _,token in ipairs(toks) do
-		local op,width = token:match('(.)([%d.]+)')
-		if not op or not width then
-			error "struct.unpack: illegal format string"
-		end
-		
-		print(op, width, read[op])
-		R[#R+1] = read[op](source, width)
-	end
-	
-	return unpack(R)
-end
 
-function struct.unpack(fmt)
-	local t = lex(fmt)
-	for k,v in ipairs(t) do print(k,v) end
+	local f = lexer.read(fmt)
+	local resolver = { unpack = unpack }
+	function resolver:__index(key)
+		return function(w)
+			return read[key](source, w)
+		end
+	end
+	setmetatable(resolver, resolver)
+	
+	return setfenv(f, resolver)()
 end
 
 -- given a format string and a list of data, pack them
@@ -73,9 +65,22 @@ function struct.pack(fd, fmt, ...)
 	if type(fd) == 'string' then
 		data = { fmt, ... }
 		fmt = fd
+		fd = cursor("")
 	else
 		data = { ... }
 	end
+	
+	local f = lexer.write(fmt)
+	local resolver = {}
+	function resolver:__index(key)
+		return function(w)
+			local r = write[key](fd, w, data[1])
+			if r then table.remove(data, 1) end
+			return r
+		end
+	end
+	
+	return setfenv(f, resolver)()
 end
 
 --[[

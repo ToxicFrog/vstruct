@@ -11,6 +11,16 @@
 -- perform the corresponding writes on the fd
 
 --[[
+I have a horrible awesome idea
+Use regex abuse to transform the input string into valid ordered lua code, and compile it
+something like:
+
+%w%d -> %1(fd, %2);
+name:... -> name = ...
+{ ... } -> { ... };
+*n -> ???
+( ... ) -> ???
+
 function FIXME_Read_Container(fd)
 	local R = {}
 	for _,instruction in ipairs(instructions) do
@@ -70,56 +80,91 @@ end
 	return unpack(R)
 ]]
 
-local function wrap(ops, op, width, d)
-	return function(fd)
-		return ops[op](fd, width, d)
-	end
-end
-		
+require "util"
+local read = require "struct.read"
+local write = require "struct.write"
+local resolver = { unpack = unpack }
+local lexer = {}
 
-function parse(next)
-	local cq = {}
-	for token in next do
-		-- token processing
-		-- <>= turn into endianness control functions
-		-- @+-a turn into seek functions through wrap
-		-- pre-repetition gets the next() token and repeats it
-		-- post-repetition pops the previous token and repeats it
-		-- name gets the next() token and wraps it in a naming function
-		-- everything else turns into an io function
-	end
-	-- we return a function that when called executes the instruction list
-	-- we've created and returns a table containing everything we extracted
-	-- from those functions
-	-- we need seperate versions of these for read and write
-	return function(fd)
-		local t = {}
-		for _,c in ipairs(cq) do
-			c(fd, t)
-		end
-		return t
-	end	
-end
+-- table of translations for weird symbols that aren't valid Names
+local translate_r = {
+	["<"] = "['.'] = littleendian";
+	[">"] = "['.'] = bigendian";
+	["="] = "['.'] = hostendian";
+	["+"] = "['.'] = seekforward";
+	["-"] = "['.'] = seekback";
+	["@"] = "['.'] = seekto";
+	["a"] = "['.'] = a";	-- align
+	["x"] = "['.'] = x";	-- skip/pad
+}
 
--- break a format string down into individual tokens
--- this is mode-agnostic
-function lex(fmt)
-	-- tokenize
+function lexer.read(fmt)
+	local function tr(type, width)
+		return (translate[type] or type)..' ("'..(width or "")..'"); '
+	end
+
 	-- first, we make sure all punctuation is surrounded with whitspace
+	-- surround {}()<>= with spaces
 	fmt = fmt:gsub('([{}%(%)<>=])', ' %1 ')
 	-- turn ' nfw' into ' n* fw'
-		:gsub('%s+(%d+)', ' %1* ')
+	-- FIXME we actually strip this since it isn't supported yet
+		:gsub('%s+(%d+)%*', ' ')
 	-- turn 'fw*n' into 'fw *n'
-		:gsub('%*(%d+) ', ' *%1 ')
-	-- turn 'foo:fw' into ' foo: fw'
-		:gsub('(%a%w*%:)', ' %1 ')
-	
-	-- now we can just split
-	tokens = { fmt:trim():split('%s+') }
-	
-	return tokens
+	-- FIXME we actually strip this since it isn't supported yet
+		:gsub('%*(%d+)%s+', ' ')
+	-- turn fw into f("w"),
+	-- use "w" instead of w so that fixed point works as expected
+		:gsub('([<>=])', tr)
+		:gsub('([-@+abfimpsuxz])(%d+%.?%d*)', tr)
+	-- turn 'foo:fw' into ' foo = fw'
+		:gsub('(%a%w*)%:', ' %1 = ')
+
+	local f = loadstring("return unpack { "..fmt.." }")
+	return f
 end
+
+local translate_r = {
+	["<"] = "littleendian";
+	[">"] = "bigendian";
+	["="] = "hostendian";
+	["+"] = "seekforward";
+	["-"] = "seekback";
+	["@"] = "seekto";
+}
+
+function lexer.write(fmt)
+	local function tr(type, width)
+		return (translate[type] or type)..' ("'..(width or "")..'"), '
+	end
+
+	-- first, we make sure all punctuation is surrounded with whitspace
+	-- surround {}()<>= with spaces
+	fmt = fmt:gsub('([{}%(%)<>=])', ' %1 ')
+	-- turn ' nfw' into ' n* fw'
+	-- FIXME we actually strip this since it isn't supported yet
+		:gsub('%s+(%d+)%*', ' ')
+	-- turn 'fw*n' into 'fw *n'
+	-- FIXME we actually strip this since it isn't supported yet
+		:gsub('%*(%d+)%s+', ' ')
+	-- turn fw into f("w"),
+	-- use "w" instead of w so that fixed point works as expected
+		:gsub('([<>=])', tr)
+		:gsub('([-@+abfimpsuxz])(%d+%.?%d*)', tr)
+	-- turn 'foo:fw' into ' foo = fw'
+		:gsub('(%a%w*)%:', ' %1 = ')
+end
+
+return lexer
+
+-- we need to get the fd and, for write mode, the source table
+-- write mode is actually going to be Worse Than It Looks, we may
+-- need a multi-stage system, or replace { and } in writemode with
+-- downshift/upshift
+
 --[[
+	a { b c d } e
+	a (function(t) b c d end)(???) e
+
 	-- each token should now be one of:
 	-- punctuation characters {}()<>=
 	-- pre-repetition n*
