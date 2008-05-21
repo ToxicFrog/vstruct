@@ -21,34 +21,6 @@ name:... -> name = ...
 *n -> ???
 ( ... ) -> ???
 
-function FIXME_Read_Container(fd)
-	local R = {}
-	for _,instruction in ipairs(instructions) do
-		instruction(fd, R)
-	end
-	return R
-end
-
-function FIXME_Read_IO(fd, R)
-	table.insert(R, <<read curry>>(fd))
-end
-
-function FIXME_Read_Named_IO(fd, R)
-	R[name] = <<read curry>>(fd)
-end
-
-function FIXME_Write_Container(fd, W)
-	for _,instruction in ipairs(instructions) do
-		instruction(fd, W) -- should be W[1] perhaps?
-	end
-end
-
-function FIXME_Write_IO(fd, W)
-	local d = W[1]
-	if not <<write curry>>(fd, d) then
-		table.remove(W, 1)
-	end
-end
 --]]
 
 -- for reading - we get a table; we call each reader in turn; we pack the
@@ -83,8 +55,8 @@ end
 require "util"
 local read = require "struct.read"
 local write = require "struct.write"
-local resolver = { unpack = unpack }
 local lexer = {}
+
 
 -- table of translations for weird symbols that aren't valid Names
 local translate_r = {
@@ -100,7 +72,7 @@ local translate_r = {
 
 function lexer.read(fmt)
 	local function tr(type, width)
-		return (translate[type] or type)..' ("'..(width or "")..'"); '
+		return (translate_r[type] or type)..' ("'..(width or "")..'"); '
 	end
 
 	-- first, we make sure all punctuation is surrounded with whitspace
@@ -118,6 +90,8 @@ function lexer.read(fmt)
 		:gsub('([-@+abfimpsuxz])(%d+%.?%d*)', tr)
 	-- turn 'foo:fw' into ' foo = fw'
 		:gsub('(%a%w*)%:', ' %1 = ')
+
+	print("DEBUG", fmt)
 
 	local f = loadstring("return unpack { "..fmt.." }")
 	return f
@@ -155,39 +129,3 @@ function lexer.write(fmt)
 end
 
 return lexer
-
--- we need to get the fd and, for write mode, the source table
--- write mode is actually going to be Worse Than It Looks, we may
--- need a multi-stage system, or replace { and } in writemode with
--- downshift/upshift
-
---[[
-	a { b c d } e
-	a (function(t) b c d end)(???) e
-
-	-- each token should now be one of:
-	-- punctuation characters {}()<>=
-	-- pre-repetition n*
-	-- post-repetition *n
-	-- name foo:
-	-- format token fn or fn.m
-	local cq = {}
-	
-	while #tokens > 0 do
-		local token = table.remove(tokens, 1)
-		
-		if punctuation[token] then
-			table.insert(cq, punctuation[token])
-		elseif 
-		
-	for i,token in ipairs(tokens) do
-		-- first check for punctuation
-		-- then pre/post repetition
-		-- finally, 
-			
-		
-	end
-]]
-
--- cases we need to handle:
--- - next character is one of { } ( )

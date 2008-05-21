@@ -22,30 +22,23 @@ end
 function struct.implode(mask)
 	local int = 0
 	for i=#mask,1,-1 do
-		int = int*2 + (mask[i] and 1) or 0
+		int = int*2 + ((mask[i] and 1) or 0)
 	end
-	return val
-end
-
-function struct.unpack(fmt, source)
-	-- wrap it in a cursor so we can seek on it and all that
-	if type(source) == 'string' then
-		source = cursor(source)
-	end
-
-	local f = parse(fmt, read)
-	return unpack(f())
+	return int
 end
 
 -- given a source, which is either a string or a file handle,
 -- unpack it into individual data based on the format string
-function struct.unpack(fmt, source)
+function struct.unpack(source, fmt)
 	-- wrap it in a cursor so we can seek on it and all that
 	if type(source) == 'string' then
 		source = cursor(source)
 	end
 
 	local f = lexer.read(fmt)
+
+	-- we provide a custom environment which wraps the reader
+	-- functions so that the source is provided to them
 	local resolver = { unpack = unpack }
 	function resolver:__index(key)
 		return function(w)
@@ -54,6 +47,7 @@ function struct.unpack(fmt, source)
 	end
 	setmetatable(resolver, resolver)
 	
+	-- the unpack() is built in, so just tail call
 	return setfenv(f, resolver)()
 end
 
@@ -82,21 +76,3 @@ function struct.pack(fd, fmt, ...)
 	
 	return setfenv(f, resolver)()
 end
-
---[[
--- data formats
-
--- write actions
-
-function write.b(fd, w)
-	return write.u(fd, w and 1 or 0)
-end
-
-write.f
-write.i
-write.m
-write.s
-write.u
-write.x
-write.z
---]]

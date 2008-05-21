@@ -1,6 +1,6 @@
 exports:
 	struct.pack([fd], fmt, ...)
-	struct.unpack(fmt, <fd or string>)
+	struct.unpack(<fd or string>, fmt)
 	struct.explode(int)
 	struct.implode(table)
 
@@ -31,6 +31,14 @@ repetition is meaningless.
 In the documentation below, the convention is that A represents an address and W
 a width in bytes. Either can be written in base-10 (1234) or base-16 (0x1234)
 format.
+
+FORMAT	:=	ACTION FORMAT | e
+ACTION	:=	int '*' ENTRY | ENTRY '*' int
+ENTRY	:=	NAME FORMAT | '(' ENTRY ')' | '{' ENTRY '}'
+NAME	:=	id ':'
+FORMAT	:=	endianness-specifier | FORMATW
+FORMATW	:=	format-char number
+	
 
 Endianness Controls
 -------------------
@@ -95,7 +103,9 @@ pW	Fixed point rational.
 
 sW	String.
 	Read: reads exactly W bytes and returns them as a string.
-	Write: 
+	Write:
+	If W is 0, or is greater than the string length, uses the string length.
+	If W is shorter than the string length, truncates the string.
 
 uW	Unsigned integer.
 	Read: an unsigned integer of width W bytes.
@@ -110,6 +120,7 @@ xW	Skip/pad.
 
 zW	Null terminated string.
 	Read: reads exactly W bytes. Returns everything up to the first zero byte.
+	If W is 0, reads up to the next zero byte.
 	Write: writes exactly W bytes.
 	If the input is shorter than W, zero pads the output.
 	If as long or longer, truncates to W-1 and writes a zero byte at the end.
