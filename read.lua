@@ -40,7 +40,10 @@ end
 -- fixed point
 function read.p(fd, w)
 	local d,f = string.split(w, '%.')
-	return read.u(fd, d+f)/(2^(f*8))
+	if (d+f) % 8 ~= 0 then
+		error "total width of fixed point value must be byte multiple"
+	end
+	return read.u(fd, (d+f)/8)/(2^f)
 end
 
 -- string

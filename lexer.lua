@@ -75,25 +75,35 @@ function lexer.read(fmt)
 		return (translate_r[type] or type)..' ("'..(width or "")..'"); '
 	end
 
-	-- first, we make sure all punctuation is surrounded with whitspace
+	-- turn ',' and ';', which are permitted but not required, into ' '
+	fmt = (" "..fmt.." "):gsub('[,;]', ' ')
+	-- make sure all punctuation is surrounded with whitspace
 	-- surround {}()<>= with spaces
-	fmt = fmt:gsub('([{}%(%)<>=])', ' %1 ')
-	-- turn ' nfw' into ' n* fw'
-	-- FIXME we actually strip this since it isn't supported yet
-		:gsub('%s+(%d+)%*', ' ')
-	-- turn 'fw*n' into 'fw *n'
-	-- FIXME we actually strip this since it isn't supported yet
-		:gsub('%*(%d+)%s+', ' ')
+		:gsub('([{}%(%)<>=])', ' %1 ')
+	-- turn ' n{...}' or ' n*{...}' into repetitions of {...}
+		:gsub('%s+(%d+)%*?%s+(%b{})', function(count, action) return (action.."; "):rep(count) end)
+	-- turn '{...}n ' or '{...}*n' into repetitions of {...}
+		:gsub('(%b{})%s+%*(%d+)%s+', function(action, count) return (action.."; "):rep(count) end)
+
+	-- turn ' n(...)' or ' n*(...)' into repetitions of ...
+		:gsub('%s+(%d+)%*%s+(%b())', function(count, action) return action:sub(2,-2):rep(count) end)
+	-- turn '(...)n ' or '(...)*n' into repetitions of ...
+		:gsub('(%b())%s+%*?(%d+)%s+', function(action, count) return action:sub(2,-2):rep(count) end)
+
 	-- turn fw into f("w"),
 	-- use "w" instead of w so that fixed point works as expected
 		:gsub('([<>=])', tr)
 		:gsub('([-@+abfimpsuxz])(%d+%.?%d*)', tr)
+
 	-- turn 'foo:fw' into ' foo = fw'
 		:gsub('(%a%w*)%:', ' %1 = ')
 
+	-- append ; to {} expressions so the lua parser doesn't freak out
+		:gsub('}%s', '}; ')
+
 	print("DEBUG", fmt)
 
-	local f = loadstring("return unpack { "..fmt.." }")
+	local f = assert(loadstring("return unpack { "..fmt.." }"))
 	return f
 end
 
