@@ -35,6 +35,7 @@ function struct.unpack(source, fmt)
 		source = cursor(source)
 	end
 
+	assert(source, "invalid first argument to struct.unpack")
 	local f = lexer.read(fmt)
 
 	-- we provide a custom environment which wraps the reader
