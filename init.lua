@@ -1,14 +1,12 @@
-require "util"
-local cursor = require "struct.cursor"
-local common = require "struct.common"
-local read = require "struct.read"
-local write = require "struct.write"
-local lexer = require "struct.lexer"
+local cursor = require "struct.cursor"	-- file-like wrapper for strings
+local lexer = require "struct.lexer"	-- processor for format strings
 
-struct = {}
-struct.bigendian = false	-- FIXME
+local struct = {}
+struct.bigendian = false
 
 -- turn an int into a list of booleans
+-- the length of the list will be the smallest number of bits needed to
+-- represent the int
 function struct.explode(int)
 	local mask = {}
 	while int ~= 0 do
@@ -19,6 +17,7 @@ function struct.explode(int)
 end
 
 -- turn a list of booleans into an int
+-- the converse of explode
 function struct.implode(mask)
 	local int = 0
 	for i=#mask,1,-1 do
@@ -30,26 +29,18 @@ end
 -- given a source, which is either a string or a file handle,
 -- unpack it into individual data based on the format string
 function struct.unpack(source, fmt)
-	-- wrap it in a cursor so we can seek on it and all that
+	-- wrap it in a cursor so we can treat it like a file
 	if type(source) == 'string' then
 		source = cursor(source)
 	end
 
 	assert(source, "invalid first argument to struct.unpack")
-	local f = lexer.read(fmt)
 
-	-- we provide a custom environment which wraps the reader
-	-- functions so that the source is provided to them
-	local resolver = { unpack = unpack }
-	function resolver:__index(key)
-		return function(w)
-			return read[key](source, w)
-		end
-	end
-	setmetatable(resolver, resolver)
-	
-	-- the unpack() is built in, so just tail call
-	return setfenv(f, resolver)()
+	-- the lexer will take our format string and generate code from it
+	-- it returns a function that when called with our source, will
+	-- unpack the data according to the format string and return all
+	-- values from said unpacking
+	return lexer.read(fmt)(source)
 end
 
 -- given a format string and a list of data, pack them
@@ -66,32 +57,8 @@ function struct.pack(fd, fmt, ...)
 		data = { ... }
 	end
 	
-	local f = lexer.write(fmt)
-
-	local resolver = {}
-	local stack = { data }
-	
-	function resolver.push_data()
-		table.insert(stack, table.remove(stack[#stack], 1))
-	end
-	
-	function resolver.pop_data()
-		table.remove(stack)
-	end
-	
-	function resolver.push_var(name)
-		table.insert(stack[#stack], 1, stack[#stack][name])
-	end
-	
-	function resolver:__index(key)
-		return function(w)
-			local r = write[key](fd, w, stack[#stack][1])
-			if r then table.remove(stack[#stack], 1) end
-			return r
-		end
-	end
-	setmetatable(resolver, resolver)
-	
-	setfenv(f, resolver)()
+	lexer.write(fmt)(fd, data)
 	return (str_fd and fd.str) or fd
 end
+
+return struct

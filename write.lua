@@ -6,7 +6,7 @@
 local common = require "struct.common"
 local write = setmetatable({}, { __index = common })
 
-local fp = srequire "struct.fp"
+--local fp = srequire "struct.fp"
 
 -- boolean
 function write.b(fd, w, d)

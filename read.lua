@@ -2,17 +2,22 @@
 -- return a value if applicable, which will be packed
 -- otherwise return nil
 
+-- load operations common to both read and write, and set __index so that
+-- requests for, say, read.seekto will succeed
 local common = require "struct.common"
 local read = setmetatable({}, { __index = common })
 
-local fp = srequire "struct.fp"
+-- load the floating point module if available
+--local fp = srequire "struct.fp"
 
 -- boolean
+-- true if any bit is 1, false otherwise
 function read.b(fd, w)
 	return read.u(fd, w) ~= 0
 end
 
 -- float
+-- this is callout to the floating-point read/write module, if installed
 function read.f(fd, w)
 	if not fp then
 		error("struct.unpack: floating point support is not loaded")
@@ -23,7 +28,7 @@ function read.f(fd, w)
 	return fp.r[w](read.u(fd,w))
 end
 
--- signed int
+-- signed int of w bytes
 function read.i(fd, w)
 	local i = read.u(fd, w)
 	if i >= 2^(w*8 - 1) then
@@ -32,12 +37,14 @@ function read.i(fd, w)
 	return i
 end
 
--- bitmask
+-- bitmask of w bytes
 function read.m(fd, w)
 	return struct.explode(read.u(fd, w))
 end
 
 -- fixed point
+-- w is in the form d.f, where d is the number of bits in the integer part
+-- and f the number of bits in the fractional part
 function read.p(fd, w)
 	local d,f = string.split(w, '%.')
 	if (d+f) % 8 ~= 0 then
@@ -47,6 +54,7 @@ function read.p(fd, w)
 end
 
 -- string
+-- reads exactly w bytes of data and returns them verbatim
 function read.s(fd, w)
 	return fd:read(tonumber(w))
 end
@@ -68,12 +76,16 @@ function read.u(fd, w)
 end
 
 -- skip/pad
+-- reads w bytes and discards them
 function read.x(fd, w)
 	fd:read(w)
 	return nil
 end
 
 -- null-terminated string
+-- if w is 0, reads up to and including the first nul, and returns everything
+-- except that nul
+-- otherwise, reads exactly w bytes and returns everything up to the first nul
 function read.z(fd, w)
 	if tonumber(w) ~= 0 then
 		return read.s(fd, w):match('^%Z*')

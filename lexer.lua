@@ -10,55 +10,17 @@
 -- a function which, when called with an fd and a list of input data, will
 -- perform the corresponding writes on the fd
 
---[[
-I have a horrible awesome idea
-Use regex abuse to transform the input string into valid ordered lua code, and compile it
-something like:
-
-%w%d -> %1(fd, %2);
-name:... -> name = ...
-{ ... } -> { ... };
-*n -> ???
-( ... ) -> ???
-
---]]
-
--- for reading - we get a table; we call each reader in turn; we pack the
--- value it returns into the table
--- for subtables, we get another table and pack into that - do this with
--- recursion?
-
--- {} needs to be surrounded with an implicit (), so that stuff
--- like n*{...} and {...}*n will work
--- this doesn't solve foo:{...}, though
--- of course! {...} turns into a single function that processes the table
--- constructor and returns the resulting table
--- foo: bar composes into a single function (set foo (bar))
--- <>= set endianness
--- n* multiply next entry on execution stack
--- *n multiply last entry on execution stack
--- foo: wrap next entry on execution stack in name assignment
-
--- *n we need to process at lex time
--- n* we need to process at execute time? or use get_next_operation?
-
--- parse - process the token stream until EOF or until the table pops
--- then pack everything it got into a function and return it
--- this allows us to process n* and foo:!
-
---[[
-	so the top level looks something like
-	local R = parse(token_stream)()
-	return unpack(R)
-]]
-
 require "util"
 local read = require "struct.read"
 local write = require "struct.write"
 local lexer = {}
 
 
--- table of translations for weird symbols that aren't valid Names
+-- we do some trickery here
+-- if the user asks for something like @4, the emitted code is "['.'] = a(4)"
+-- this way, the returned value (which is nil) doesn't take up a table slot
+-- and thus, when unpacked, it doesn't appear in the returned values, and the
+-- user doesn't need placeholders
 local translate_r = {
 	["<"] = "['.'] = littleendian";
 	[">"] = "['.'] = bigendian";
@@ -72,14 +34,14 @@ local translate_r = {
 
 function lexer.read(fmt)
 	local function tr(type, width)
-		return (translate_r[type] or type)..' ("'..(width or "")..'"); '
+		return (translate_r[type] or type)..' ('..(width or ""):gsub('.',',')..'); '
 	end
 
 	-- turn ',' and ';', which are permitted but not required, into ' '
 	fmt = (" "..fmt.." "):gsub('[,;]', ' ')
 	-- make sure all punctuation is surrounded with whitspace
-	-- surround {}()<>= with spaces
 		:gsub('([{}%(%)<>=])', ' %1 ')
+		
 	-- turn ' n{...}' or ' n*{...}' into repetitions of {...}
 		:gsub('%s+(%d+)%*?%s+(%b{})', function(count, action) return (action.."; "):rep(count) end)
 	-- turn '{...}n ' or '{...}*n' into repetitions of {...}
@@ -90,8 +52,8 @@ function lexer.read(fmt)
 	-- turn '(...)n ' or '(...)*n' into repetitions of ...
 		:gsub('(%b())%s+%*?(%d+)%s+', function(action, count) return action:sub(2,-2):rep(count) end)
 
-	-- turn fw into f("w"),
-	-- use "w" instead of w so that fixed point works as expected
+	-- turn fw into f(w),
+	-- turn fw.x into f(w,x),
 		:gsub('([<>=])', tr)
 		:gsub('([-@+abfimpsuxz])(%d+%.?%d*)', tr)
 
@@ -102,9 +64,22 @@ function lexer.read(fmt)
 		:gsub('}%s', '}; ')
 
 	local f = assert(loadstring("return unpack { "..fmt.." }"))
-	return f
+
+	return function(source)
+		local env = { unpack = unpack }
+		function env:__index(key)
+			return function(w)
+				return read[key](source, w)
+			end
+		end
+		setmetatable(env, env)
+		return setfenv(f, env)()
+	end
 end
 
+-- unlike translate_r we don't need to worry about discarding return values when
+-- writing, so this is just a mapping from format symbols that aren't valid lua
+-- identifiers to strings that are
 local translate_w = {
 	["<"] = "littleendian";
 	[">"] = "bigendian";
@@ -116,14 +91,14 @@ local translate_w = {
 
 function lexer.write(fmt)
 	local function tr(type, width)
-		return (translate_w[type] or type)..' ("'..(width or "")..'") '
+		return (translate_w[type] or type)..' ("'..(width or ""):gsub('.',',')..'") '
 	end
 
 	-- turn ',' and ';', which are permitted but not required, into ' '
 	fmt = (" "..fmt.." "):gsub('[,;]', ' ')
 	-- make sure all punctuation is surrounded with whitspace
-	-- surround {}()<>= with spaces
 		:gsub('([{}%(%)<>=])', ' %1 ')
+		
 	-- turn ' n{...}' or ' n*{...}' into repetitions of {...}
 		:gsub('%s+(%d+)%*?%s+(%b{})', function(count, action) return (action.."; "):rep(count) end)
 	-- turn '{...}n ' or '{...}*n' into repetitions of {...}
@@ -140,15 +115,42 @@ function lexer.write(fmt)
 	-- } is turned into "return to the previous argument list and discard the current one"
 		:gsub('}', 'pop_data()')
 
-	-- turn fw into f("w"),
-	-- use "w" instead of w so that fixed point works as expected
+	-- turn fw into f(w)
+	-- turn fw.x into f(w,x)
 		:gsub('([<>=])', tr)
 		:gsub('([-@+abfimpsuxz])(%d+%.?%d*)', tr)
 
 	-- 'foo:fw' is 'the data for this format is taken from args.foo instead of args[1]'
 		:gsub('(%a%w*)%:', ' push_var("%1") ')
 
-	return assert(loadstring(fmt))
+	local f = assert(loadstring(fmt))
+	
+	return function(source, data)
+		local env = {}
+		local stack = { data }
+		
+		function env.push_data()
+			table.insert(stack, table.remove(stack[#stack], 1))
+		end
+
+		function env.pop_data()
+			table.remove(stack)
+		end
+
+		function env.push_var(name)
+			table.insert(stack[#stack], 1, stack[#stack][name])
+		end
+
+		function env:__index(key)
+			return function(w)
+				local r = write[key](fd, w, stack[#stack][1])
+				if r then table.remove(stack[#stack], 1) end
+				return r
+			end
+		end
+		setmetatable(env, env)
+		return setfenv(f, env)()
+	end
 end
 
 return lexer
