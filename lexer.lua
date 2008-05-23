@@ -107,7 +107,7 @@ function lexer.read(fmt)
 	return f
 end
 
-local translate_r = {
+local translate_w = {
 	["<"] = "littleendian";
 	[">"] = "bigendian";
 	["="] = "hostendian";
@@ -118,24 +118,39 @@ local translate_r = {
 
 function lexer.write(fmt)
 	local function tr(type, width)
-		return (translate[type] or type)..' ("'..(width or "")..'"), '
+		return (translate_w[type] or type)..' ("'..(width or "")..'") '
 	end
 
-	-- first, we make sure all punctuation is surrounded with whitspace
+	-- turn ',' and ';', which are permitted but not required, into ' '
+	fmt = (" "..fmt.." "):gsub('[,;]', ' ')
+	-- make sure all punctuation is surrounded with whitspace
 	-- surround {}()<>= with spaces
-	fmt = fmt:gsub('([{}%(%)<>=])', ' %1 ')
-	-- turn ' nfw' into ' n* fw'
-	-- FIXME we actually strip this since it isn't supported yet
-		:gsub('%s+(%d+)%*', ' ')
-	-- turn 'fw*n' into 'fw *n'
-	-- FIXME we actually strip this since it isn't supported yet
-		:gsub('%*(%d+)%s+', ' ')
+		:gsub('([{}%(%)<>=])', ' %1 ')
+	-- turn ' n{...}' or ' n*{...}' into repetitions of {...}
+		:gsub('%s+(%d+)%*?%s+(%b{})', function(count, action) return (action.."; "):rep(count) end)
+	-- turn '{...}n ' or '{...}*n' into repetitions of {...}
+		:gsub('(%b{})%s+%*(%d+)%s+', function(action, count) return (action.."; "):rep(count) end)
+
+	-- turn ' n(...)' or ' n*(...)' into repetitions of ...
+		:gsub('%s+(%d+)%*%s+(%b())', function(count, action) return action:sub(2,-2):rep(count) end)
+	-- turn '(...)n ' or '(...)*n' into repetitions of ...
+		:gsub('(%b())%s+%*?(%d+)%s+', function(action, count) return action:sub(2,-2):rep(count) end)
+
+	-- { is turned into "make the table which is the next argument be our argument list"
+		:gsub('{', 'push_data()')
+	
+	-- } is turned into "return to the previous argument list and discard the current one"
+		:gsub('}', 'pop_data()')
+
 	-- turn fw into f("w"),
 	-- use "w" instead of w so that fixed point works as expected
 		:gsub('([<>=])', tr)
 		:gsub('([-@+abfimpsuxz])(%d+%.?%d*)', tr)
-	-- turn 'foo:fw' into ' foo = fw'
-		:gsub('(%a%w*)%:', ' %1 = ')
+
+	-- 'foo:fw' is 'the data for this format is taken from args.foo instead of args[1]'
+		:gsub('(%a%w*)%:', ' push_var("%1") ')
+
+	return assert(loadstring(fmt))
 end
 
 return lexer

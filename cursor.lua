@@ -26,14 +26,17 @@ function cursor:write(buf)
 		.. buf
 		.. self.str:sub(self.pos + #buf + 1, -1)
 	self.pos = self.pos + #buf
+	return self
 end	
 
-local function make_cursor(self, source)
+function cursor:__call(source)
 	return setmetatable(
 		{ str = source, pos = 0 },
-		{ __index = cursor })
+		cursor)
 end
 
-setmetatable(cursor, { __call = make_cursor })
+cursor.__index = cursor
+
+setmetatable(cursor, cursor)
 
 return cursor

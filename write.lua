@@ -40,13 +40,17 @@ end
 -- fixed point
 function write.p(fd, w, d)
 	local de,f = string.split(w, '%.')
-	return write.u(fd, de+f, d * 2^(f*8))
+	if (de+f) % 8 ~= 0 then
+		error "total width of fixed point value must be byte multiple"
+	end
+	return write.u(fd, (de+f)/8, d * 2^f)
 end
 
 -- fixed length string
 -- length 0 is write string as is
--- length >0 is write exactly w bytes, truncating r padding as needed
+-- length >0 is write exactly w bytes, truncating or padding as needed
 function write.s(fd, w, d)
+	w = tonumber(w)
 	if w == 0 then w = #d end
 	if #d < w then
 		d = d..string.char(0):rep(w-#d)
@@ -72,7 +76,8 @@ end
 
 -- skip/pad
 function write.x(fd, w, d)
-	return write.u(fd, w, 0)
+	write.s(fd, w, "")
+	return false
 end
 
 -- null terminated string
@@ -85,10 +90,7 @@ function write.z(fd, w, d)
 		d = d:sub(1, w-1)
 	end
 	
-	return write.s(fd, w, d..string.char(0))
+	return write.s(fd, w, d.."\0")
 end
 
 return write
-
-
-

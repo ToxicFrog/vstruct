@@ -1,23 +1,35 @@
+Overview
+========
+Struct is a library for Lua 5.1. It provides functions for manipulating binary
+data, in particular for unpacking binary files or byte buffers into Lua values
+and for packing Lua values back into files or buffers. Supported data types
+include:
+	- signed and unsigned integers of arbitrary byte width
+	- booleans and bitmasks
+	- plain and null-terminated strings
+	- fixed and floating point reals (the latter requires C module support)
+In addition, the library supports seeking, alignment, and byte order controls,
+repetition, grouping of data into tables, and naming of values within tables.
+
+API
+===	
 exports:
 	struct.pack([fd], fmt, ...)
 	struct.unpack(<fd or string>, fmt)
 	struct.explode(int)
 	struct.implode(table)
 
-pack takes a format specifier and zero or more data objects and packs them
+pack takes a format string and zero or more data objects and packs them
 into a buffer. If the first argument is a file descriptor, it will pack data
 directly into that rather than generating and returning a buffer.
 
-unpack takes a format specifier and a buffer or file to unpack from, and returns
+unpack takes a format string and a buffer or file to unpack from, and returns
 each unpacked value as a seperate return value.
 
 explode converts a bitmask into a list of booleans, and implode does the
-converse.
+converse. In such lists, list[1] is the least significant bit, and list[n]
+the most significant.
 	
-The format string consists of any number of field or control specifiers,
-seperated by whitespace. The format is thus:
-
-
 The Format String
 =================
 The format string contains any number of endianness controls, seek controls,
@@ -150,8 +162,9 @@ pW	Fixed point rational.
 sW	String.
 	Read: reads exactly W bytes and returns them as a string.
 	Write:
-	If W is 0, or is greater than the string length, uses the string length.
+	If W is 0, uses the string length.
 	If W is shorter than the string length, truncates the string.
+	If W is greater than the string length, null pads the string.
 
 uW	Unsigned integer.
 	Read: an unsigned integer of width W bytes.
