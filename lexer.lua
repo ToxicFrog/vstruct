@@ -101,8 +101,6 @@ function lexer.read(fmt)
 	-- append ; to {} expressions so the lua parser doesn't freak out
 		:gsub('}%s', '}; ')
 
-	print("DEBUG", fmt)
-
 	local f = assert(loadstring("return unpack { "..fmt.." }"))
 	return f
 end
