@@ -40,7 +40,7 @@ function compile.read(fmt)
 	end
 
 	local function tr(type, width)
-		return (translate_r[type] or type)..' ('..(width or ""):gsub('.',',')..'); '
+		return (translate_r[type] or type)..' ('..(width or ""):gsub('%.',',')..'); '
 	end
 
 	-- turn ',' and ';', which are permitted but not required, into ' '
@@ -106,7 +106,7 @@ function compile.write(fmt)
 	end
 	
 	local function tr(type, width)
-		return (translate_w[type] or type)..' ("'..(width or ""):gsub('.',',')..'") '
+		return (translate_w[type] or type)..' ("'..(width or ""):gsub('%.',',')..'") '
 	end
 
 	-- turn ',' and ';', which are permitted but not required, into ' '
