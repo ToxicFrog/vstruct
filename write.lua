@@ -38,7 +38,7 @@ function write.m(fd, d, w)
 end
 
 -- fixed point bit aligned
-function write.p(fd, d, dp, fp)
+function write.P(fd, d, dp, fp)
 	if (dp+fp) % 8 ~= 0 then
 		error "total width of fixed point value must be byte multiple"
 	end
