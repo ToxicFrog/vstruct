@@ -106,7 +106,7 @@ function compile.write(fmt)
 	end
 	
 	local function tr(type, width)
-		return (translate_w[type] or type)..' ("'..(width or ""):gsub('%.',',')..'") '
+		return (translate_w[type] or type)..' ('..(width or ""):gsub('%.',',')..') '
 	end
 
 	-- turn ',' and ';', which are permitted but not required, into ' '
@@ -142,7 +142,7 @@ function compile.write(fmt)
 	
 	-- this one is somewhat more complicated than the read version, since we need
 	-- to supply functions for manipulating the data stack
-	w_cache[fmt] = function(source, data)
+	w_cache[fmt] = function(fd, data)
 		local env = {}
 		local stack = { data }
 		
