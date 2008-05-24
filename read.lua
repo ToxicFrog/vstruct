@@ -42,15 +42,19 @@ function read.m(fd, w)
 	return struct.explode(read.u(fd, w))
 end
 
--- fixed point
+-- fixed point bit aligned
 -- w is in the form d.f, where d is the number of bits in the integer part
 -- and f the number of bits in the fractional part
-function read.p(fd, w)
-	local d,f = string.split(w, '%.')
-	if (d+f) % 8 ~= 0 then
+function read.P(fd, dp, fp)
+	if (dp+fp) % 8 ~= 0 then
 		error "total width of fixed point value must be byte multiple"
 	end
-	return read.u(fd, (d+f)/8)/(2^f)
+	return read.u(fd, (dp+fp)/8)/(2^f)
+end
+
+-- fixed point byte aligned
+function read.p(fd, dp, fp)
+	return read.P(fd, dp*8, fp*8)
 end
 
 -- string

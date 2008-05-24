@@ -18,6 +18,9 @@ exports:
 	struct.unpack(<fd or string>, fmt)
 	struct.explode(int)
 	struct.implode(table)
+	struct.cursor(string)
+	struct.compile.read(format)
+	struct.compile.write(format)
 
 pack takes a format string and zero or more data objects and packs them
 into a buffer. If the first argument is a file descriptor, it will pack data
@@ -29,6 +32,28 @@ each unpacked value as a seperate return value.
 explode converts a bitmask into a list of booleans, and implode does the
 converse. In such lists, list[1] is the least significant bit, and list[n]
 the most significant.
+
+cursor wraps a string in something that looks, at first glance, like a file.
+This permits strings to be wrapped and passed to the struct IO functions. The
+wrapped string supports :seek, and has limited support for :read (the only
+supported calling mode is :read(num_bytes)) and :write (as :write(buffer)).
+
+compile.read takes a format string and returns a function, which can later be
+passed a file (or file-like object - see struct.cursor) to perform a read
+operation. In effect, the following code:
+	f = struct.compile.read(fmt)
+	d = f(fd)
+Is equivalent to:
+	d = struct.unpack(fd, fmt)
+f can of course be called repeatedly, with different or the same fds each time.
+
+compile.write is the converse of compile.read. The emitted function expects a
+file and a list of data elements, so that:
+	f = struct.compile.write(fmt)
+	f(fd, { d... })
+Is equivalent to:
+	struct.pack(fd, fmt, d...)
+As with compile.read, the emitted function is fully re-usable.
 	
 The Format String
 =================
@@ -151,11 +176,15 @@ mW	Bitmask.
 
 pW	Fixed point rational.
 	Width is in the format "I.F"; the value before the dot is the number of
-	*BITS* in the integer part, and the value after, in the fractional part.
-	Read: a fixed point rational of I+F bits.
-	Write: a fixed point rational of I+F bits. Values which cannot be exactly
+	bytes in the integer part, and the value after, in the fractional part.
+	Read: a fixed point rational of I+F bytes.
+	Write: a fixed point rational of I+F bytes. Values which cannot be exactly
 	represented in the specified width are truncated.
 	Affected by endianness.
+
+PW	Fixed point rational with bit-aligned subfields
+	Equivalent to pW, except that the decimal point does not need to be byte
+	aligned; for example, formats such as P20.12 are possible.
 	Note that underlying reads must still occur in byte multiples. Using a W
 	such that I+F is not a multiple of 8 is an error.
 

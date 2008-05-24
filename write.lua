@@ -9,48 +9,51 @@ local write = setmetatable({}, { __index = common })
 --local fp = srequire "struct.fp"
 
 -- boolean
-function write.b(fd, w, d)
-	return write.u(fd, w, (d and 1) or 0)
+function write.b(fd, d, w)
+	return write.u(fd, (d and 1) or 0, w)
 end
 
 -- floating point
-function write.f(fd, w, d)
+function write.f(fd, d, w)
 	if not fp then
 		error("struct.pack: floating point support is not loaded")
 	elseif not fp.w[w] then
 		error("struct.pack: illegal floating point width")
 	end
 	
-	return write.u(fd, fp.w[w](d))
+	return write.u(fd, fp.w[w](d), w)
 end
 
 -- signed int
-function write.i(fd, w, d)
+function write.i(fd, d, w)
 	if d < 0 then
 		d = d + 2^(w*8)
 	end
-	return write.u(fd, w, d)
+	return write.u(fd, d, w)
 end
 
 -- bitmask
-function write.m(fd, w, d)
-	return write.u(fd, w, struct.implode(d))
+function write.m(fd, d, w)
+	return write.u(fd, struct.implode(d), w)
 end
 
--- fixed point
-function write.p(fd, w, d)
-	local de,f = string.split(w, '%.')
-	if (de+f) % 8 ~= 0 then
+-- fixed point bit aligned
+function write.p(fd, d, dp, fp)
+	if (dp+fp) % 8 ~= 0 then
 		error "total width of fixed point value must be byte multiple"
 	end
-	return write.u(fd, (de+f)/8, d * 2^f)
+	return write.u(fd, d * 2^f, (dp+fp)/8)
+end
+
+-- fixed point byte aligned
+function write.p(fd, d, dp, fp)
+	return write.P(fd, d, dp*8, fp*8)
 end
 
 -- fixed length string
 -- length 0 is write string as is
 -- length >0 is write exactly w bytes, truncating or padding as needed
-function write.s(fd, w, d)
-	w = tonumber(w)
+function write.s(fd, d, w)
 	if w == 0 then w = #d end
 	if #d < w then
 		d = d..string.char(0):rep(w-#d)
@@ -59,7 +62,7 @@ function write.s(fd, w, d)
 end
 
 -- unsigned int
-function write.u(fd, w, d)
+function write.u(fd, d, w)
 	local s = ""
 
 	for i=1,w do
@@ -71,11 +74,11 @@ function write.u(fd, w, d)
 		d = math.floor(d/2^8)
 	end
 	
-	return write.s(fd, w, s)
+	return write.s(fd, s, w)
 end
 
 -- skip/pad
-function write.x(fd, w, d)
+function write.x(fd, d, w)
 	write.s(fd, w, "")
 	return false
 end
@@ -83,14 +86,14 @@ end
 -- null terminated string
 -- w==0 is write string as is + termination
 -- w>0 is write exactly w bytes, truncating/padding and terminating
-function write.z(fd, w, d)
+function write.z(fd, d, w)
 	if w == 0 then
 		w = #d+1
 	elseif #d >= w then
 		d = d:sub(1, w-1)
 	end
 	
-	return write.s(fd, w, d.."\0")
+	return write.s(fd, d.."\0", w)
 end
 
 return write

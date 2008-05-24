@@ -35,6 +35,7 @@ function cursor:write(buf)
 end	
 
 function cursor:__call(source)
+	assert(type(source) == "string", "invalid first argument to cursor()")
 	return setmetatable(
 		{ str = source, pos = 0 },
 		cursor)

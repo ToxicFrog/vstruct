@@ -1,7 +1,6 @@
-local cursor = require "struct.cursor"	-- file-like wrapper for strings
-local lexer = require "struct.lexer"	-- processor for format strings
-
 local struct = {}
+struct.cursor = require "struct.cursor"
+struct.compile = require "struct.compile"
 struct.bigendian = false
 
 -- turn an int into a list of booleans
@@ -31,7 +30,7 @@ end
 function struct.unpack(source, fmt)
 	-- wrap it in a cursor so we can treat it like a file
 	if type(source) == 'string' then
-		source = cursor(source)
+		source = struct.cursor(source)
 	end
 
 	assert(source, "invalid first argument to struct.unpack")
@@ -40,7 +39,7 @@ function struct.unpack(source, fmt)
 	-- it returns a function that when called with our source, will
 	-- unpack the data according to the format string and return all
 	-- values from said unpacking
-	return lexer.read(fmt)(source)
+	return struct.compile.read(fmt)(source)
 end
 
 -- given a format string and a list of data, pack them
@@ -51,13 +50,13 @@ function struct.pack(fd, fmt, ...)
 	if type(fd) == 'string' then
 		data = { fmt, ... }
 		fmt = fd
-		fd = cursor("")
+		fd = struct.cursor("")
 		str_fd = true
 	else
 		data = { ... }
 	end
 	
-	lexer.write(fmt)(fd, data)
+	struct.compile.write(fmt)(fd, data)
 	return (str_fd and fd.str) or fd
 end
 

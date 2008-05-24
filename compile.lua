@@ -1,19 +1,14 @@
--- lexer module for struct
--- turn a format string into a sequence of calls
-
--- the contract of the read parser is that it will turn a token stream into
--- a function which, when called with an fd and with a container table, packs
--- the results of the reads into the container and returns it.
-
-
--- the contract of the write parser is that it will turn a token stream into
--- a function which, when called with an fd and a list of input data, will
--- perform the corresponding writes on the fd
+-- functions for turning a format string into a callable function
+-- two functions are exported, one for read, one for write
+-- they work internally by using gsub to translate the format string into
+-- executable lua code, then wrapping it in a closure that does scope hacking
+-- to make available to it the IO functions.
+-- This is a crime against god and man, but it works, and is totally sweet.
 
 require "util"
 local read = require "struct.read"
 local write = require "struct.write"
-local lexer = {}
+local compile = {}
 
 
 -- we do some trickery here
@@ -32,7 +27,12 @@ local translate_r = {
 	["x"] = "['.'] = x";	-- skip/pad
 }
 
-function lexer.read(fmt)
+-- turn a format string into a function that does reads
+-- this is done by translating it into lua code which is then compiled using
+-- loadstring
+-- it returns a function that, when passed a fileoid, does the necessary
+-- scope hacking and then executes the function
+function compile.read(fmt)
 	local function tr(type, width)
 		return (translate_r[type] or type)..' ('..(width or ""):gsub('.',',')..'); '
 	end
@@ -68,8 +68,8 @@ function lexer.read(fmt)
 	return function(source)
 		local env = { unpack = unpack }
 		function env:__index(key)
-			return function(w)
-				return read[key](source, w)
+			return function(...)
+				return read[key](source, ...)
 			end
 		end
 		setmetatable(env, env)
@@ -89,7 +89,9 @@ local translate_w = {
 	["@"] = "seekto";
 }
 
-function lexer.write(fmt)
+-- similar to compile.read, but generates code for writing to a fileoid
+-- 
+function compile.write(fmt)
 	local function tr(type, width)
 		return (translate_w[type] or type)..' ("'..(width or ""):gsub('.',',')..'") '
 	end
@@ -125,6 +127,8 @@ function lexer.write(fmt)
 
 	local f = assert(loadstring(fmt))
 	
+	-- this one is somewhat more complicated than the read version, since we need
+	-- to supply functions for manipulating the data stack
 	return function(source, data)
 		local env = {}
 		local stack = { data }
@@ -142,8 +146,8 @@ function lexer.write(fmt)
 		end
 
 		function env:__index(key)
-			return function(w)
-				local r = write[key](fd, w, stack[#stack][1])
+			return function(...)
+				local r = write[key](fd, stack[#stack][1], ...)
 				if r then table.remove(stack[#stack], 1) end
 				return r
 			end
@@ -153,4 +157,4 @@ function lexer.write(fmt)
 	end
 end
 
-return lexer
+return compile
