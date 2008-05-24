@@ -27,18 +27,24 @@ local translate_r = {
 	["x"] = "['.'] = x";	-- skip/pad
 }
 
+local r_cache = {}
+
 -- turn a format string into a function that does reads
 -- this is done by translating it into lua code which is then compiled using
 -- loadstring
 -- it returns a function that, when passed a fileoid, does the necessary
 -- scope hacking and then executes the function
 function compile.read(fmt)
+	if r_cache[fmt] then
+		return r_cache[fmt]
+	end
+
 	local function tr(type, width)
 		return (translate_r[type] or type)..' ('..(width or ""):gsub('.',',')..'); '
 	end
 
 	-- turn ',' and ';', which are permitted but not required, into ' '
-	fmt = (" "..fmt.." "):gsub('[,;]', ' ')
+	local src = (" "..fmt.." "):gsub('[,;]', ' ')
 	-- make sure all punctuation is surrounded with whitspace
 		:gsub('([{}%(%)<>=])', ' %1 ')
 		
@@ -63,9 +69,10 @@ function compile.read(fmt)
 	-- append ; to {} expressions so the lua parser doesn't freak out
 		:gsub('}%s', '}; ')
 
-	local f = assert(loadstring("return unpack { "..fmt.." }"))
+	local f = assert(loadstring("return unpack { "..src.." }"),
+				"struct.unpack: error in format string")
 
-	return function(source)
+	r_cache[fmt] = function(source)
 		local env = { unpack = unpack }
 		function env:__index(key)
 			return function(...)
@@ -75,6 +82,7 @@ function compile.read(fmt)
 		setmetatable(env, env)
 		return setfenv(f, env)()
 	end
+	return r_cache[fmt]
 end
 
 -- unlike translate_r we don't need to worry about discarding return values when
@@ -89,15 +97,20 @@ local translate_w = {
 	["@"] = "seekto";
 }
 
+local w_cache = {}
+
 -- similar to compile.read, but generates code for writing to a fileoid
--- 
 function compile.write(fmt)
+	if w_cache[fmt] then
+		return w_cache[fmt]
+	end
+	
 	local function tr(type, width)
 		return (translate_w[type] or type)..' ("'..(width or ""):gsub('.',',')..'") '
 	end
 
 	-- turn ',' and ';', which are permitted but not required, into ' '
-	fmt = (" "..fmt.." "):gsub('[,;]', ' ')
+	local src = (" "..fmt.." "):gsub('[,;]', ' ')
 	-- make sure all punctuation is surrounded with whitspace
 		:gsub('([{}%(%)<>=])', ' %1 ')
 		
@@ -125,11 +138,11 @@ function compile.write(fmt)
 	-- 'foo:fw' is 'the data for this format is taken from args.foo instead of args[1]'
 		:gsub('(%a%w*)%:', ' push_var("%1") ')
 
-	local f = assert(loadstring(fmt))
+	local f = assert(loadstring(src), "struct.pack: error in format string")
 	
 	-- this one is somewhat more complicated than the read version, since we need
 	-- to supply functions for manipulating the data stack
-	return function(source, data)
+	w_cache[fmt] = function(source, data)
 		local env = {}
 		local stack = { data }
 		
@@ -155,6 +168,7 @@ function compile.write(fmt)
 		setmetatable(env, env)
 		return setfenv(f, env)()
 	end
+	return w_cache[fmt]
 end
 
 return compile
