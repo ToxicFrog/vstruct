@@ -5,7 +5,6 @@
 -- to make available to it the IO functions.
 -- This is a crime against god and man, but it works, and is totally sweet.
 
-require "util"
 local read = require "struct.read"
 local write = require "struct.write"
 local compile = {}
