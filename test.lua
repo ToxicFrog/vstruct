@@ -1,5 +1,6 @@
 -- we need to test all the different formats, at minimum
 -- this means bimPpsuxz for now
+-- Copyright © 2008 Ben "ToxicFrog" Kelly; see COPYING
 
 local name = (...):gsub('%.[^%.]+$', '')
 local struct = require(name)

@@ -1,5 +1,6 @@
 -- shared formats - seeking, endianness
 -- these should all return nil so that they do not mutate the data list
+-- Copyright © 2008 Ben "ToxicFrog" Kelly; see COPYING
 
 local common = {}
 

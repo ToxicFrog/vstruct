@@ -1,3 +1,6 @@
+-- vstruct, the versatile struct library
+-- Copyright © 2008 Ben "ToxicFrog" Kelly; see COPYING
+
 local table,math,type,require,assert = table,math,type,require,assert
 local name = (...)
 module(name)

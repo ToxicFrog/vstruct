@@ -4,6 +4,7 @@
 -- executable lua code, then wrapping it in a closure that does scope hacking
 -- to make available to it the IO functions.
 -- This is a crime against god and man, but it works, and is totally sweet.
+-- Copyright © 2008 Ben "ToxicFrog" Kelly; see COPYING
 
 local name = (...):gsub('%.[^%.]+$', '')
 local read = require (name..".read")

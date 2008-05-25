@@ -2,6 +2,7 @@
 -- return true if they have consumed a value from the input stream
 -- return false/nil otherwise (ie, the next value will be preserved
 -- for subsequent calls, eg skip/pad)
+-- Copyright © 2008 Ben "ToxicFrog" Kelly; see COPYING
 
 local name = (...):gsub('%.[^%.]+$', '')
 local struct = require (name)

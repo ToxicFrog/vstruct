@@ -1,6 +1,7 @@
 -- read formats
 -- return a value if applicable, which will be packed
 -- otherwise return nil
+-- Copyright © 2008 Ben "ToxicFrog" Kelly; see COPYING
 
 -- load operations common to both read and write, and set __index so that
 -- requests for, say, read.seekto will succeed
