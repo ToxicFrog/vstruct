@@ -62,7 +62,7 @@ end
 -- string
 -- reads exactly w bytes of data and returns them verbatim
 function read.s(fd, w)
-	return fd:read(tonumber(w))
+	return fd:read(w or 0)
 end
 
 -- unsigned int
@@ -90,15 +90,15 @@ function read.x(fd, w)
 end
 
 -- null-terminated string
--- if w is 0, reads up to and including the first nul, and returns everything
+-- if w is omitted, reads up to and including the first nul, and returns everything
 -- except that nul
 -- otherwise, reads exactly w bytes and returns everything up to the first nul
 function read.z(fd, w)
-	if tonumber(w) ~= 0 then
+	if w then
 		return read.s(fd, w):match('^%Z*')
 	end
 	
-	local buf
+	local buf = ""
 	local c = read.s(fd, 1)
 	while #c > 0 and c ~= string.char(0) do
 		buf = buf..c

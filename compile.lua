@@ -47,23 +47,25 @@ function compile.read(fmt)
 	local src = (" "..fmt.." "):gsub('[,;]', ' ')
 	-- make sure all punctuation is surrounded with whitspace
 		:gsub('([{}%(%)<>=])', ' %1 ')
+	-- except '*'
+		:gsub('%s+%*%s+', '*')
 		
-	-- turn ' n{...}' or ' n*{...}' into repetitions of {...}
-		:gsub('%s+(%d+)%*?%s+(%b{})', function(count, action) return (action.."; "):rep(count) end)
-	-- turn '{...}n ' or '{...}*n' into repetitions of {...}
-		:gsub('(%b{})%s+%*(%d+)%s+', function(action, count) return (action.."; "):rep(count) end)
+	-- turn ' n*{...}' into repetitions of {...}
+		:gsub('%s+(%d+)%*(%b{})', function(count, action) return (action.."; "):rep(count) end)
+	-- turn '{...}*n ' into repetitions of {...}
+		:gsub('(%b{})%*(%d+)%s+', function(action, count) return (action.."; "):rep(count) end)
 
-	-- turn ' n(...)' or ' n*(...)' into repetitions of ...
-		:gsub('%s+(%d+)%*%s+(%b())', function(count, action) return action:sub(2,-2):rep(count) end)
-	-- turn '(...)n ' or '(...)*n' into repetitions of ...
-		:gsub('(%b())%s+%*?(%d+)%s+', function(action, count) return action:sub(2,-2):rep(count) end)
+	-- turn ' n*(...)' into repetitions of ...
+		:gsub('%s+(%d+)%*(%b())', function(count, action) return action:sub(2,-2):rep(count) end)
+	-- turn '(...)*n ' into repetitions of ...
+		:gsub('(%b())%*(%d+)%s+', function(action, count) return action:sub(2,-2):rep(count) end)
 
 	-- turn fw into f(w),
 	-- turn fw.x into f(w,x),
 		:gsub('([<>=-@+%a])([%d%.]*)', tr)
 
 	-- turn 'foo:fw' into ' foo = fw'
-		:gsub('(%a%w*)%:', ' %1 = ')
+		:gsub('([%a_][%w_]*)%:', ' %1 = ')
 
 	-- append ; to {} expressions so the lua parser doesn't freak out
 		:gsub('}%s', '}; ')
@@ -113,16 +115,18 @@ function compile.write(fmt)
 	local src = (" "..fmt.." "):gsub('[,;]', ' ')
 	-- make sure all punctuation is surrounded with whitspace
 		:gsub('([{}%(%)<>=])', ' %1 ')
+	-- except '*'
+		:gsub('%s+%*%s+', '*')
 		
-	-- turn ' n{...}' or ' n*{...}' into repetitions of {...}
-		:gsub('%s+(%d+)%*?%s+(%b{})', function(count, action) return (action.."; "):rep(count) end)
-	-- turn '{...}n ' or '{...}*n' into repetitions of {...}
-		:gsub('(%b{})%s+%*(%d+)%s+', function(action, count) return (action.."; "):rep(count) end)
+	-- turn ' n*{...}' into repetitions of {...}
+		:gsub('%s+(%d+)%*(%b{})', function(count, action) return (action.."; "):rep(count) end)
+	-- turn '{...}*n ' into repetitions of {...}
+		:gsub('(%b{})%*(%d+)%s+', function(action, count) return (action.."; "):rep(count) end)
 
-	-- turn ' n(...)' or ' n*(...)' into repetitions of ...
-		:gsub('%s+(%d+)%*%s+(%b())', function(count, action) return action:sub(2,-2):rep(count) end)
-	-- turn '(...)n ' or '(...)*n' into repetitions of ...
-		:gsub('(%b())%s+%*?(%d+)%s+', function(action, count) return action:sub(2,-2):rep(count) end)
+	-- turn ' n*(...)' into repetitions of ...
+		:gsub('%s+(%d+)%*(%b())', function(count, action) return action:sub(2,-2):rep(count) end)
+	-- turn '(...)*n ' into repetitions of ...
+		:gsub('(%b())%*(%d+)%s+', function(action, count) return action:sub(2,-2):rep(count) end)
 
 	-- turn fw into f(w)
 	-- turn fw.x into f(w,x)
@@ -135,7 +139,7 @@ function compile.write(fmt)
 		:gsub('}', 'pop_data()')
 
 	-- 'foo:fw' is 'the data for this format is taken from args.foo instead of args[1]'
-		:gsub('(%a%w*)%:', ' push_var("%1") ')
+		:gsub('([%a_][%w_]*)%:', ' push_var("%1") ')
 
 	local f = assert(loadstring(src), "struct.pack: error in format string")
 	

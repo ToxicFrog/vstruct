@@ -54,7 +54,7 @@ end
 -- length 0 is write string as is
 -- length >0 is write exactly w bytes, truncating or padding as needed
 function write.s(fd, d, w)
-	if w == 0 then w = #d end
+	w = w or #d
 	if #d < w then
 		d = d..string.char(0):rep(w-#d)
 	end
@@ -84,12 +84,11 @@ function write.x(fd, d, w)
 end
 
 -- null terminated string
--- w==0 is write string as is + termination
+-- w==nil is write string as is + termination
 -- w>0 is write exactly w bytes, truncating/padding and terminating
 function write.z(fd, d, w)
-	if w == 0 then
-		w = #d+1
-	elseif #d >= w then
+	w = w or #d+1
+	if #d >= w then
 		d = d:sub(1, w-1)
 	end
 	
