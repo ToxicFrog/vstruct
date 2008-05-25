@@ -3,7 +3,9 @@
 -- return false/nil otherwise (ie, the next value will be preserved
 -- for subsequent calls, eg skip/pad)
 
-local common = require "struct.common"
+local name = (...):gsub('%.[^%.]+$', '')
+local struct = require (name)
+local common = require (name..".common")
 local write = setmetatable({}, { __index = common })
 
 --local fp = srequire "struct.fp"
@@ -16,7 +18,7 @@ end
 -- floating point
 function write.f(fd, d, w)
 	if not fp then
-		error("struct.pack: floating point support is not loaded")
+		error("struct.pack: floating point support is not implemented yet")
 	elseif not fp.w[w] then
 		error("struct.pack: illegal floating point width")
 	end
@@ -39,10 +41,8 @@ end
 
 -- fixed point bit aligned
 function write.P(fd, d, dp, fp)
-	if (dp+fp) % 8 ~= 0 then
-		error "total width of fixed point value must be byte multiple"
-	end
-	return write.u(fd, d * 2^f, (dp+fp)/8)
+	assert((dp+fp) % 8 == 0, "total width of fixed point value must be byte multiple")
+	return write.u(fd, d * 2^fp, (dp+fp)/8)
 end
 
 -- fixed point byte aligned
@@ -66,7 +66,7 @@ function write.u(fd, d, w)
 	local s = ""
 
 	for i=1,w do
-		if struct.bigendian then
+		if write.is_bigendian then
 			s = string.char(d % 2^8) .. s
 		else
 			s = s .. string.char(d % 2^8)
@@ -79,7 +79,7 @@ end
 
 -- skip/pad
 function write.x(fd, d, w)
-	write.s(fd, w, "")
+	write.s(fd, "", w)
 	return false
 end
 

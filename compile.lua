@@ -5,8 +5,9 @@
 -- to make available to it the IO functions.
 -- This is a crime against god and man, but it works, and is totally sweet.
 
-local read = require "struct.read"
-local write = require "struct.write"
+local name = (...):gsub('%.[^%.]+$', '')
+local read = require (name..".read")
+local write = require (name..".write")
 local compile = {}
 
 
@@ -39,7 +40,7 @@ function compile.read(fmt)
 	end
 
 	local function tr(type, width)
-		return (translate_r[type] or type)..' ('..(width or ""):gsub('%.',',')..'); '
+		return (translate_r[type] or type)..' ('..width:gsub('%.',',')..'); '
 	end
 
 	-- turn ',' and ';', which are permitted but not required, into ' '
@@ -59,8 +60,7 @@ function compile.read(fmt)
 
 	-- turn fw into f(w),
 	-- turn fw.x into f(w,x),
-		:gsub('([<>=])', tr)
-		:gsub('([-@+abfimpsuxz])(%d+%.?%d*)', tr)
+		:gsub('([<>=-@+%a])([%d%.]*)', tr)
 
 	-- turn 'foo:fw' into ' foo = fw'
 		:gsub('(%a%w*)%:', ' %1 = ')
@@ -75,7 +75,8 @@ function compile.read(fmt)
 		local env = { unpack = unpack }
 		function env:__index(key)
 			return function(...)
-				return read[key](source, ...)
+				local f = assert(read[key], "invalid format specifier: "..key)
+				return f(source, ...)
 			end
 		end
 		setmetatable(env, env)
@@ -105,7 +106,7 @@ function compile.write(fmt)
 	end
 	
 	local function tr(type, width)
-		return (translate_w[type] or type)..' ('..(width or ""):gsub('%.',',')..') '
+		return (translate_w[type] or type)..' ('..width:gsub('%.',',')..') '
 	end
 
 	-- turn ',' and ';', which are permitted but not required, into ' '
@@ -123,16 +124,15 @@ function compile.write(fmt)
 	-- turn '(...)n ' or '(...)*n' into repetitions of ...
 		:gsub('(%b())%s+%*?(%d+)%s+', function(action, count) return action:sub(2,-2):rep(count) end)
 
+	-- turn fw into f(w)
+	-- turn fw.x into f(w,x)
+		:gsub('([<>=-@+%a])([%d%.]*)', tr)
+
 	-- { is turned into "make the table which is the next argument be our argument list"
 		:gsub('{', 'push_data()')
 	
 	-- } is turned into "return to the previous argument list and discard the current one"
 		:gsub('}', 'pop_data()')
-
-	-- turn fw into f(w)
-	-- turn fw.x into f(w,x)
-		:gsub('([<>=])', tr)
-		:gsub('([-@+abfimpsuxz])(%d+%.?%d*)', tr)
 
 	-- 'foo:fw' is 'the data for this format is taken from args.foo instead of args[1]'
 		:gsub('(%a%w*)%:', ' push_var("%1") ')
@@ -159,7 +159,8 @@ function compile.write(fmt)
 
 		function env:__index(key)
 			return function(...)
-				local r = write[key](fd, stack[#stack][1], ...)
+				local f = assert(write[key], "invalid format specifier: "..key)
+				local r = f(fd, stack[#stack][1], ...)
 				if r then table.remove(stack[#stack], 1) end
 				return r
 			end

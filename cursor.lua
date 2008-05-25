@@ -1,7 +1,6 @@
 -- cursor - a wrapper for strings that makes them look like files
 -- exports: seek read write
 -- read only supports numeric amounts
--- use me as: local cursor = require "cursor"; cur = cursor(str)
 
 local cursor = {}
 

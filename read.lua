@@ -4,7 +4,9 @@
 
 -- load operations common to both read and write, and set __index so that
 -- requests for, say, read.seekto will succeed
-local common = require "struct.common"
+local name = (...):gsub('%.[^%.]+$', '')
+local struct = require (name)
+local common = require (name..".common")
 local read = setmetatable({}, { __index = common })
 
 -- load the floating point module if available
@@ -20,7 +22,7 @@ end
 -- this is callout to the floating-point read/write module, if installed
 function read.f(fd, w)
 	if not fp then
-		error("struct.unpack: floating point support is not loaded")
+		error("struct.unpack: floating point support is not implemented yet")
 	elseif not fp.r[w] then
 		error("struct.unpack: illegal floating point width")
 	end
@@ -49,7 +51,7 @@ function read.P(fd, dp, fp)
 	if (dp+fp) % 8 ~= 0 then
 		error "total width of fixed point value must be byte multiple"
 	end
-	return read.u(fd, (dp+fp)/8)/(2^f)
+	return read.u(fd, (dp+fp)/8)/(2^fp)
 end
 
 -- fixed point byte aligned
@@ -68,9 +70,10 @@ function read.u(fd, w)
 	local u = 0
 	local s = read.s(fd, w)
 	
-	local sof = (struct.bigendian and 1 or w)
-	local eof = (struct.bigendian and w or 1)
-	local dir = (struct.bigendian and 1 or -1)
+	-- the "is_bigendian" setting is provided by struct.common
+	local sof = (read.is_bigendian and 1 or w)
+	local eof = (read.is_bigendian and w or 1)
+	local dir = (read.is_bigendian and 1 or -1)
 	
 	for i=sof,eof,dir do
 		u = u * 2^8 + s:sub(i,i):byte()

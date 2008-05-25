@@ -5,9 +5,11 @@ local common = {}
 
 -- determine if the host system is big-endian or not, by dumping an empty
 -- function and looking at the endianness flag
+-- this is kind of hackish
 local function bigendian()
 	return string.byte(string.dump(function() end)) == string.char(0x00)
 end
+common.is_bigendian = bigendian()
 
 -- seek controls
 function common.seekto(fd, w)
@@ -31,15 +33,15 @@ end
 
 -- endianness controls
 function common.littleendian(fd, w)
-	struct.bigendian = false
+	common.is_bigendian = false
 end
 
 function common.bigendian(fd, w)
-	struct.bigendian = true
+	common.is_bigendian = true
 end
 
 function common.hostendian(fd, w)
-	struct.bigendian = bigendian()
+	common.is_bigendian = bigendian()
 end
 
 return common
