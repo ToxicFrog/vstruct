@@ -68,7 +68,7 @@ function compile.read(fmt)
 	-- append ; to {} expressions so the lua parser doesn't freak out
 		:gsub('}%s', '}; ')
 
-	local f = assert(loadstring("return unpack { "..src.." }"),
+	local f = assert(loadstring("return { "..src.." }"),
 				"struct.unpack: error in format string")
 
 	r_cache[fmt] = function(source)

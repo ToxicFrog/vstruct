@@ -40,22 +40,20 @@ function unpack(source, fmt)
 	-- the lexer will take our format string and generate code from it
 	-- it returns a function that when called with our source, will
 	-- unpack the data according to the format string and return all
-	-- values from said unpacking
+	-- values from said unpacking in a list
 	return compile.read(fmt)(source)
 end
 
 -- given a format string and a list of data, pack them
 -- if 'fd' is omitted, pack them into and return a string
 -- otherwise, write them directly to the given file
-function pack(fd, fmt, ...)
+function pack(fd, fmt, data)
 	local data,str_fd
 	if type(fd) == 'string' then
-		data = { fmt, ... }
+		data = fmt
 		fmt = fd
 		fd = cursor("")
 		str_fd = true
-	else
-		data = { ... }
 	end
 	
 	compile.write(fmt)(fd, data)

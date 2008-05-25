@@ -22,16 +22,16 @@ exports:
 	struct.compile.read(format)
 	struct.compile.write(format)
 
-pack takes a format string and zero or more data objects and packs them
-into a buffer. If the first argument is a file descriptor, it will pack data
-directly into that rather than generating and returning a buffer.
+pack takes a format string and a table of data and packs the contents into a
+buffer. If the first argument is a file descriptor, it will pack data directly
+into that rather than generating and returning a buffer.
 
 unpack takes a format string and a buffer or file to unpack from, and returns
-each unpacked value as a seperate return value.
+the unpacked data as a table.
 
 explode converts a bitmask into a list of booleans, and implode does the
-converse. In such lists, list[1] is the least significant bit, and list[n]
-the most significant.
+converse. In such lists, list[1] is the least significant bit, and list[n] the
+most significant.
 
 cursor wraps a string in something that looks, at first glance, like a file.
 This permits strings to be wrapped and passed to the struct IO functions. The

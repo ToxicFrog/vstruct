@@ -23,7 +23,7 @@ data = "\1"
 	.."\0\0\0\0\0\0\0"
 	.."bar baz\0\0\0"
 
-unpacked = { struct.unpack(data, "< b1 i3 m1 > P8.8 p1.1 < s3 u3 x7 z10") }
+unpacked = struct.unpack(data, "< b1 i3 m1 > P8.8 p1.1 < s3 u3 x7 z10")
 
 test(unpacked[1] == true,		true,		"b")
 test(unpacked[2] == -2, 		-2, 		"i")
@@ -34,7 +34,7 @@ test(unpacked[6] == "foo",		"foo",		"s")
 test(unpacked[7] == 100,		100,		"u")
 test(unpacked[8] == "bar baz",	"bar baz",	"z")
 
-packed = struct.pack("{ < b1 i3 m1 > P8.8 p1.1 < s3 u3 x7 z10 }", unpacked)
+packed = struct.pack("< b1 i3 m1 > P8.8 p1.1 < s3 u3 x7 z10", unpacked)
 test(packed, data, "r/w")
 
 os.exit(0)
