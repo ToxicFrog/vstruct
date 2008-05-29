@@ -13,58 +13,83 @@ local function reader(uint, size_exp, size_fraction)
 	mask = 2 ^ size_exp
 	exponent = uint % mask
 	uint = math.floor(uint / mask)
-	sign = uint
+	sign = (uint == 0 and 1 or -1)
 
-	-- when fraction and exponent == 0, then this bit can be skipped
-	if fraction ~= 0 or exponent ~= 0 then
-		-- Add the most significant bit back onto the fraction
-		fraction = fraction + (2 ^ size_fraction)
-		-- Decrease the size of the exponent rather than make the fraction (0.5, 1]
-		exponent = exponent - size_fraction
+	-- special case: exponent is all 1s
+	if exponent == 2^size_exp-1 then
+		-- significand is 0? +- infinity
+		if fraction == 0 then
+			return sign * math.huge
+		
+		-- otherwise it's NaN
+		else
+			return 0/0
+		end
 	end
-
+			
+	-- restore the MSB of the significand
+	if exponent ~= 0 then
+		fraction = fraction + (2 ^ size_fraction)
+	end
+	
 	-- remove the exponent bias
 	exponent = exponent - 2 ^ (size_exp - 1) + 1
 
-	return (sign == 0 and 1 or -1) * math.ldexp(fraction, exponent)
+	-- Decrease the size of the exponent rather than make the fraction (0.5, 1]
+	exponent = exponent - size_fraction
+
+	return sign * math.ldexp(fraction, exponent)
 end
 
 local function writer(value, size_exp, size_fraction)
 	local fraction, exponent, sign
-	fraction, exponent = math.frexp(value)
-
-	-- handle the simple case
-	if fraction == 0 then
-		return 0
-	end
-
-	-- ensure a positive fraction
-	if fraction < 0 then
-		fraction = -fraction
+	
+	if value < 0 then
 		sign = 1
+		value = -value
 	else
 		sign = 0
 	end
 
-	-- remove the most significant bit from the fraction and adjust exponent
-	fraction = fraction - 0.5
-	exponent = exponent - 1
+	-- special case: value is infinite
+	if value == math.huge then
+		exponent = 2^size_exp -1
+		fraction = 0
+	
+	-- special case: value is NaN
+	elseif value ~= value then
+		exponent = 2^size_exp -1
+		fraction = 2^(size_fraction-1)
 
-	-- convert fraction into a binary integer  
-	local frac_uint, frac_mask, frac_part = 0, 2 ^ (size_fraction - 1), 0.25
-	for bit = 1, size_fraction do
-		if fraction >= frac_part then
-			frac_uint = frac_uint + frac_mask
-			fraction = fraction - frac_part
+	else
+		fraction,exponent = math.frexp(value)
+		-- handle the simple case
+		if fraction == 0 then
+			return 0
 		end
-		frac_mask = frac_mask * 0.5
-		frac_part = frac_part * 0.5
+
+		-- remove the most significant bit from the fraction and adjust exponent
+		fraction = fraction - 0.5
+		exponent = exponent - 1
+
+		-- convert fraction into a binary integer  
+		local frac_uint, frac_mask, frac_part = 0, 2 ^ (size_fraction - 1), 0.25
+		for bit = 1, size_fraction do
+			if fraction >= frac_part then
+				frac_uint = frac_uint + frac_mask
+				fraction = fraction - frac_part
+			end
+			frac_mask = frac_mask * 0.5
+			frac_part = frac_part * 0.5
+		end
+
+		-- add the exponent bias
+		exponent = exponent + 2 ^ (size_exp - 1) - 1
+
+		return frac_uint + math.ldexp(exponent, size_fraction) + math.ldexp(sign, size_exp + size_fraction)
 	end
-
-	-- add the exponent bias
-	exponent = exponent + 2 ^ (size_exp - 1) - 1
-
-	return frac_uint + math.ldexp(exponent, size_fraction) + math.ldexp(sign, size_exp + size_fraction)
+	
+	return fraction + math.ldexp(exponent, size_fraction) + math.ldexp(sign, size_exp + size_fraction)
 end
 
 -- Create readers and writers for the IEEE sizes

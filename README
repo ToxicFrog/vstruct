@@ -2,12 +2,13 @@ Contents
 ========
 1.	Overview
 2.	API
-3.	The Format String
+3.	Warning!
+4.	The Format String
 		Naming
 		Grouping
 		Repetition
-4.	Format Specifiers
-5.	Credits
+5.	Format Specifiers
+6.	Credits
 
 
 1. Overview
@@ -70,8 +71,11 @@ Is equivalent to:
 As with compile.read, the emitted function is fully re-usable.
 
 
+3. Warning!
+===========
 
-3. The Format String
+
+4. The Format String
 ====================
 The format string contains any number of endianness controls, seek controls,
 format specifiers, and grouping/naming sequences, seperated by whitespace,
@@ -137,7 +141,7 @@ Is equivalent to:
 Like grouping, these can be nested.
 
 
-4. Format Specifiers
+5. Format Specifiers
 ====================
 
 Endianness Controls
@@ -247,7 +251,7 @@ zW	Null terminated string.
 
 
 
-5. Credits
+6. Credits
 ==========
 	While the library code was written by me (Ben Kelly), the existence of this
 library owes itself to many others:
