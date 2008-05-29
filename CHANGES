@@ -1,6 +1,7 @@
 1.0 beta 2
 ----------
 Added the counted string format "c".
+Added float and double support, courtesy of Peter "Corsix" Cawley.
 
 
 1.0 beta 1

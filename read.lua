@@ -9,6 +9,7 @@ local name = (...):gsub('%.[^%.]+$', '')
 local struct = require (name)
 local common = require (name..".common")
 local read = setmetatable({}, { __index = common })
+local fp = require (name..".fp")
 
 -- boolean
 -- true if any bit is 1, false otherwise
@@ -26,9 +27,7 @@ end
 -- float
 -- this is callout to the floating-point read/write module, if installed
 function read.f(fd, w)
-	if not fp then
-		error("struct.unpack: floating point support is not implemented yet")
-	elseif not fp.r[w] then
+	if not fp.r[w] then
 		error("struct.unpack: illegal floating point width")
 	end
 	

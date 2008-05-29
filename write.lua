@@ -8,6 +8,7 @@ local name = (...):gsub('%.[^%.]+$', '')
 local struct = require (name)
 local common = require (name..".common")
 local write = setmetatable({}, { __index = common })
+local fp = require (name..".fp")
 
 -- boolean
 function write.b(fd, d, w)
@@ -23,9 +24,7 @@ end
 
 -- floating point
 function write.f(fd, d, w)
-	if not fp then
-		error("struct.pack: floating point support is not implemented yet")
-	elseif not fp.w[w] then
+	if not fp.w[w] then
 		error("struct.pack: illegal floating point width")
 	end
 	
