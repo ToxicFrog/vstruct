@@ -13,19 +13,19 @@ local compile = {}
 
 
 -- we do some trickery here
--- if the user asks for something like @4, the emitted code is "['.'] = a(4)"
+-- if the user asks for something like @4, the emitted code is "[0] = a(4)"
 -- this way, the returned value (which is nil) doesn't take up a table slot
 -- and thus, when unpacked, it doesn't appear in the returned values, and the
 -- user doesn't need placeholders
 local translate_r = {
-	["<"] = "['.'] = littleendian";
-	[">"] = "['.'] = bigendian";
-	["="] = "['.'] = hostendian";
-	["+"] = "['.'] = seekforward";
-	["-"] = "['.'] = seekback";
-	["@"] = "['.'] = seekto";
-	["a"] = "['.'] = a";	-- align
-	["x"] = "['.'] = x";	-- skip/pad
+	["<"] = "[0] = littleendian";
+	[">"] = "[0] = bigendian";
+	["="] = "[0] = hostendian";
+	["+"] = "[0] = seekforward";
+	["-"] = "[0] = seekback";
+	["@"] = "[0] = seekto";
+	["a"] = "[0] = a";	-- align
+	["x"] = "[0] = x";	-- skip/pad
 }
 
 local r_cache = {}
@@ -48,8 +48,8 @@ function compile.read(fmt)
 	local src = (" "..fmt.." "):gsub('[,;]', ' ')
 	-- make sure all punctuation is surrounded with whitspace
 		:gsub('([{}%(%)<>=])', ' %1 ')
-	-- except '*'
-		:gsub('%s+%*%s+', '*')
+	-- strip whitespace from '*'
+		:gsub('%s*%*%s*', '*')
 		
 	-- turn ' n*{...}' into repetitions of {...}
 		:gsub('%s+(%d+)%*(%b{})', function(count, action) return (action.."; "):rep(count) end)
@@ -66,13 +66,13 @@ function compile.read(fmt)
 		:gsub('([<>=-@+%a])([%d%.]*)', tr)
 
 	-- turn 'foo:fw' into ' foo = fw'
-		:gsub('([%a_][%w_]*)%:', ' %1 = ')
+		:gsub('([%a_][%w_]*)%:', '%1 = ')
 
 	-- append ; to {} expressions so the lua parser doesn't freak out
 		:gsub('}%s', '}; ')
 
 	local f = assert(loadstring("return { "..src.." }"),
-				"struct.unpack: error in format string")
+				"struct.unpack: error in format string:\n\t"..src)
 
 	r_cache[fmt] = function(source)
 		local env = { unpack = unpack }
@@ -116,8 +116,8 @@ function compile.write(fmt)
 	local src = (" "..fmt.." "):gsub('[,;]', ' ')
 	-- make sure all punctuation is surrounded with whitspace
 		:gsub('([{}%(%)<>=])', ' %1 ')
-	-- except '*'
-		:gsub('%s+%*%s+', '*')
+	-- strip whitespace from '*'
+		:gsub('%s*%*%s*', '*')
 		
 	-- turn ' n*{...}' into repetitions of {...}
 		:gsub('%s+(%d+)%*(%b{})', function(count, action) return (action.."; "):rep(count) end)
@@ -142,7 +142,8 @@ function compile.write(fmt)
 	-- 'foo:fw' is 'the data for this format is taken from args.foo instead of args[1]'
 		:gsub('([%a_][%w_]*)%:', ' push_var("%1") ')
 
-	local f = assert(loadstring(src), "struct.pack: error in format string")
+	local f = assert(loadstring(src),
+		"struct.pack: error in format string:\n\t"..src)
 	
 	-- this one is somewhat more complicated than the read version, since we need
 	-- to supply functions for manipulating the data stack
