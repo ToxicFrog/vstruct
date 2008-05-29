@@ -1,52 +1,44 @@
-data = string.char(
-	-- floats
-	0x00, 0x00, 0x00, 0x00, -- +0.0
-	0x00, 0x00, 0x80, 0x3f, -- +1.0
-	0x00, 0x00, 0x80, 0xbf, -- -1.0
-	0x00, 0x00, 0x80, 0x7f, -- +inf
-	0x00, 0x00, 0x80, 0xff, -- -inf
-	0x00, 0x00, 0xc0, 0x7f, -- +NaN
-	0x00, 0x00, 0xc0, 0xff, -- -NaN
-	-- doubles
-	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, -- +0.0
-	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xf0, 0x3f, -- +1.0
-	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xf0, 0xbf, -- -1.0
-	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xf0, 0x7f, -- +inf
-	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xf0, 0xff, -- -inf
-	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xf8, 0x7f, -- +NaN
-	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xf8, 0xff  -- -NaN
-)
-	
 struct = require("struct")
 
-unpacked = struct.unpack(data, "< (f4)*7 (f8)*7")
-test = { 0.0, 1.0, -1.0, math.huge, -math.huge }
+local c = string.char
 
-function check(exp, ...)
-	print(exp and "PASS" or "FAIL", ...)
+local tests = {
+	-- floats
+	{ raw = c(0x00, 0x00, 0x00, 0x00); format = "< f4"; val = 0.0; },
+	{ raw = c(0x00, 0x00, 0x80, 0x3f); format = "< f4"; val = 1.0; },
+	{ raw = c(0x00, 0x00, 0x80, 0xbf); format = "< f4"; val = -1.0; },
+	{ raw = c(0x00, 0x00, 0x80, 0x7f); format = "< f4"; val = math.huge; },
+	{ raw = c(0x00, 0x00, 0x80, 0xff); format = "< f4"; val = -math.huge; },
+	{ raw = c(0x00, 0x00, 0xc0, 0x7f); format = "< f4"; val = 0/0; },
+	{ raw = c(0x00, 0x00, 0xc0, 0xff); format = "< f4"; val = 0/0; },
+	-- doubles
+	{ raw = c(0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00); format = "< f8"; val = 0.0; },
+	{ raw = c(0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xf0, 0x3f); format = "< f8"; val = 1.0; },
+	{ raw = c(0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xf0, 0xbf); format = "< f8"; val = -1.0; },
+	{ raw = c(0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xf0, 0x7f); format = "< f8"; val = math.huge; },
+	{ raw = c(0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xf0, 0xff); format = "< f8"; val = -math.huge; },
+	{ raw = c(0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xf8, 0x7f); format = "< f8"; val = 0/0; },
+	{ raw = c(0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xf8, 0xff); format = "< f8"; val = 0/0; },
+}
+
+function od(str)
+	return str:gsub('.', function(c) return string.format("%02X ", c:byte()) end)
 end
 
-for i,v in ipairs(test) do
-	check(unpacked[i] == v, v, unpacked[i])
-	check(unpacked[i+7] == v, v, unpacked[i+7])
+function check(test)
+	local val, pass, raw
+
+	val = struct.unpack(test.raw, test.format)[1]
+	pass = test.test
+		and test.test(val)
+		or val == test.val
+	print(od(test.raw), "->", val, pass and "PASS" or "FAIL", pass and "" or "("..test.val..")")
+
+	raw = struct.pack(test.format, {val})
+	pass = raw == test.raw
+	print(od(raw), "<-", val, pass and "PASS" or "FAIL")
 end
 
-check(unpacked[6] ~= unpacked[6], 0/0, unpacked[6])
-check(unpacked[7] ~= unpacked[7], 0/0, unpacked[7])
-check(unpacked[13] ~= unpacked[13], 0/0, unpacked[13])
-check(unpacked[14] ~= unpacked[14], 0/0, unpacked[14])
-
-packed = struct.pack("< (f4)*7 (f8)*7", unpacked)
-check(packed == unpacked, "packed")
-
-print(packed:sub(1, 4*7):gsub('....', function(f)
-	return f:gsub('.', function(c)
-		return string.format("%02X ", c:byte())
-	end).."\n"
-end))
-
-print(packed:sub(4*7+1, -1):gsub('........', function(f)
-	return f:gsub('.', function(c)
-		return string.format("%02X ", c:byte())
-	end).."\n"
-end))
+for i,test in ipairs(tests) do
+	check(test)
+end
