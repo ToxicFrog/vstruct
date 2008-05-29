@@ -9,11 +9,16 @@ local struct = require (name)
 local common = require (name..".common")
 local write = setmetatable({}, { __index = common })
 
---local fp = srequire "struct.fp"
-
 -- boolean
 function write.b(fd, d, w)
 	return write.u(fd, (d and 1) or 0, w)
+end
+
+-- counted string
+-- a string immediately prefaced with its length as a uint
+function write.c(fd, d, w)
+	write.u(fd, #d, w)
+	return write.s(fd, d)
 end
 
 -- floating point

@@ -10,13 +10,17 @@ local struct = require (name)
 local common = require (name..".common")
 local read = setmetatable({}, { __index = common })
 
--- load the floating point module if available
---local fp = srequire "struct.fp"
-
 -- boolean
 -- true if any bit is 1, false otherwise
 function read.b(fd, w)
 	return read.u(fd, w) ~= 0
+end
+
+-- counted string
+-- a string immediately prefaced with its length as a uint
+function read.c(fd, w)
+	w = read.u(fd, w)
+	return read.s(fd, w)
 end
 
 -- float

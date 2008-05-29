@@ -177,9 +177,22 @@ bW	Boolean.
 	Read: as uW, but returns true if the result is non-zero and false otherwise.
 	Write: as uW with input 1 if true and 0 otherwise.
 
-fW
-	IEEE floating point. NOT IMPLEMENTED.
-	Valid widths are 4 (float) 8 (double) and 16 (quad)
+cW	Counted string.
+	Read: uW to determine the length of the string W', followed by sW'.
+	Write: the length of the string as uW, followed by the string itself.
+	The counted string is a common idiom where a string is immediately prefixed
+	with its length, as in:
+		size_t len;
+		char[] str;
+	The counted string format can be used to easily read and write these. The
+	width provided is the width of the len field, which is treated as an
+	unsigned int. Only the string itself is returned (when unpacking) or
+	required (when packing).
+	The len field is affected by endianness, as in format u.
+
+fW	IEEE 754 floating point. NOT IMPLEMENTED.
+	Valid widths are 4 (float), 8 (double), and 16 (quad).
+	Affected by endianness.
 
 iW	Signed integer.
 	Read: a signed integer of width W bytes.
