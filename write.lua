@@ -27,8 +27,9 @@ function write.f(fd, d, w)
 	if not fp.w[w] then
 		error("struct.pack: illegal floating point width")
 	end
-	
-	return write.u(fd, fp.w[w](d), w)
+--	local f = fp.w[w](d)
+--	print(f, type(f))
+	return write.s(fd, fp.w[w](d), w)
 end
 
 -- signed int

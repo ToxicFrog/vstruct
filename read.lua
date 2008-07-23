@@ -31,7 +31,7 @@ function read.f(fd, w)
 		error("struct.unpack: illegal floating point width")
 	end
 	
-	return fp.r[w](read.u(fd,w))
+	return fp.r[w](read.s(fd,w))
 end
 
 -- signed int of w bytes
@@ -50,9 +50,9 @@ function read.m(fd, w)
 	local buf = read.s(fd, w)
 	local mask = {}
 	
-	local sof = (read.is_bigendian and 1 or w)
-	local eof = (read.is_bigendian and w or 1)
-	local dir = (read.is_bigendian and 1 or -1)
+	local sof = (read.is_bigendian and w or 1)
+	local eof = (read.is_bigendian and 1 or w)
+	local dir = (read.is_bigendian and -1 or 1)
 
 	for i=sof,eof,dir do
 		local byte = buf:sub(i,i):byte()

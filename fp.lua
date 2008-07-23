@@ -2,18 +2,17 @@
 -- Copyright © 2008 Peter "Corsix" Cawley; see COPYING
 
 local fp = {}
+local name = (...):gsub('%.[^%.]+$', '')
+local struct = require (name)
 
-local function reader(uint, size_exp, size_fraction)
-	local mask, fraction, exponent, sign
-
+local function reader(data, size_exp, size_fraction)
+	local fraction, exponent, sign
+	
 	-- Split the unsigned integer into the 3 IEEE fields
-	mask = 2 ^ size_fraction
-	fraction = uint % mask
-	uint = math.floor(uint / mask)
-	mask = 2 ^ size_exp
-	exponent = uint % mask
-	uint = math.floor(uint / mask)
-	sign = (uint == 0 and 1 or -1)
+	local bits = struct.unpack(data, "m"..#data)[1]
+	local fraction = struct.implode{unpack(bits, 1, size_fraction)}
+	local exponent = struct.implode{unpack(bits, size_fraction+1, size_fraction+size_exp)}
+	local sign = bits[#bits] and -1 or 1
 
 	-- special case: exponent is all 1s
 	if exponent == 2^size_exp-1 then
@@ -43,12 +42,13 @@ end
 
 local function writer(value, size_exp, size_fraction)
 	local fraction, exponent, sign
+	local width = size_exp + size_fraction + 1
 	
 	if value < 0 then
-		sign = 1
+		sign = true
 		value = -value
 	else
-		sign = 0
+		sign = false
 	end
 
 	-- special case: value is infinite
@@ -65,7 +65,7 @@ local function writer(value, size_exp, size_fraction)
 		fraction,exponent = math.frexp(value)
 		-- handle the simple case
 		if fraction == 0 then
-			return 0
+			return struct.pack("m"..width, {{}})
 		end
 
 		-- remove the most significant bit from the fraction and adjust exponent
@@ -85,11 +85,17 @@ local function writer(value, size_exp, size_fraction)
 
 		-- add the exponent bias
 		exponent = exponent + 2 ^ (size_exp - 1) - 1
-
-		return frac_uint + math.ldexp(exponent, size_fraction) + math.ldexp(sign, size_exp + size_fraction)
+		fraction = frac_uint
 	end
 	
-	return fraction + math.ldexp(exponent, size_fraction) + math.ldexp(sign, size_exp + size_fraction)
+	local bits = struct.explode(fraction)
+	local bits_exp = struct.explode(exponent)
+	for i=1,size_exp do
+		bits[size_fraction+i] = bits_exp[i]
+	end
+	bits[size_fraction+size_exp+1] = sign
+
+	return struct.pack("m"..width, {bits})
 end
 
 -- Create readers and writers for the IEEE sizes
