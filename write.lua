@@ -40,8 +40,21 @@ function write.i(fd, d, w)
 end
 
 -- bitmask
+-- we use a string here because using an unsigned will lose data on bitmasks
+-- wider than lua's native number format
 function write.m(fd, d, w)
-	return write.u(fd, struct.implode(d), w)
+	local buf = ""
+	
+	for i=1,w*8,8 do
+		local bits = { unpack(d, i, i+7) }
+		local byte = string.char(struct.implode(bits))
+		if write.is_bigendian then
+			buf = byte..buf
+		else
+			buf = buf..byte
+		end
+	end
+	return write.s(fd, buf, w)
 end
 
 -- fixed point bit aligned

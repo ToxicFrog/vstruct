@@ -44,8 +44,24 @@ function read.i(fd, w)
 end
 
 -- bitmask of w bytes
+-- we need to read and unpack it as a string, not an unsigned, because otherwise
+-- we're limited to 52 bits
 function read.m(fd, w)
-	return struct.explode(read.u(fd, w))
+	local buf = read.s(fd, w)
+	local mask = {}
+	
+	local sof = (read.is_bigendian and 1 or w)
+	local eof = (read.is_bigendian and w or 1)
+	local dir = (read.is_bigendian and 1 or -1)
+
+	for i=sof,eof,dir do
+		local byte = buf:sub(i,i):byte()
+		local bits = struct.explode(byte)
+		for i=1,8 do
+			mask[#mask+1] = bits[i] or false
+		end
+	end
+	return mask
 end
 
 -- fixed point bit aligned
