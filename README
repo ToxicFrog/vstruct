@@ -248,6 +248,8 @@ zW	Null terminated string.
 	Write: writes exactly W bytes.
 	If the input is shorter than W, zero pads the output.
 	If as long or longer, truncates to W-1 and writes a zero byte at the end.
+	If W is omitted, uses the string length plus one (ie, writes the string
+	out entire and then null terminates it).
 
 
 

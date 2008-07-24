@@ -4,38 +4,80 @@
 
 local name = (...):gsub('%.[^%.]+$', '')
 local struct = require(name)
-
-local function test(exp, expected, name)
-	print(name, tostring(expected):sub(1,7), exp and "PASS" or "FAIL", exp and "" or val)
-end
+local c = string.char
 
 local function check_bm(m)
 	return m[8] and m[7] and m[6] and m[5]
 	and m[4] and not m[3] and m[2] and not m[1]
 end
 
-data = "\1"
-	.."\254\255\255"
-	.."\250"
-	.."\1\128".."\2\192"
-	.."foo"
-	.."\100\0\0"
-	.."\0\0\0\0\0\0\0"
-	.."bar baz\0\0\0".."moby\0"
+local tests = {
+	-- booleans
+	{ raw = "\0\0\0\0\0\0\0\1"; format = "b8"; val = true; },
+	{ raw = "\1\0\0\0\0\0\0\0"; format = "b8"; val = true; },
+	{ raw = "\0\0\0\0\0\0\0\0"; format = "b8"; val = false; },
+	-- signed integers
+	{ raw = "\254\255\255"; format = "< i3"; val = -2; },
+	-- unsigned integers
+	{ raw = "\254\255\255"; format = "< u3"; val = 2^24-2; },
+	-- bitmasks
+	{ raw = "\250"; format = "m1"; test = check_bm; },
+	-- fixed point
+	{ raw = "\1\128"; format = "> P8.8"; val = 1.5; },
+	{ raw = "\2\192"; format = "> p1.1"; val = 2.75; },
+	-- plain strings
+	{ raw = "foobar"; format = "s4"; val = "foob"; },
+	-- counted strings
+	{ raw = "\006\000\000\000foobar"; format = "< c4"; val = "foobar"; },
+	-- null terminated strings
+	{ raw = "foobar\0baz"; format = "z"; val = "foobar"; },
+	{ raw = "foobar\0baz"; format = "z10"; val = "foobar"; },
+	-- floats
+	{ raw = c(0x00, 0x00, 0x00, 0x00); format = "< f4"; val = 0.0; },
+	{ raw = c(0x00, 0x00, 0x80, 0x3f); format = "< f4"; val = 1.0; },
+	{ raw = c(0x00, 0x00, 0x80, 0xbf); format = "< f4"; val = -1.0; },
+	{ raw = c(0x00, 0x00, 0x80, 0x7f); format = "< f4"; val = math.huge; },
+	{ raw = c(0x00, 0x00, 0x80, 0xff); format = "< f4"; val = -math.huge; },
+	{ raw = c(0x00, 0x00, 0xc0, 0x7f); format = "< f4"; val = 0/0; test = function(v) return v ~= v end },
+	{ raw = c(0x00, 0x00, 0xc0, 0xff); format = "< f4"; val = 0/0; test = function(v) return v ~= v end },
+	-- doubles
+	{ raw = c(0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00); format = "< f8"; val = 0.0; },
+	{ raw = c(0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xf0, 0x3f); format = "< f8"; val = 1.0; },
+	{ raw = c(0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xf0, 0xbf); format = "< f8"; val = -1.0; },
+	{ raw = c(0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xf0, 0x7f); format = "< f8"; val = math.huge; },
+	{ raw = c(0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xf0, 0xff); format = "< f8"; val = -math.huge; },
+	{ raw = c(0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xf8, 0x7f); format = "< f8"; val = 0/0; test = function(v) return v ~= v end },
+	{ raw = c(0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xf8, 0xff); format = "< f8"; val = 0/0; test = function(v) return v ~= v end },
+}
 
-unpacked = struct.unpack(data, "< b1 i3 m1 > (P8.8) * 1 p1.1 < 1 * (s3 u3) x7 z10 z")
+function od(str)
+	return str:gsub('.', function(c) return string.format("%02X ", c:byte()) end)
+end
 
-test(unpacked[1] == true,		true,		"b")
-test(unpacked[2] == -2, 		-2, 		"i")
-test(check_bm(unpacked[3]),		true, 		"m")
-test(unpacked[4] == 1.5,		1.5,		"P")
-test(unpacked[5] == 2.75,		2.75,		"p")
-test(unpacked[6] == "foo",		"foo",		"s")
-test(unpacked[7] == 100,		100,		"u")
-test(unpacked[8] == "bar baz",	"bar baz",	"z")
-test(unpacked[9] == "moby", 	"moby", 	"z")
+function check(test)
+	local val, pass, raw
+	local fmt = "%7.7s %42.42s%2.2s %17.17s %4.4s %3.3s"
 
-packed = struct.pack("< b1 i3 m1 > P8.8 p1.1 < s3 u3 x7 z10 z", unpacked)
-test(packed, data, "r/w")
+	val = struct.unpack(test.raw, test.format)[1]
+	pass = test.test
+		and test.test(val)
+		or val == test.val
+	print(fmt:format(test.format, od(test.raw), "=>", tostring(val), pass and "PASS" or "FAIL", pass and "" or "!!!"):sub(1,79))
+
+	raw = struct.pack(test.format, {val})
+	pass = raw == test.raw
+	-- if we have a failure, it might be because there are multiple valid on-disk forms
+	-- for example, a boolean can be any non-zero value, but we always write it back out as 1
+	-- so, re-read it using the same format and see if it matches
+	if not pass then
+		local new_val = struct.unpack(raw, test.format)[1]
+		pass = test.test and test.test(val) or new_val == test.val
+	end
+	print(fmt:format(test.format, od(raw), "<=", tostring(val), pass and "PASS" or "FAIL", pass and "" or " !!!"):sub(1,79))
+end
+
+for i,test in ipairs(tests) do
+	check(test)
+end
 
 os.exit(0)
