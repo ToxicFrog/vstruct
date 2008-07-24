@@ -1,5 +1,6 @@
 -- floating point module
 -- Copyright © 2008 Peter "Corsix" Cawley; see COPYING
+-- modified by Ben "ToxicFrog" Kelly
 
 local fp = {}
 local name = (...):gsub('%.[^%.]+$', '')

@@ -73,7 +73,14 @@ As with compile.read, the emitted function is fully re-usable.
 
 3. Warning!
 ===========
-
+When reading and writing numeric formats, vstruct is inherently limited by lua's
+number format, which is by default the IEEE 754 double. What this means in
+practice is that formats cipPu may be subject to data loss when read in widths
+of 7 bytes or more, if they contain more than 52 significant bits. (The same is
+true of numeric constants declared in Lua itself, of course, and other libraries
+which store values in lua numbers).
+Formats bfmsxz are unaffected by this, as they either do not use lua numbers or
+are guaranteed to fit inside them.
 
 4. The Format String
 ====================
@@ -255,8 +262,9 @@ zW	Null terminated string.
 
 6. Credits
 ==========
-	While the library code was written by me (Ben Kelly), the existence of this
-library owes itself to many others:
+	While most of the library code was written by me (Ben Kelly), the existence
+of this library owes itself to many others:
+	The floating point code was contributed by Peter Cawley on lua-l.
 	The original inspiration came from Roberto Ierusalimschy's "struct" library
 and Luiz Henrique de Figueiredo's "lpack" library, as well as the "struct"
 available in Python.

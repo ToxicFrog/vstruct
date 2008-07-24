@@ -2,6 +2,9 @@
 ----------
 Added the counted string format "c".
 Added float and double support, courtesy of Peter "Corsix" Cawley.
+Updated the test framework.
+Fixed a bug in format m that could result in data loss when manipulating fields
+of 7 bytes or more width.
 
 
 1.0 beta 1
