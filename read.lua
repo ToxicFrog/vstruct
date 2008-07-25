@@ -55,7 +55,7 @@ function read.m(fd, w)
 	local dir = (read.is_bigendian and -1 or 1)
 
 	for i=sof,eof,dir do
-		local byte = buf:sub(i,i):byte()
+		local byte = buf:byte(i)
 		local bits = struct.explode(byte)
 		for i=1,8 do
 			mask[#mask+1] = bits[i] or false
@@ -96,7 +96,7 @@ function read.u(fd, w)
 	local dir = (read.is_bigendian and 1 or -1)
 	
 	for i=sof,eof,dir do
-		u = u * 2^8 + s:sub(i,i):byte()
+		u = u * 2^8 + s:byte(i)
 	end
 	
 	return u
