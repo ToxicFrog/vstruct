@@ -45,7 +45,7 @@ function compile.read(fmt)
 	end
 
 	-- turn ',' and ';', which are permitted but not required, into ' '
-	local src = (" "..fmt.." "):gsub('[,;]', ' ')
+	local src = (" "..fmt.." "):gsub('[,; ]', '  ')
 	-- make sure all punctuation is surrounded with whitspace
 		:gsub('([{}%(%)<>=])', ' %1 ')
 	-- strip whitespace from '*'
@@ -61,13 +61,13 @@ function compile.read(fmt)
 	-- turn '(...)*n ' into repetitions of ...
 		:gsub('(%b())%*(%d+)%s+', function(action, count) return action:sub(2,-2):rep(count) end)
 
-	-- turn fw into f(w),
-	-- turn fw.x into f(w,x),
-		:gsub('([<>=-@+%a])([%d%.]*)', tr)
+	-- turn 'foo:fw' into ' foo= fw'
+		:gsub('([%a_][%w_]*)%:', '%1= ')
 
-	-- turn 'foo:fw' into ' foo = fw'
-		:gsub('([%a_][%w_]*)%:', '%1 = ')
-
+	-- turn fw into f (w),
+	-- turn fw.x into f (w,x),
+		:gsub('%s([<>=-@+%a])([%d%.]*)%s', tr)
+		
 	-- append ; to {} expressions so the lua parser doesn't freak out
 		:gsub('}%s', '}; ')
 
@@ -109,11 +109,11 @@ function compile.write(fmt)
 	end
 	
 	local function tr(type, width)
-		return (translate_w[type] or type)..' ('..width:gsub('%.',',')..') '
+		return (translate_w[type] or type)..' ('..width:gsub('%.',',')..'); '
 	end
 
 	-- turn ',' and ';', which are permitted but not required, into ' '
-	local src = (" "..fmt.." "):gsub('[,;]', ' ')
+	local src = (" "..fmt.." "):gsub('[,; ]', '  ')
 	-- make sure all punctuation is surrounded with whitspace
 		:gsub('([{}%(%)<>=])', ' %1 ')
 	-- strip whitespace from '*'
@@ -129,18 +129,18 @@ function compile.write(fmt)
 	-- turn '(...)*n ' into repetitions of ...
 		:gsub('(%b())%*(%d+)%s+', function(action, count) return action:sub(2,-2):rep(count) end)
 
+	-- 'foo:fw' is 'the data for this format is taken from args.foo instead of args[1]'
+		:gsub('([%a_][%w_]*)%:', ' push_var("%1"); ')
+
 	-- turn fw into f(w)
 	-- turn fw.x into f(w,x)
-		:gsub('([<>=-@+%a])([%d%.]*)', tr)
+		:gsub('%s([<>=-@+%a])([%d%.]*)%s', tr)
 
 	-- { is turned into "make the table which is the next argument be our argument list"
-		:gsub('{', 'push_data()')
+		:gsub('{', 'push_data(); ')
 	
 	-- } is turned into "return to the previous argument list and discard the current one"
-		:gsub('}', 'pop_data()')
-
-	-- 'foo:fw' is 'the data for this format is taken from args.foo instead of args[1]'
-		:gsub('([%a_][%w_]*)%:', ' push_var("%1") ')
+		:gsub('}', 'pop_data(); ')
 
 	local f = assert(loadstring(src),
 		"struct.pack: error in format string:\n\t"..src)
@@ -160,6 +160,7 @@ function compile.write(fmt)
 		end
 
 		function env.push_var(name)
+			assert(stack[#stack][name], "write named field '"..name.."': no such field in input")
 			table.insert(stack[#stack], 1, stack[#stack][name])
 		end
 
