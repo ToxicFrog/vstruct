@@ -5,11 +5,15 @@
 
 -- load operations common to both read and write, and set __index so that
 -- requests for, say, read.seekto will succeed
-local name = (...):gsub('%.[^%.]+$', '')
-local struct = require (name)
-local common = require (name..".common")
+local require,error,setmetatable = require,error,setmetatable
+
+module((...))
+
+local struct = require (_PACKAGE:sub(1,-2))
+local common = require (_PACKAGE.."common")
+local fp = require (_PACKAGE.."fp")
+
 local read = setmetatable({}, { __index = common })
-local fp = require (name..".fp")
 
 -- boolean
 -- true if any bit is 1, false otherwise

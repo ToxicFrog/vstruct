@@ -1,12 +1,18 @@
 -- vstruct, the versatile struct library
 -- Copyright © 2008 Ben "ToxicFrog" Kelly; see COPYING
 
-local table,math,type,require,assert = table,math,type,require,assert
-local name = (...)
-module(name)
+local _require = require
+function require(module)
+	print("REQUIRE", module)
+	return _require(module)
+end
 
-cursor = require (name..".cursor")
-compile = require (name..".compile")
+local table,math,type,require,assert = table,math,type,require,assert
+
+module((...))
+
+cursor = require (_NAME..".cursor")
+compile = require (_NAME..".compile")
 
 -- turn an int into a list of booleans
 -- the length of the list will be the smallest number of bits needed to
