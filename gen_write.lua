@@ -17,7 +17,7 @@ local function push(key)
 		index = index + 1
 	end
 	
-	stack[#stack+1] = { data, index }
+	stack[#stack+1] = { index, data }
 	data = data[key]
 	index = 1
 end
@@ -99,7 +99,7 @@ end
 --		pop()
 function gen.name_table(token)
 	return "push("..token[1]..")\n"
-	..parse(token[2]:sub(2,-2))
+	..parse(token[2]:sub(2,-2), gen)
 	.."\npop()"
 end
 

@@ -84,7 +84,7 @@ end
 
 function gen.name_table(token)
 	return "push()\n"
-	..parse(token[2]:sub(2,-2))
+	..parse(token[2]:sub(2,-2), gen)
 	.."\npop("..token[1]..")\n"
 end
 
