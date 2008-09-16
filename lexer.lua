@@ -17,6 +17,9 @@ lexeme "control"	"([-+@<>=ax])([%d.]*)"
 lexeme "atom"		"(%a)([%d.]*)"
 
 return function(source)
+	local orig = source
+	local index = 1
+	
 	local function iter()
 		if #source == 0 then return nil end
 		
@@ -27,6 +30,7 @@ return function(source)
 				table.remove(result, 1)
 				
 				source = source:sub(eof+1, -1)
+				index = index+eof
 				
 				if lexeme.name then
 					result.type = lexeme.name
@@ -35,7 +39,13 @@ return function(source)
 				return iter()
 			end
 		end
-		error ("no match for '"..source:sub(1,8).."...' in lexicon")
+		error ("Error in format string [["
+			..orig
+			.."]] at char "
+			..index
+			.." ("
+			..source:sub(1,1)
+			..")")
 	end
 
 	return coroutine.wrap(iter)

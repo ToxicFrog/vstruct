@@ -18,7 +18,24 @@ local function compile(format, cache, gen, env)
 		return cache[format]
 	end
 	
-	local fn = assert(loadstring(parse(format, gen, true)))
+	local source = parse(format, gen, true)
+	local fn,err = loadstring(source)
+	
+	if not fn then
+		error([[
+struct: error in emitted lua source
+This is an internal error in the struct library
+Please report it as a bug and include the following information:
+-- loadstring error
+]]..err.."\n"..[[
+-- format string
+]]..format.."\n"..[[
+-- emitted source
+]]..source.."\n"..[[
+-- stack trace
+]])
+	end
+	
 	setfenv(fn, env)
 	
 	cache[format] = fn
