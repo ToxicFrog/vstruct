@@ -1,12 +1,6 @@
 -- vstruct, the versatile struct library
 -- Copyright © 2008 Ben "ToxicFrog" Kelly; see COPYING
 
-local _require = require
-function require(module)
-	print("REQUIRE", module)
-	return _require(module)
-end
-
 local table,math,type,require,assert = table,math,type,require,assert
 
 module((...))

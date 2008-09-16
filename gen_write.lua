@@ -1,3 +1,9 @@
+local require,table
+	= require,table
+
+module((...))
+local parse = require(_PACKAGE.."parser")
+
 local gen = {}
 
 gen.preamble = [[
@@ -67,14 +73,14 @@ end
 --		pop()
 function gen.table(token)
 	return "push()\n"
-	..parse(token[1]:sub(2,-2))
+	..parse(token[1]:sub(2,-2), gen)
 	.."\npop()"
 end
 
 --	group:
 --		<<group contents>>
 function gen.group(token)
-	return parse(token[1]:sub(2,-2))
+	return parse(token[1]:sub(2,-2), gen)
 end
 
 -- named atom:
@@ -104,7 +110,7 @@ function gen.prerepeat(token, get)
 	return "for i=1,"..token[1].." do\n\n"..src.."\nend"
 end
 
-function gen.postrepeat(token,get, asl)
+function gen.postrepeat(token, get, asl)
 	local src = table.remove(asl)
 	
 	return "for i=1,"..token[1].." do\n\n"..src.."\nend"

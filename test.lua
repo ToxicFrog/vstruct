@@ -2,11 +2,16 @@
 -- this means bimPpsuxz for now
 -- Copyright © 2008 Ben "ToxicFrog" Kelly; see COPYING
 
-local name = (...):gsub('%.[^%.]+$', '')
-local struct = require(name)
 local c = string.char
+local require,math,ipairs,string,tostring,print,os,pairs
+	= require,math,ipairs,string,tostring,print,os,pairs
+
+module((...))
+local struct = require(_PACKAGE:sub(1,-2))
+local name = (...):gsub('%.[^%.]+$', '')
 
 local function check_bm(m)
+	m = m.m
 	return m[8] and m[7] and m[6] and m[5]
 	and m[4] and not m[3] and m[2] and not m[1]
 end
@@ -14,14 +19,14 @@ end
 local tests = {
 	-- booleans
 	{ raw = "\0\0\0\0\0\0\0\1"; format = "b8"; val = true; },
-	{ raw = "\1\0\0\0\0\0\0\0"; format = "b8"; val = true; },
-	{ raw = "\0\0\0\0\0\0\0\0"; format = "b8"; val = false; },
+	{ raw = "\1\0\0\0\0\0\0\0"; format = "(b8)*1"; val = true; },
+	{ raw = "\0\0\0\0\0\0\0\0"; format = "1*(b8)"; val = false; },
 	-- signed integers
 	{ raw = "\254\255\255"; format = "< i3"; val = -2; },
 	-- unsigned integers
 	{ raw = "\254\255\255"; format = "< u3"; val = 2^24-2; },
 	-- bitmasks
-	{ raw = "\250"; format = "m1"; test = check_bm; },
+	{ raw = "\250"; format = "{m:m1}"; test = check_bm; },
 	-- fixed point
 	{ raw = "\1\128"; format = "> P8.8"; val = 1.5; },
 	{ raw = "\2\192"; format = "> p1.1"; val = 2.75; },

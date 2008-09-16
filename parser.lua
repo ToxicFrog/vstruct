@@ -17,7 +17,7 @@ return function(source, codegen, prepost)
 	
 	for token in get do
 		-- seperate statements because codegen may change #asl
-		local code = codegen[token.type](token, asl, get)
+		local code = codegen[token.type](token, get, asl)
 		asl[#asl+1] = code
 	end
 	
