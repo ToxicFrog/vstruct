@@ -77,6 +77,7 @@ function write.s(fd, d, w)
 	if #d < w then
 		d = d..string.char(0):rep(w-#d)
 	end
+	
 	return fd:write(d:sub(1,w))
 end
 
@@ -97,7 +98,9 @@ function write.u(fd, d, w)
 end
 
 -- skip/pad
-function write.x(fd, d, w)
+-- this is technically a control format, so it has a different signature
+-- specifically, there is no "data" argument
+function write.x(fd, w)
 	return write.s(fd, "", w)
 end
 
