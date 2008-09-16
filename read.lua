@@ -5,7 +5,8 @@
 
 -- load operations common to both read and write, and set __index so that
 -- requests for, say, read.seekto will succeed
-local require,error,setmetatable = require,error,setmetatable
+local require,error,setmetatable,string
+	= require,error,setmetatable,string
 
 module((...))
 

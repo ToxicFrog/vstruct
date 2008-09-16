@@ -28,7 +28,7 @@ return function(source, codegen, prepost)
 			.. source
 			.. codegen.postamble
 	end
-	print(source)
+	
 	return source
 end
 

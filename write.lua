@@ -98,8 +98,7 @@ end
 
 -- skip/pad
 function write.x(fd, d, w)
-	write.s(fd, "", w)
-	return false
+	return write.s(fd, "", w)
 end
 
 -- null terminated string

@@ -1,26 +1,34 @@
 local gen = {}
 
 gen.preamble = [[
-local fd = (...)
+local fd,data = ...
 local stack = {}
-local pack = {}
+local index = 1
 
-local function push()
-	stack[#stack+1],pack = pack,{}
+local function push(key)
+	if not key then
+		key = index
+		index = index + 1
+	end
+	
+	stack[#stack+1] = { data, index }
+	data = data[key]
+	index = 1
 end
 
 local function pop(key)
-	local target = stack[#stack]
-	key = key or #target+1
-	target[key],pack = pack,target
+	local saved = stack[#stack]
 	stack[#stack] = nil
+	
+	index = saved[1]
+	data = saved[2]
 end
 
 ]]		
 
 gen.postamble = [[
 
-return pack
+return fd
 ]]
 
 --	control:
@@ -38,18 +46,19 @@ function gen.control(token)
 
 	local args = token[2]:gsub('%.', ', ')
 	if #args == 0 then args = "nil" end
-	
+
 	return fn.."(fd, "..args..")"
 end
 
 --	atom:
---		pack[#pack+1] = <<type>>(fd, <<args>>)
+--		<<type>>(fd, data[index], <<args>>)
+--		++index
 function gen.atom(token)
 	local fn = token[1]
 	local args = token[2]:gsub('%.', ', ')
 	if #args == 0 then args = "nil" end
 
-	return "pack[#pack+1] = "..fn.."(fd, "..args..")"
+	return fn.."(fd, data[index], "..args..")\nindex = index+1"
 end
 
 --	table:
@@ -68,18 +77,24 @@ function gen.group(token)
 	return parse(token[1]:sub(2,-2))
 end
 
+-- named atom:
+--		<<type>>(fd, data.<<name>>, <<args>>)
 function gen.name_atom(token)
 	local fn = token[2]
 	local args = token[3]:gsub('%.', ', ')
 	if #args == 0 then args = "nil" end
 
-	return "pack."..token[1].." = "..fn.."(fd, "..args..")"
+	return fn.."(fd, data."..token[1]..", "..args..")"	
 end
 
+-- named table:
+--		push(<<name>>)
+--		<<table contents>>
+--		pop()
 function gen.name_table(token)
-	return "push()\n"
+	return "push("..token[1]..")\n"
 	..parse(token[2]:sub(2,-2))
-	.."\npop("..token[1]..")\n"
+	.."\npop()"
 end
 
 function gen.prerepeat(token, get)

@@ -9,12 +9,12 @@ end
 lexeme (false) 		"%s+"	-- whitespace
 lexeme "table" 		"%b{}"
 lexeme "group" 		"%b()"
-lexeme "name_atom"	"([%a_][%w_]*)%:(%a)([%d.]+)"
+lexeme "name_atom"	"([%a_][%w_]*)%:(%a)([%d.]*)"
 lexeme "name_table"	"([%a_][%w_]*)%:%b{}"
 lexeme "prerepeat" 	"(%d+)%s*%*"
 lexeme "postrepeat"	"%*%s*(%d+)"
 lexeme "control"	"([-+@<>=ax])([%d.]*)"
-lexeme "atom"		"(%a)([%d.]+)"
+lexeme "atom"		"(%a)([%d.]*)"
 
 return function(source)
 	local function iter()
