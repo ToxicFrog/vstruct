@@ -93,13 +93,13 @@ function gen.prerepeat(token, get)
 	local next = get()
 	local src = gen[next.type](next, get)
 	
-	return "for i=1,"..token[1].." do\n\n"..src.."\nend"
+	return "for _idx=1,"..token[1].." do\n\n"..src.."\nend"
 end
 
 function gen.postrepeat(token, get, asl)
 	local src = table.remove(asl)
 	
-	return "for i=1,"..token[1].." do\n\n"..src.."\nend"
+	return "for _idx=1,"..token[1].." do\n\n"..src.."\nend"
 end
 
 return gen

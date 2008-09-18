@@ -33,10 +33,8 @@ function write.f(fd, d, w)
 end
 
 -- signed int
+-- thanks to % we can pass this straight through to the unsigned format
 function write.i(fd, d, w)
-	if d < 0 then
-		d = d + 2^(w*8)
-	end
 	return write.u(fd, d, w)
 end
 

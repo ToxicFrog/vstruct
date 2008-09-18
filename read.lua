@@ -41,11 +41,20 @@ end
 
 -- signed int of w bytes
 function read.i(fd, w)
-	local i = read.u(fd, w)
-	if i >= 2^(w*8 - 1) then
-		return i - 2^(w*8)
+	local buf = read.s(fd, w)
+	local i = 0
+	
+	local sof = (read.is_bigendian and 1 or w)
+	local eof = (read.is_bigendian and w or 1)
+	local dir = (read.is_bigendian and 1 or -1)
+	
+	for c=sof,eof,dir do
+		byte = buf:sub(c,c):byte()
+		i = i * 2^8
+		i = i - (255 - byte)
 	end
-	return i
+	
+	return i-1
 end
 
 -- bitmask of w bytes
