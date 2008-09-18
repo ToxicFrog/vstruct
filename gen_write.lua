@@ -30,6 +30,7 @@ local function pop(key)
 	data = saved[2]
 end
 
+hostendian()
 ]]		
 
 gen.postamble = [[
@@ -105,7 +106,7 @@ end
 
 function gen.prerepeat(token, get)
 	local next = get()
-	local src = gen[next.type](next)
+	local src = gen[next.type](next, get)
 	
 	return "for i=1,"..token[1].." do\n\n"..src.."\nend"
 end
