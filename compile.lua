@@ -6,34 +6,71 @@
 -- with a return value and loadstring() is called on it to generate a function
 -- Copyright © 2008 Ben "ToxicFrog" Kelly; see COPYING
 
-local require,assert,loadstring,setfenv,error
-	= require,assert,loadstring,setfenv,error
+local require,assert,loadstring,setfenv,error,print,xpcall,where
+	= require,assert,loadstring,setfenv,error,print,xpcall,debug.traceback
 
 module((...))
 
 local parse = require(_PACKAGE.."parser")
+
+local function err_generate(message, format, trace)
+	error([[
+struct: internal error in code generator
+This is an internal error in the struct library
+Please report it as a bug and include the following information:
+-- error message
+]]..message.."\n\n"..[[
+-- format string
+]]..format.."\n\n"..[[
+-- stack trace
+]]..trace)
+end
+
+local function err_compile(message, format, source)
+	error([[
+struct: syntax error in emitted lua source
+This is an internal error in the struct library
+Please report it as a bug and include the following information:
+-- loadstring error
+]]..message.."\n\n"..[[
+-- format string
+]]..format.."\n\n"..[[
+-- emitted source
+]]..source.."\n\n"..[[
+-- stack trace
+]])
+end
 
 local function compile(format, cache, gen, env)
 	if cache[format] then
 		return cache[format]
 	end
 	
-	local source = parse(format, gen, true)
+--[[
+	local status,source = xpcall(function()
+		return parse(format, gen, true)
+	end,
+	function(message)
+		print(message)
+		err_generate(message, format, where("",2))
+	end)
+--]]
+--	local status,source = pcall(parse, format, gen, true)
+	local status,source = xpcall(function()
+		return parse(format, gen, true)
+	end,
+	function(message)
+		return { message, where("",2) }
+	end)
+
+	if not status then
+		err_generate(source[1], format, source[2])
+	end
+	
 	local fn,err = loadstring(source)
 	
 	if not fn then
-		error([[
-struct: error in emitted lua source
-This is an internal error in the struct library
-Please report it as a bug and include the following information:
--- loadstring error
-]]..err.."\n"..[[
--- format string
-]]..format.."\n"..[[
--- emitted source
-]]..source.."\n"..[[
--- stack trace
-]])
+		err_compile(err, format, source)
 	end
 	
 	setfenv(fn, env)
