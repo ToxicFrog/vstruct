@@ -39,13 +39,14 @@ return function(source)
 				return iter()
 			end
 		end
-		error ("Error in format string [["
+		error (function() return "Error in format string [["
 			..orig
 			.."]] at char "
 			..index
 			.." ("
 			..source:sub(1,1)
-			..")")
+			..")"
+			end)
 	end
 
 	return coroutine.wrap(iter)

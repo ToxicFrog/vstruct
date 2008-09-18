@@ -26,6 +26,10 @@ end
 -- a string immediately prefaced with its length as a uint
 function read.c(fd, w)
 	w = read.u(fd, w)
+	
+	-- don't do IO for the empty string, it will return nil at eof
+	if w == 0 then return "" end
+	
 	return read.s(fd, w)
 end
 

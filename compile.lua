@@ -6,8 +6,8 @@
 -- with a return value and loadstring() is called on it to generate a function
 -- Copyright © 2008 Ben "ToxicFrog" Kelly; see COPYING
 
-local require,assert,loadstring,setfenv,error,print,xpcall,where
-	= require,assert,loadstring,setfenv,error,print,xpcall,debug.traceback
+local require,assert,loadstring,setfenv,error,print,xpcall,type,where
+	= require,assert,loadstring,setfenv,error,print,xpcall,type,debug.traceback
 
 module((...))
 
@@ -46,16 +46,6 @@ local function compile(format, cache, gen, env)
 		return cache[format]
 	end
 	
---[[
-	local status,source = xpcall(function()
-		return parse(format, gen, true)
-	end,
-	function(message)
-		print(message)
-		err_generate(message, format, where("",2))
-	end)
---]]
---	local status,source = pcall(parse, format, gen, true)
 	local status,source = xpcall(function()
 		return parse(format, gen, true)
 	end,
@@ -64,6 +54,9 @@ local function compile(format, cache, gen, env)
 	end)
 
 	if not status then
+		if type(source[1]) == "function" then
+			error(source[1]())
+		end
 		err_generate(source[1], format, source[2])
 	end
 	

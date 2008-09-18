@@ -32,13 +32,13 @@ end
 
 -- given a source, which is either a string or a file handle,
 -- unpack it into individual data based on the format string
-function unpack(source, fmt)
+function unpack(fmt, source)
 	-- wrap it in a cursor so we can treat it like a file
 	if type(source) == 'string' then
 		source = cursor(source)
 	end
 
-	assert(source, "invalid first argument to struct.unpack")
+	assert(fmt and source, "struct: invalid arguments to unpack")
 
 	-- the lexer will take our format string and generate code from it
 	-- it returns a function that when called with our source, will
@@ -50,14 +50,16 @@ end
 -- given a format string and a list of data, pack them
 -- if 'fd' is omitted, pack them into and return a string
 -- otherwise, write them directly to the given file
-function pack(fd, fmt, data)
-	local data,str_fd
+function pack(fmt, fd, data)
+	local str_fd
+	
 	if type(fd) == 'string' then
-		data = fmt
-		fmt = fd
+		data = fd
 		fd = cursor("")
 		str_fd = true
 	end
+	
+	assert(fmt and fd and data, "struct: invalid arguments to pack")
 	
 	compile.write(fmt)(fd, data)
 	return (str_fd and fd.str) or fd
