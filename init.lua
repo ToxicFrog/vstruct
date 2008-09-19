@@ -38,7 +38,7 @@ function unpack(fmt, source)
 		source = cursor(source)
 	end
 
-	assert(fmt and source, "struct: invalid arguments to unpack")
+	assert(fmt and source and type(fmt) == "string", "struct: invalid arguments to unpack")
 
 	-- the lexer will take our format string and generate code from it
 	-- it returns a function that when called with our source, will
@@ -59,7 +59,7 @@ function pack(fmt, fd, data)
 		str_fd = true
 	end
 	
-	assert(fmt and fd and data, "struct: invalid arguments to pack")
+	assert(fmt and fd and data and type(fmt) == "string", "struct: invalid arguments to pack")
 	
 	compile.write(fmt)(fd, data)
 	return (str_fd and fd.str) or fd

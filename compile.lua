@@ -6,12 +6,17 @@
 -- with a return value and loadstring() is called on it to generate a function
 -- Copyright © 2008 Ben "ToxicFrog" Kelly; see COPYING
 
-local require,assert,loadstring,setfenv,error,print,xpcall,type,where
-	= require,assert,loadstring,setfenv,error,print,xpcall,type,debug.traceback
+local require,assert,loadstring,setfenv,error,print,xpcall,type,select,unpack,where
+	= require,assert,loadstring,setfenv,error,print,xpcall,type,select,unpack,debug.traceback
 
 module((...))
 
 local parse = require(_PACKAGE.."parser")
+
+local function xpcall2(f, err, ...)  
+	local args = {n=select('#', ...), ...}  
+	return xpcall(function() return f(unpack(args, 1, args.n)) end, err)  
+end
 
 local function err_generate(message, format, trace)
 	error([[
@@ -41,6 +46,26 @@ Please report it as a bug and include the following information:
 ]])
 end
 
+local function err_execute(message, format, source, trace)
+	error([[
+struct: runtime error in generated function
+This is at some level an internal error in the struct library
+It could be a genuine error in the emitted code (in which case this is a code
+generation bug)
+Alternately, it could be that you gave it a malformed format string, a bad
+file descriptor, or data that does not match the given format (in which case
+it is an argument validation bug and you should be getting an error anyways).
+Please report this as a bug and include the following information:
+-- execution error
+]]..message.."\n\n"..[[
+-- format string
+]]..format.."\n\n"..[[
+-- emitted source
+]]..source.."\n\n"..[[
+-- stack trace
+]]..trace)
+end
+
 local function compile(format, cache, gen, env)
 	if cache[format] then
 		return cache[format]
@@ -67,6 +92,16 @@ local function compile(format, cache, gen, env)
 	end
 	
 	setfenv(fn, env)
+	
+	local fn = function(...)
+		local status,ret = xpcall2(fn, function(message)
+			return { message, where("",2) }
+		end, ...)
+		
+		if status then return ret end
+		
+		err_execute(ret[1], format, source, ret[2])
+	end
 	
 	cache[format] = fn
 	return fn
