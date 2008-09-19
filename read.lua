@@ -5,8 +5,8 @@
 
 -- load operations common to both read and write, and set __index so that
 -- requests for, say, read.seekto will succeed
-local require,error,setmetatable,string
-	= require,error,setmetatable,string
+local require,error,setmetatable,string,print
+	= require,error,setmetatable,string,print
 
 module((...))
 
@@ -43,22 +43,44 @@ function read.f(fd, w)
 	return fp.r[w](read.s(fd,w))
 end
 
+-- utility functions for the i and u formats
+local function directions(w)
+	if read.is_bigendian then
+		return 1,w,1
+	else
+		return w,1,-1
+	end
+end
+
+local function pve_unpack(buf, w)
+	local i,sof,eof,dir = 0,directions(w)
+
+	for c=sof,eof,dir do
+		i = i * 2^8 + buf:byte(c)
+	end
+
+	return i
+end
+
+local function nve_unpack(buf, w)
+	local i,sof,eof,dir = 0,directions(w)
+	
+	if buf:byte(sof) < 128 then
+		return pve_unpack(buf, w)
+	end
+	
+	for c=sof,eof,dir do
+		i = i * 2^8 - (255 - buf:byte(c))
+	end
+
+	return i-1
+end
+
 -- signed int of w bytes
 function read.i(fd, w)
 	local buf = read.s(fd, w)
-	local i = 0
 	
-	local sof = (read.is_bigendian and 1 or w)
-	local eof = (read.is_bigendian and w or 1)
-	local dir = (read.is_bigendian and 1 or -1)
-	
-	for c=sof,eof,dir do
-		byte = buf:sub(c,c):byte()
-		i = i * 2^8
-		i = i - (255 - byte)
-	end
-	
-	return i-1
+	return nve_unpack(buf, w)
 end
 
 -- bitmask of w bytes
@@ -68,9 +90,7 @@ function read.m(fd, w)
 	local buf = read.s(fd, w)
 	local mask = {}
 	
-	local sof = (read.is_bigendian and w or 1)
-	local eof = (read.is_bigendian and 1 or w)
-	local dir = (read.is_bigendian and -1 or 1)
+	local sof,eof,dir = directions(w)
 
 	for i=sof,eof,dir do
 		local byte = buf:byte(i)
@@ -94,7 +114,7 @@ end
 
 -- fixed point byte aligned
 function read.p(fd, dp, fp)
-	return read.i(fd, dp*8, fp*8)
+	return read.P(fd, dp*8, fp*8)
 end
 
 -- string
@@ -105,19 +125,9 @@ end
 
 -- unsigned int
 function read.u(fd, w)
-	local u = 0
-	local s = read.s(fd, w)
-	
-	-- the "is_bigendian" setting is provided by struct.common
-	local sof = (read.is_bigendian and 1 or w)
-	local eof = (read.is_bigendian and w or 1)
-	local dir = (read.is_bigendian and 1 or -1)
-	
-	for i=sof,eof,dir do
-		u = u * 2^8 + s:byte(i)
-	end
-	
-	return u
+	local buf = read.s(fd, w)
+
+	return pve_unpack(buf, w)
 end
 
 -- skip/pad

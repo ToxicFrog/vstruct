@@ -64,7 +64,7 @@ end
 
 -- fixed point byte aligned
 function write.p(fd, d, dp, fp)
-	return write.i(fd, d, dp*8, fp*8)
+	return write.P(fd, d, dp*8, fp*8)
 end
 
 -- fixed length string
