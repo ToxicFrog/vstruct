@@ -59,12 +59,12 @@ end
 -- fixed point bit aligned
 function write.P(fd, d, dp, fp)
 	assert((dp+fp) % 8 == 0, "total width of fixed point value must be byte multiple")
-	return write.u(fd, d * 2^fp, (dp+fp)/8)
+	return write.i(fd, d * 2^fp, (dp+fp)/8)
 end
 
 -- fixed point byte aligned
 function write.p(fd, d, dp, fp)
-	return write.P(fd, d, dp*8, fp*8)
+	return write.i(fd, d, dp*8, fp*8)
 end
 
 -- fixed length string

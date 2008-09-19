@@ -89,12 +89,12 @@ function read.P(fd, dp, fp)
 	if (dp+fp) % 8 ~= 0 then
 		error "total width of fixed point value must be byte multiple"
 	end
-	return read.u(fd, (dp+fp)/8)/(2^fp)
+	return read.i(fd, (dp+fp)/8)/(2^fp)
 end
 
 -- fixed point byte aligned
 function read.p(fd, dp, fp)
-	return read.P(fd, dp*8, fp*8)
+	return read.i(fd, dp*8, fp*8)
 end
 
 -- string
