@@ -29,8 +29,8 @@ repetition, grouping of data into tables, and naming of values within tables.
 2. API
 ======	
 exports:
-	vstruct.pack([fd], fmt, ...)
-	vstruct.unpack(<fd or string>, fmt)
+	vstruct.pack(fmt, [fd], data)
+	vstruct.unpack(fmt, <fd or string>)
 	vstruct.explode(int)
 	vstruct.implode(table)
 	vstruct.cursor(string)
@@ -38,8 +38,9 @@ exports:
 	vstruct.compile.write(format)
 
 pack takes a format string and a table of data and packs the contents into a
-buffer. If the first argument is a file descriptor, it will pack data directly
-into that rather than generating and returning a buffer.
+buffer. If the fd argument is present, it will write the data directly to it
+using standard file io methods (write and seek), and return the fd; otherwise
+it will construct and return a string.
 
 unpack takes a format string and a buffer or file to unpack from, and returns
 the unpacked data as a table.
@@ -142,9 +143,9 @@ from the group by a '*'. For example:
 Are all equivalent. Note that the whitespace in the above examples is optional.
 In cases where you want to repeat format specifiers without implying a grouping,
 you can use (). For example:
-	"4 * (u4)"
+	"4 * (u4 b1)"
 Is equivalent to:
-	"u4 u4 u4 u4"
+	"u4 b1 u4 b1 u4 b1 u4"
 Like grouping, these can be nested.
 
 
@@ -217,7 +218,7 @@ mW	Bitmask.
 	Affected by endianness.
 	See also: struct.implode, struct.explode.
 
-pW	Fixed point rational.
+pW	Signed fixed point rational.
 	Width is in the format "I.F"; the value before the dot is the number of
 	bytes in the integer part, and the value after, in the fractional part.
 	Read: a fixed point rational of I+F bytes.
@@ -225,7 +226,7 @@ pW	Fixed point rational.
 	represented in the specified width are truncated.
 	Affected by endianness.
 
-PW	Fixed point rational with bit-aligned subfields
+PW	Signed fixed point rational with bit-aligned subfields
 	Equivalent to pW, except that the decimal point does not need to be byte
 	aligned; for example, formats such as P20.12 are possible.
 	Note that underlying reads must still occur in byte multiples. Using a W
@@ -268,6 +269,8 @@ of this library owes itself to many others:
 	The original inspiration came from Roberto Ierusalimschy's "struct" library
 and Luiz Henrique de Figueiredo's "lpack" library, as well as the "struct"
 available in Python.
+	sanooj, from #lua, has done so much testing and bug reporting that at this
+point he's practically a co-author.
 	The overall library design and  interface are the result of much discussion
 with rici, sanooj, Keffo, snogglethorpe, Spark, kozure, Vornicus, McMartin, and
 probably several others I've forgotten about on IRC (#lua on freenode and #code
