@@ -120,6 +120,8 @@ end
 -- string
 -- reads exactly w bytes of data and returns them verbatim
 function read.s(fd, w)
+	if w == 0 then return "" end
+	
 	return fd:read(w or 0)
 end
 

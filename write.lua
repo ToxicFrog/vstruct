@@ -72,6 +72,8 @@ end
 -- length >0 is write exactly w bytes, truncating or padding as needed
 function write.s(fd, d, w)
 	w = w or #d
+	if w == 0 then return end
+	
 	if #d < w then
 		d = d..string.char(0):rep(w-#d)
 	end
