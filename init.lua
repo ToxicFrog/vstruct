@@ -53,8 +53,12 @@ end
 function pack(fmt, fd, data)
 	local str_fd
 	
-	if type(fd) == 'string' then
+	if not data then
 		data = fd
+		fd = ""
+	end
+	
+	if type(fd) == 'string' then
 		fd = cursor("")
 		str_fd = true
 	end

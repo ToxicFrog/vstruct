@@ -6,8 +6,11 @@
 -- with a return value and loadstring() is called on it to generate a function
 -- Copyright © 2008 Ben "ToxicFrog" Kelly; see COPYING
 
-local require,assert,loadstring,setfenv,error,print,xpcall,type,select,unpack,where
-	= require,assert,loadstring,setfenv,error,print,xpcall,type,select,unpack,debug.traceback
+local require,loadstring,setfenv,type,select,unpack,setmetatable
+	= require,loadstring,setfenv,type,select,unpack,setmetatable
+
+local print,assert,error,xpcall,where
+	= print,assert,error,xpcall,debug.traceback
 
 module((...))
 
@@ -66,11 +69,7 @@ Please report this as a bug and include the following information:
 ]]..trace)
 end
 
-local function compile(format, cache, gen, env)
-	if cache[format] then
-		return cache[format]
-	end
-	
+local function compile(format, gen, env)
 	local status,source = xpcall(function()
 		return parse(format, gen, true)
 	end,
@@ -98,29 +97,49 @@ local function compile(format, cache, gen, env)
 			return { message, where("",2) }
 		end, ...)
 		
+		-- call succeeded without errors
 		if status then return ret end
 		
-		err_execute(ret[1], format, source, ret[2])
+		local message,where = ret[1],ret[2]
+		
+		-- call generated a deliberate error; call the provided closure
+		-- it will either emit an error code or re-throw
+		if type(message) == "function" then return nil,message() end
+		
+		-- call generated an internal error; re-throw with extra debug info
+		err_execute(message, format, source, trace)
 	end
 	
-	cache[format] = fn
 	return fn
 end
 
 local gen_read = require(_PACKAGE.."gen_read")
 local io_read = require(_PACKAGE.."read")
-local read_cache = {}
+
+--[[
+local read_env = {}
+function read_env:__index(key)
+	return function(fd, w)
+		local data,err = io_read[key](fd, w)
+		
+		if not data then
+			-- report that an IO error has occurred
+			print("ERROR", err)
+			error(function() return err end)
+		end
+		return data
+	end
+end]]
 
 function read(format)
-	return compile(format, read_cache, gen_read, io_read)
+	return compile(format, gen_read, io_read)
 end
 
 local gen_write = require(_PACKAGE.."gen_write")
 local io_write = require(_PACKAGE.."write")
-local write_cache = {}
 
 function write(format)
-	return compile(format, write_cache, gen_write, io_write)
+	return compile(format, gen_write, io_write)
 end
 
 return _M
