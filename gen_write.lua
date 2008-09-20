@@ -99,7 +99,7 @@ end
 --		<<table contents>>
 --		pop()
 function gen.name_table(token)
-	return "push("..token[1]..")\n"
+	return "push('"..token[1].."')\n"
 	..parse(token[2]:sub(2,-2), gen)
 	.."\npop()"
 end

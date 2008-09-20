@@ -107,7 +107,7 @@ local function compile(format, gen, env)
 		if type(message) == "function" then return nil,message() end
 		
 		-- call generated an internal error; re-throw with extra debug info
-		err_execute(message, format, source, trace)
+		err_execute(message, format, source, where)
 	end
 	
 	return fn
