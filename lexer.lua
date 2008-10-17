@@ -39,7 +39,7 @@ return function(source)
 				return iter()
 			end
 		end
-		error (function() return "Error in format string [["
+		error (function() return "Error lexing format string [["
 			..orig
 			.."]] at char "
 			..index

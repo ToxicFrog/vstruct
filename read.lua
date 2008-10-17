@@ -27,9 +27,6 @@ end
 function read.c(fd, w)
 	w = read.u(fd, w)
 	
-	-- don't do IO for the empty string, it will return nil at eof
-	if w == 0 then return "" end
-	
 	return read.s(fd, w)
 end
 
@@ -127,7 +124,7 @@ end
 
 -- unsigned int
 function read.u(fd, w)
-	local buf = read.s(fd, w)
+	local buf,err = read.s(fd, w)
 
 	return pve_unpack(buf, w)
 end
@@ -136,7 +133,7 @@ end
 -- reads w bytes and discards them
 function read.x(fd, w)
 	fd:read(w)
-	return nil
+	return true
 end
 
 -- null-terminated string

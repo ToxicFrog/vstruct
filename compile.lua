@@ -116,21 +116,6 @@ end
 local gen_read = require(_PACKAGE.."gen_read")
 local io_read = require(_PACKAGE.."read")
 
---[[
-local read_env = {}
-function read_env:__index(key)
-	return function(fd, w)
-		local data,err = io_read[key](fd, w)
-		
-		if not data then
-			-- report that an IO error has occurred
-			print("ERROR", err)
-			error(function() return err end)
-		end
-		return data
-	end
-end]]
-
 function read(format)
 	return compile(format, gen_read, io_read)
 end

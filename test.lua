@@ -2,6 +2,14 @@
 -- this means bimPpsuxz for now
 -- Copyright © 2008 Ben "ToxicFrog" Kelly; see COPYING
 
+-- test cases
+-- simple: read and write of each format, seeks, endianness controls
+-- complex: naming, tables, repetition, combinations of all of these,
+--		nested tables, multi formats per string
+-- non-obvious: seek past end of file
+-- error handling: seek past start, read past end, invalid widths,
+--		non-isomorphic input tables
+
 local c = string.char
 local require,math,ipairs,string,tostring,print,os,pairs
 	= require,math,ipairs,string,tostring,print,os,pairs
