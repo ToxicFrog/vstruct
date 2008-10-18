@@ -113,18 +113,18 @@ local function compile(format, gen, env)
 	return fn
 end
 
-local gen_read = require(_PACKAGE.."gen_read")
-local io_read = require(_PACKAGE.."read")
+local gen_unpack = require(_PACKAGE.."gen_unpack")
+local io_unpack = require(_PACKAGE.."io_unpack")
 
-function read(format)
-	return compile(format, gen_read, io_read)
+function _M.unpack(format)
+	return compile(format, gen_unpack, io_unpack)
 end
 
-local gen_write = require(_PACKAGE.."gen_write")
-local io_write = require(_PACKAGE.."write")
+local gen_pack = require(_PACKAGE.."gen_pack")
+local io_pack = require(_PACKAGE.."io_pack")
 
-function write(format)
-	return compile(format, gen_write, io_write)
+function _M.pack(format)
+	return compile(format, gen_pack, io_pack)
 end
 
 return _M

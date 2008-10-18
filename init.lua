@@ -3,10 +3,15 @@
 
 local table,math,type,require,assert = table,math,type,require,assert
 
+local pairs=pairs
+local print=print
+
 module((...))
 
 cursor = require (_NAME..".cursor")
 compile = require (_NAME..".compile")
+
+for k,v in pairs(compile) do print(k,v) end
 
 -- turn an int into a list of booleans
 -- the length of the list will be the smallest number of bits needed to
@@ -44,7 +49,7 @@ function unpack(fmt, source)
 	-- it returns a function that when called with our source, will
 	-- unpack the data according to the format string and return all
 	-- values from said unpacking in a list
-	return compile.read(fmt)(source)
+	return compile.unpack(fmt)(source)
 end
 
 -- given a format string and a list of data, pack them
@@ -65,7 +70,7 @@ function pack(fmt, fd, data)
 	
 	assert(fmt and fd and data and type(fmt) == "string", "struct: invalid arguments to pack")
 	
-	compile.write(fmt)(fd, data)
+	compile.pack(fmt)(fd, data)
 	return (str_fd and fd.str) or fd
 end
 
