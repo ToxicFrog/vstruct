@@ -2,7 +2,7 @@
 -- return true if they have consumed a value from the input stream
 -- return false/nil otherwise (ie, the next value will be preserved
 -- for subsequent calls, eg skip/pad)
--- Copyright © 2008 Ben "ToxicFrog" Kelly; see COPYING
+-- Copyright ï¿½ 2008 Ben "ToxicFrog" Kelly; see COPYING
 
 local name = (...):gsub('%.[^%.]+$', '')
 local struct = require (name)
@@ -15,7 +15,7 @@ function write.b(fd, d, w)
 	return write.u(fd, (d and 1) or 0, w)
 end
 
--- counted string
+-- counted strin
 -- a string immediately prefaced with its length as a uint
 function write.c(fd, d, w)
 	write.u(fd, #d, w)
@@ -91,7 +91,7 @@ function write.u(fd, d, w)
 		else
 			s = s .. string.char(d % 2^8)
 		end
-		d = math.floor(d/2^8)
+		d = math.trunc(d/2^8)
 	end
 	
 	return write.s(fd, s, w)

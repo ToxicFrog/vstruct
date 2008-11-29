@@ -1,6 +1,6 @@
 -- we need to test all the different formats, at minimum
 -- this means bimPpsuxz for now
--- Copyright © 2008 Ben "ToxicFrog" Kelly; see COPYING
+-- Copyright ï¿½ 2008 Ben "ToxicFrog" Kelly; see COPYING
 
 local c = string.char
 local require,math,ipairs,string,tostring,print,os,pairs
@@ -39,7 +39,7 @@ local tests = {
 	{ raw = "foobar\0baz"; format = "z10"; val = "foobar"; },
 	-- floats
 	{ raw = c(0x00, 0x00, 0x00, 0x00); format = "< f4"; val = 0.0; },
-	{ raw = c(0x00, 0x00, 0x80, 0x3f); format = "< f4"; val = 1.0; },
+	{ raw = c(0x3f, 0x80, 0x00, 0x00); format = "> f4"; val = 1.0; },
 	{ raw = c(0x00, 0x00, 0x80, 0xbf); format = "< f4"; val = -1.0; },
 	{ raw = c(0x00, 0x00, 0x80, 0x7f); format = "< f4"; val = math.huge; },
 	{ raw = c(0x00, 0x00, 0x80, 0xff); format = "< f4"; val = -math.huge; },
@@ -63,7 +63,7 @@ function check(test)
 	local val, pass, raw
 	local fmt = "%7.7s %42.42s%2.2s %17.17s %4.4s %3.3s"
 
-	val = struct.unpack(test.raw, test.format)[1]
+	val = struct.unpack(test.format, test.raw)[1]
 	pass = test.test
 		and test.test(val)
 		or val == test.val
@@ -75,7 +75,7 @@ function check(test)
 	-- for example, a boolean can be any non-zero value, but we always write it back out as 1
 	-- so, re-read it using the same format and see if it matches
 	if not pass then
-		local new_val = struct.unpack(raw, test.format)[1]
+		local new_val = struct.unpack(test.format, raw)[1]
 		pass = test.test and test.test(val) or new_val == test.val
 	end
 	print(fmt:format(test.format, od(raw), "<=", tostring(val), pass and "PASS" or "FAIL", pass and "" or " !!!"):sub(1,79))
