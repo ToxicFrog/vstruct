@@ -9,8 +9,8 @@
 local require,loadstring,setfenv,type,select,unpack,setmetatable
 	= require,loadstring,setfenv,type,select,unpack,setmetatable
 
-local print,assert,error,xpcall,where
-	= print,assert,error,xpcall,debug.traceback
+local print,assert,error,xpcall,pairs,where
+	= print,assert,error,xpcall,pairs,debug.traceback
 
 module((...))
 
@@ -79,7 +79,7 @@ local function compile(format, gen, env)
 
 	if not status then
 		if type(source[1]) == "function" then
-			error(source[1]())
+			error(source[1]()..source[2])
 		end
 		err_generate(source[1], format, source[2])
 	end

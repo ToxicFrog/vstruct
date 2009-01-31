@@ -71,11 +71,12 @@ function check(test)
 	local val, pass, raw
 	local fmt = "%7.7s %42.42s%2.2s %17.17s %4.4s %3.3s"
 
-	val = struct.unpack(test.raw, test.format)[1]
+	val = struct.unpack(test.format, test.raw)[1]
 	pass = test.test
 		and test.test(val)
 		or val == test.val
 	print(fmt:format(test.format, od(test.raw), "=>", tostring(val), pass and "PASS" or "FAIL", pass and "" or "!!!"):sub(1,79))
+	if not pass then return end
 
 	raw = struct.pack(test.format, {val})
 	pass = raw == test.raw
@@ -83,7 +84,7 @@ function check(test)
 	-- for example, a boolean can be any non-zero value, but we always write it back out as 1
 	-- so, re-read it using the same format and see if it matches
 	if not pass then
-		local new_val = struct.unpack(raw, test.format)[1]
+		local new_val = struct.unpack(test.format, raw)[1]
 		pass = test.test and test.test(val) or new_val == test.val
 	end
 	print(fmt:format(test.format, od(raw), "<=", tostring(val), pass and "PASS" or "FAIL", pass and "" or " !!!"):sub(1,79))

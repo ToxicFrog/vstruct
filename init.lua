@@ -3,15 +3,10 @@
 
 local table,math,type,require,assert = table,math,type,require,assert
 
-local pairs=pairs
-local print=print
-
 module((...))
 
 cursor = require (_NAME..".cursor")
 compile = require (_NAME..".compile")
-
-for k,v in pairs(compile) do print(k,v) end
 
 -- turn an int into a list of booleans
 -- the length of the list will be the smallest number of bits needed to

@@ -10,10 +10,11 @@ local function reader(data, size_exp, size_fraction)
 	local fraction, exponent, sign
 	
 	-- Split the unsigned integer into the 3 IEEE fields
-	local bits = struct.unpack(data, "m"..#data)[1]
+	local bits = struct.unpack("m"..#data, data)[1]
 	local fraction = struct.implode{unpack(bits, 1, size_fraction)}
 	local exponent = struct.implode{unpack(bits, size_fraction+1, size_fraction+size_exp)}
 	local sign = bits[#bits] and -1 or 1
+	print(size_exp, size_fraction, fraction, exponent, sign)
 
 	-- special case: exponent is all 1s
 	if exponent == 2^size_exp-1 then

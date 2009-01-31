@@ -3,8 +3,8 @@
 -- return false/nil otherwise (ie, the next value will be preserved
 -- for subsequent calls, eg skip/pad)
 -- Copyright © 2008 Ben "ToxicFrog" Kelly; see COPYING
-local require,error,setmetatable,string,print
-	= require,error,setmetatable,string,print
+local require,error,setmetatable,string,print,math,unpack
+	= require,error,setmetatable,string,print,math,unpack
 
 module((...))
 
@@ -62,7 +62,9 @@ end
 
 -- fixed point bit aligned
 function pack.P(fd, d, dp, fp)
-	assert((dp+fp) % 8 == 0, "total width of fixed point value must be byte multiple")
+	if (dp+fp) % 8 ~= 0 then
+		error "total width of fixed point value must be byte multiple"
+	end
 	return pack.i(fd, d * 2^fp, (dp+fp)/8)
 end
 
@@ -120,4 +122,4 @@ function pack.z(fd, d, w)
 	return pack.s(fd, d.."\0", w)
 end
 
-return write
+return pack
