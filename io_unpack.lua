@@ -40,7 +40,7 @@ function unpack.f(fd, w)
 	return fp.r[w](unpack.s(fd,w))
 end
 
--- utility functions for the i and u formats
+-- utility functions for the i, m and u formats
 local function directions(w)
 	if unpack.is_bigendian then
 		return 1,w,1
@@ -89,11 +89,13 @@ function unpack.m(fd, w)
 	
 	local sof,eof,dir = directions(w)
 
-	for i=sof,eof,dir do
+	-- reverse it here because directions() returns numbers for MSB first,
+	-- and we want LSB first
+	for i=eof,sof,-dir do
 		local byte = buf:byte(i)
 		local bits = struct.explode(byte)
-		for i=1,8 do
-			mask[#mask+1] = bits[i] or false
+		for j=1,8 do
+			mask[#mask+1] = bits[j] or false
 		end
 	end
 	return mask

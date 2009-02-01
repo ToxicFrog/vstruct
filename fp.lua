@@ -5,16 +5,17 @@
 local fp = {}
 local name = (...):gsub('%.[^%.]+$', '')
 local struct = require (name)
+local common = require (name..".common")
 
 local function reader(data, size_exp, size_fraction)
 	local fraction, exponent, sign
+	local endian = common.is_bigendian and ">" or "<"
 	
 	-- Split the unsigned integer into the 3 IEEE fields
-	local bits = struct.unpack("m"..#data, data)[1]
+	local bits = struct.unpack(endian.."m"..#data, data)[1]
 	local fraction = struct.implode{unpack(bits, 1, size_fraction)}
 	local exponent = struct.implode{unpack(bits, size_fraction+1, size_fraction+size_exp)}
 	local sign = bits[#bits] and -1 or 1
-	print(size_exp, size_fraction, fraction, exponent, sign)
 
 	-- special case: exponent is all 1s
 	if exponent == 2^size_exp-1 then
@@ -44,7 +45,8 @@ end
 
 local function writer(value, size_exp, size_fraction)
 	local fraction, exponent, sign
-	local width = size_exp + size_fraction + 1
+	local width = (size_exp + size_fraction + 1)/8
+	local endian = common.is_bigendian and ">" or "<"
 	
 	if value < 0 then
 		sign = true
@@ -67,7 +69,7 @@ local function writer(value, size_exp, size_fraction)
 		fraction,exponent = math.frexp(value)
 		-- handle the simple case
 		if fraction == 0 then
-			return struct.pack("m"..width, {{}})
+			return struct.pack(endian.."m"..width, {{}})
 		end
 
 		-- remove the most significant bit from the fraction and adjust exponent
@@ -97,7 +99,7 @@ local function writer(value, size_exp, size_fraction)
 	end
 	bits[size_fraction+size_exp+1] = sign
 
-	return struct.pack("m"..width, {bits})
+	return struct.pack(endian.."m"..width, {bits})
 end
 
 -- Create readers and writers for the IEEE sizes

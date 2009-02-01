@@ -47,6 +47,7 @@ local tests = {
 	{ raw = "foobar\0baz"; format = "z10"; val = "foobar"; },
 	-- floats
 	{ raw = c(0x00, 0x00, 0x00, 0x00); format = "< f4"; val = 0.0; },
+	{ raw = c(0x3f, 0x80, 0x00, 0x00); format = "> f4"; val = 1.0; },
 	{ raw = c(0x00, 0x00, 0x80, 0x3f); format = "< f4"; val = 1.0; },
 	{ raw = c(0x00, 0x00, 0x80, 0xbf); format = "< f4"; val = -1.0; },
 	{ raw = c(0x00, 0x00, 0x80, 0x7f); format = "< f4"; val = math.huge; },
