@@ -202,8 +202,8 @@ cW	Counted string.
 	required (when packing).
 	The len field is affected by endianness, as in format u.
 
-fW	IEEE 754 floating point. NOT IMPLEMENTED.
-	Valid widths are 4 (float), 8 (double), and 16 (quad).
+fW	IEEE 754 floating point.
+	Valid widths are 4 (float) and 8 (double). No quads yet, sorry!
 	Affected by endianness.
 
 iW	Signed integer.
