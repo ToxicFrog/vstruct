@@ -4,7 +4,7 @@
 -- or writing.
 -- The resulting code is then prefixed with some setup code and postfixed
 -- with a return value and loadstring() is called on it to generate a function
--- Copyright © 2008 Ben "ToxicFrog" Kelly; see COPYING
+-- Copyright ï¿½ 2008 Ben "ToxicFrog" Kelly; see COPYING
 
 local require,loadstring,setfenv,type,select,unpack,setmetatable
 	= require,loadstring,setfenv,type,select,unpack,setmetatable
@@ -16,13 +16,17 @@ module((...))
 
 local parse = require(_PACKAGE.."parser")
 
+local function nulsafe_error(s)
+	return error(s:gsub('%z', '_'))
+end
+
 local function xpcall2(f, err, ...)  
 	local args = {n=select('#', ...), ...}  
 	return xpcall(function() return f(unpack(args, 1, args.n)) end, err)  
 end
 
 local function err_generate(message, format, trace)
-	error([[
+	nulsafe_error([[
 struct: internal error in code generator
 This is an internal error in the struct library
 Please report it as a bug and include the following information:
@@ -35,7 +39,7 @@ Please report it as a bug and include the following information:
 end
 
 local function err_compile(message, format, source)
-	error([[
+	nulsafe_error([[
 struct: syntax error in emitted lua source
 This is an internal error in the struct library
 Please report it as a bug and include the following information:
@@ -50,7 +54,7 @@ Please report it as a bug and include the following information:
 end
 
 local function err_execute(message, format, source, trace)
-	error([[
+	nulsafe_error([[
 struct: runtime error in generated function
 This is at some level an internal error in the struct library
 It could be a genuine error in the emitted code (in which case this is a code

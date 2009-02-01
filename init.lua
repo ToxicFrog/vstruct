@@ -1,5 +1,5 @@
 -- vstruct, the versatile struct library
--- Copyright © 2008 Ben "ToxicFrog" Kelly; see COPYING
+-- Copyright ï¿½ 2008 Ben "ToxicFrog" Kelly; see COPYING
 
 local table,math,type,require,assert = table,math,type,require,assert
 
@@ -8,6 +8,14 @@ module((...))
 cursor = require (_NAME..".cursor")
 compile = require (_NAME..".compile")
 
+function math.trunc(n)
+	if n < 0 then
+		return math.ceil(n)
+	else
+		return math.floor(n)
+	end
+end
+
 -- turn an int into a list of booleans
 -- the length of the list will be the smallest number of bits needed to
 -- represent the int
@@ -15,7 +23,7 @@ function explode(int)
 	local mask = {}
 	while int ~= 0 do
 		table.insert(mask, int % 2 ~= 0)
-		int = math.floor(int/2)
+		int = math.trunc(int/2)
 	end
 	return mask
 end

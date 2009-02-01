@@ -1,6 +1,6 @@
 -- we need to test all the different formats, at minimum
 -- this means bimPpsuxz for now
--- Copyright © 2008 Ben "ToxicFrog" Kelly; see COPYING
+-- Copyright ï¿½ 2008 Ben "ToxicFrog" Kelly; see COPYING
 
 -- test cases
 -- simple: read and write of each format, seeks, endianness controls

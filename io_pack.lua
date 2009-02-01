@@ -37,8 +37,10 @@ function pack.f(fd, d, w)
 end
 
 -- signed int
--- thanks to % we can pass this straight through to the unsigned format
 function pack.i(fd, d, w)
+	if d < 0 then
+		d = 2^(w*8) + d
+	end
 	return pack.u(fd, d, w)
 end
 
@@ -97,7 +99,7 @@ function pack.u(fd, d, w)
 		else
 			s = s .. string.char(d % 2^8)
 		end
-		d = math.floor(d/2^8)
+		d = math.trunc(d/2^8)
 	end
 	
 	return pack.s(fd, s, w)
