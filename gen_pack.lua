@@ -10,6 +10,8 @@ gen.preamble = [[
 local fd,data = ...
 local stack = {}
 local index = 1
+local start = fd:seek()
+local len = 0
 
 local function push(key)
 	if not key then
@@ -30,12 +32,21 @@ local function pop(key)
 	data = saved[2]
 end
 
+local function update_len()
+    len = len + fd:seek() - start
+end
+
+local function update_start()
+    start = fd:seek()
+end
+
 hostendian()
 ]]		
 
 gen.postamble = [[
 
-return fd
+update_len()
+return fd,len
 ]]
 
 --	control:
@@ -54,7 +65,7 @@ function gen.control(token)
 	local args = token[2]:gsub('%.', ', ')
 	if #args == 0 then args = "nil" end
 
-	return fn.."(fd, "..args..")"
+	return "update_len(); "..fn.."(fd, "..args..")".."; update_start()"
 end
 
 --	atom:

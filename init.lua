@@ -73,8 +73,8 @@ function pack(fmt, fd, data)
 	
 	assert(fmt and fd and data and type(fmt) == "string", "struct: invalid arguments to pack")
 	
-	compile.pack(fmt)(fd, data)
-	return (str_fd and fd.str) or fd
+	local fd,len = compile.pack(fmt)(fd, data)
+	return (str_fd and fd.str) or fd,len
 end
 
 return struct

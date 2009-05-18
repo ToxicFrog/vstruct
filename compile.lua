@@ -97,12 +97,12 @@ local function compile(format, gen, env)
 	setfenv(fn, env)
 	
 	local fn = function(...)
-		local status,ret = xpcall2(fn, function(message)
+		local status,ret,len = xpcall2(fn, function(message)
 			return { message, where("",2) }
 		end, ...)
 		
 		-- call succeeded without errors
-		if status then return ret end
+		if status then return ret,len end
 		
 		local message,where = ret[1],ret[2]
 		

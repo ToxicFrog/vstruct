@@ -40,10 +40,15 @@ exports:
 pack takes a format string and a table of data and packs the contents into a
 buffer. If the fd argument is present, it will write the data directly to it
 using standard file io methods (write and seek), and return the fd; otherwise
-it will construct and return a string.
+it will construct and return a string. In either case it also returns (as a
+second value) the number of bytes written - note that if the format involved
+seeks, this is not the same as the amount by which the write pointer moved
+or the size of the packed string.
 
 unpack takes a format string and a buffer or file to unpack from, and returns
-the unpacked data as a table.
+the unpacked data as a table. It also returns (as a second value) the number of
+bytes read - note that if the format string involved seeks, this is not the same
+as the difference between read pointer positions.
 
 explode converts a bitmask into a list of booleans, and implode does the
 converse. In such lists, list[1] is the least significant bit, and list[n] the
