@@ -39,6 +39,10 @@ function cursor:read(n)
 		return nil,"eof"
 	end
 	
+    if n == "*a" then
+        n = #self.str
+    end
+    
 	local buf = self.str:sub(self.pos+1, self.pos + n)
 	self.pos = math.min(self.pos + n, #self.str)
 	

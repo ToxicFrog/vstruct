@@ -238,11 +238,12 @@ PW	Signed fixed point rational with bit-aligned subfields
 	such that I+F is not a multiple of 8 is an error.
 
 sW	String.
-	Read: reads exactly W bytes and returns them as a string.
+	Read: reads exactly W bytes and returns them as a string. If W is omitted,
+      reads until EOF.
 	Write:
-	If W is omitted, uses the string length.
-	If W is shorter than the string length, truncates the string.
-	If W is greater than the string length, null pads the string.
+	  If W is omitted, uses the string length.
+	  If W is shorter than the string length, truncates the string.
+	  If W is greater than the string length, null pads the string.
 
 uW	Unsigned integer.
 	Read: an unsigned integer of width W bytes.

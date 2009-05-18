@@ -121,7 +121,7 @@ end
 function unpack.s(fd, w)
 	if w == 0 then return "" end
 	
-	return fd:read(w or 0)
+	return fd:read(w or '*a')
 end
 
 -- unsigned int
