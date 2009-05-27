@@ -55,12 +55,12 @@ converse. In such lists, list[1] is the least significant bit, and list[n] the
 most significant.
 
 cursor wraps a string in something that looks, at first glance, like a file.
-This permits strings to be wrapped and passed to the struct IO functions. The
+This permits strings to be wrapped and passed to the vstruct IO functions. The
 wrapped string supports :seek, and has limited support for :read (the only
 supported calling mode is :read(num_bytes)) and :write (as :write(buffer)).
 
 compile.read takes a format string and returns a function, which can later be
-passed a file (or file-like object - see struct.cursor) to perform a read
+passed a file (or file-like object - see vstruct.cursor) to perform a read
 operation. In effect, the following code:
 	f = vstruct.compile.read(fmt)
 	d = f(fd)
@@ -221,7 +221,7 @@ mW	Bitmask.
 	Read: as uW, but explodes the result into a list of booleans, one per bit.
 	Write: implodes the input value, then writes it as uW.
 	Affected by endianness.
-	See also: struct.implode, struct.explode.
+	See also: vstruct.implode, vstruct.explode.
 
 pW	Signed fixed point rational.
 	Width is in the format "I.F"; the value before the dot is the number of
