@@ -1,7 +1,7 @@
 -- read formats
 -- return a value if applicable, which will be packed
 -- otherwise return nil
--- Copyright © 2008 Ben "ToxicFrog" Kelly; see COPYING
+-- Copyright ï¿½ 2008 Ben "ToxicFrog" Kelly; see COPYING
 
 -- load operations common to both unpack and pack, and set __index so that
 -- requests for, say, unpack.seekto will succeed
@@ -121,7 +121,11 @@ end
 function unpack.s(fd, w)
 	if w == 0 then return "" end
 	
-	return fd:read(w or '*a')
+    local buf,err = fd:read(w or "*a")
+    if not buf then
+        error(function() return nil,err end)
+    end
+    return buf
 end
 
 -- unsigned int
