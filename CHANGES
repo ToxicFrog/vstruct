@@ -1,3 +1,21 @@
+1.0
+---
+Bugfixes to read error handling
+Ability to return unpacked values rather than tables
+
+1.0 beta 4
+----------
+Added the ability to say 's' with no width to read until EOF.
+Modified struct.unpack and struct.pack to return the number of bytes
+read/written as a second value. Note that this is not the same as the r/w
+pointer delta if seeks are involved.
+
+1.0 beta 3
+----------
+Lots of bugfixing and general cleanup
+Improved error reporting
+API name changes
+
 1.0 beta 2
 ----------
 Added the counted string format "c".

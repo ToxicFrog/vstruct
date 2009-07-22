@@ -1,7 +1,9 @@
 -- vstruct, the versatile struct library
 -- Copyright � 2008 Ben "ToxicFrog" Kelly; see COPYING
 
-local table,math,type,require,assert = table,math,type,require,assert
+local table,math,type,require,assert,_unpack = table,math,type,require,assert,unpack
+
+local print = print
 
 module((...))
 
@@ -40,7 +42,7 @@ end
 
 -- given a source, which is either a string or a file handle,
 -- unpack it into individual data based on the format string
-function unpack(fmt, source)
+function unpack(fmt, source, untable)
 	-- wrap it in a cursor so we can treat it like a file
 	if type(source) == 'string' then
 		source = cursor(source)
@@ -52,7 +54,14 @@ function unpack(fmt, source)
 	-- it returns a function that when called with our source, will
 	-- unpack the data according to the format string and return all
 	-- values from said unpacking in a list
-	return compile.unpack(fmt)(source)
+    if untable then
+        --local t = compile.unpack(fmt)(source)
+        --print(t)
+       -- print(_unpack(t))
+    	return _unpack((compile.unpack(fmt)(source)))
+    else
+        return compile.unpack(fmt)(source)
+    end
 end
 
 -- given a format string and a list of data, pack them

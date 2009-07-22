@@ -30,7 +30,7 @@ repetition, grouping of data into tables, and naming of values within tables.
 ======	
 exports:
 	vstruct.pack(fmt, [fd], data)
-	vstruct.unpack(fmt, <fd or string>)
+	vstruct.unpack(fmt, <fd or string>, [unpacked])
 	vstruct.explode(int)
 	vstruct.implode(table)
 	vstruct.cursor(string)
@@ -48,7 +48,11 @@ or the size of the packed string.
 unpack takes a format string and a buffer or file to unpack from, and returns
 the unpacked data as a table. It also returns (as a second value) the number of
 bytes read - note that if the format string involved seeks, this is not the same
-as the difference between read pointer positions.
+as the difference between read pointer positions. If the _unpacked_ argument is
+true, it will return the unpacked data as a series of values rather than as a
+table, equivalent to using the standard Lua function unpack() on the return
+value. Note that this means it will not return the number of bytes read as an
+additional value.
 
 explode converts a bitmask into a list of booleans, and implode does the
 converse. In such lists, list[1] is the least significant bit, and list[n] the
