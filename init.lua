@@ -22,6 +22,7 @@ end
 -- the length of the list will be the smallest number of bits needed to
 -- represent the int
 function explode(int, size)
+    assert(int, "struct.explode: missing argument")
     size = size or 0
     
 	local mask = {}

@@ -122,8 +122,8 @@ function unpack.s(fd, w)
 	if w == 0 then return "" end
 	
     local buf,err = fd:read(w or "*a")
-    if not buf then
-        error(function() return nil,err end)
+    if not buf or #buf < w then
+        error(function() return "read error: "..err end)
     end
     return buf
 end

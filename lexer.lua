@@ -40,11 +40,11 @@ return function(source)
 			end
 		end
 		error (function() return "Error lexing format string [["
-			..("meep" or orig)
+			..(orig)
 			.."]] at char "
 			..index
 			.." ("
-			..("moop" or source:sub(1,1))
+			..(source:sub(1,1))
 			..")"
 			end)
 	end
