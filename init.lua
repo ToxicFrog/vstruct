@@ -21,9 +21,11 @@ end
 -- turn an int into a list of booleans
 -- the length of the list will be the smallest number of bits needed to
 -- represent the int
-function explode(int)
+function explode(int, size)
+    size = size or 0
+    
 	local mask = {}
-	while int ~= 0 do
+	while int ~= 0 or #mask < size do
 		table.insert(mask, int % 2 ~= 0)
 		int = math.trunc(int/2)
 	end
@@ -32,9 +34,11 @@ end
 
 -- turn a list of booleans into an int
 -- the converse of explode
-function implode(mask)
+function implode(mask, size)
+    size = size or #mask
+    
 	local int = 0
-	for i=#mask,1,-1 do
+	for i=size,1,-1 do
 		int = int*2 + ((mask[i] and 1) or 0)
 	end
 	return int

@@ -2,9 +2,9 @@
 -- return true if they have consumed a value from the input stream
 -- return false/nil otherwise (ie, the next value will be preserved
 -- for subsequent calls, eg skip/pad)
--- Copyright © 2008 Ben "ToxicFrog" Kelly; see COPYING
-local require,error,setmetatable,string,print,math,unpack
-	= require,error,setmetatable,string,print,math,unpack
+-- Copyright Â© 2008 Ben "ToxicFrog" Kelly; see COPYING
+local require,error,setmetatable,string,print,math,unpack,io
+	= require,error,setmetatable,string,print,math,unpack,io
 
 module((...))
 
@@ -52,7 +52,7 @@ function pack.m(fd, d, w)
 	
 	for i=1,w*8,8 do
 		local bits = { unpack(d, i, i+7) }
-		local byte = string.char(struct.implode(bits))
+		local byte = string.char(struct.implode(bits, 8))
 		if pack.is_bigendian then
 			buf = byte..buf
 		else
