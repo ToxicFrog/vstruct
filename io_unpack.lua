@@ -103,7 +103,7 @@ end
 function unpack.I(bits, w)
     local n = unpack.U(bits, w)
     
-    if n > 2^(w-1) then
+    if n >= 2^(w-1) then
         return n - 2^w
     end
     return n
