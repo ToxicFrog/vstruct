@@ -13,6 +13,7 @@ lexeme "name_atom"	"([%a_][%w_]*)%:(%a)([%d.]*)"
 lexeme "name_table"	"([%a_][%w_]*)%:(%b{})"
 lexeme "prerepeat" 	"(%d+)%s*%*"
 lexeme "postrepeat"	"%*%s*(%d+)"
+lexeme "bitpack"    "(%d+)(%b||)"
 lexeme "control"	"([-+@<>=ax])([%d.]*)"
 lexeme "atom"		"(%a)([%d.]*)"
 

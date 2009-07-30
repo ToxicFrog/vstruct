@@ -7,9 +7,8 @@ local parse = require(_PACKAGE.."parser")
 local gen = {}
 
 gen.preamble = [[
-local fd = (...)
+local fd,pack = ...; pack = pack or {}
 local stack = {}
-local pack = {}
 local start = fd:seek()
 local len = 0
 
@@ -86,6 +85,7 @@ function gen.group(token)
 	return parse(token[1]:sub(2,-2), gen)
 end
 
+-- named atom
 function gen.name_atom(token)
 	local fn = token[2]
 	local args = token[3]:gsub('%.', ', ')
@@ -111,6 +111,19 @@ function gen.postrepeat(token, get, asl)
 	local src = table.remove(asl)
 	
 	return "for _idx=1,"..token[1].." do\n\n"..src.."\nend"
+end
+
+function gen.bitpack(token)
+    -- stack unpack
+    local buf = "do local _fd = fd\nfd = m(fd, "..token[1]..")\nfd.n = 0\n"
+    
+    -- unpack code goes here
+    buf = buf..parse(token[2]:sub(2,-2), gen).."\n"
+    
+    -- unstack
+    buf = buf.."fd = _fd end"
+    
+    return buf
 end
 
 return gen

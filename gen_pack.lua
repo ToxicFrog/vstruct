@@ -128,5 +128,24 @@ function gen.postrepeat(token, get, asl)
 	return "for _idx=1,"..token[1].." do\n\n"..src.."\nend"
 end
 
+function gen.bitpack(token)
+    -- stack unpack
+    local buf = [[
+do local _fd = fd
+fd = {}
+]]
+    
+    -- pack code goes here
+    buf = buf..parse(token[2]:sub(2,-2), gen).."\n"
+    
+    -- unstack
+    buf = buf..[[
+m(_fd, fd, ]]..token[1]..[[)
+fd = _fd; end
+]]
+    
+    return buf
+end
+
 return gen
 

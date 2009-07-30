@@ -19,6 +19,12 @@ function pack.b(fd, d, w)
 	return pack.u(fd, (d and 1) or 0, w)
 end
 
+function pack.B(bits, d, w)
+    for i=#bits+1,#bits+w do
+        bits[i] = d
+    end
+end
+
 -- counted string
 -- a string immediately prefaced with its length as a uint
 function pack.c(fd, d, w)
@@ -44,6 +50,13 @@ function pack.i(fd, d, w)
 	return pack.u(fd, d, w)
 end
 
+function pack.I(bits, d, w)
+    if d < 0 then
+        d = d+2^w
+    end
+    return pack.U(bits, d, w)
+end
+
 -- bitmask
 -- we use a string here because using an unsigned will lose data on bitmasks
 -- wider than lua's native number format
@@ -60,6 +73,12 @@ function pack.m(fd, d, w)
 		end
 	end
 	return pack.s(fd, buf, w)
+end
+
+function pack.M(bits, d, w)
+    for i=1,w do
+        bits[#bits+1] = d[i]
+    end
 end
 
 -- fixed point bit aligned
@@ -105,11 +124,19 @@ function pack.u(fd, d, w)
 	return pack.s(fd, s, w)
 end
 
+function pack.U(bits, d, w)
+    return pack.M(bits, struct.explode(d, w), w)
+end
+
 -- skip/pad
 -- this is technically a control format, so it has a different signature
 -- specifically, there is no "data" argument
 function pack.x(fd, w)
 	return pack.s(fd, "", w)
+end
+
+function pack.X(bits, w)
+    return pack.U(bits, 0, w)
 end
 
 -- null terminated string

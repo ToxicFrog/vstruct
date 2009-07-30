@@ -5,9 +5,16 @@
 
 -- load operations common to both unpack and pack, and set __index so that
 -- requests for, say, unpack.seekto will succeed
-local require,error,setmetatable,string,print
-	= require,error,setmetatable,string,print
+local require,error,setmetatable,string,print,g_unpack
+	= require,error,setmetatable,string,print,unpack
 
+local function assert(condition, ...)
+    if condition then
+        return condition,...
+    end
+    return error(...)
+end
+    
 module((...))
 
 local struct = require (_PACKAGE:sub(1,-2))
@@ -20,6 +27,19 @@ local unpack = setmetatable({}, { __index = common })
 -- true if any bit is 1, false otherwise
 function unpack.b(fd, w)
 	return unpack.u(fd, w) ~= 0
+end
+
+function unpack.B(bits, w)
+    assert(bits.n + w <= #bits, function() return "not enough bits" end)
+
+    local r = false
+    
+    for i=1,w do
+        if bits[bits.n + i] then r = true end
+    end
+    bits.n = bits.n + w
+    
+    return r
 end
 
 -- counted string
@@ -80,6 +100,15 @@ function unpack.i(fd, w)
 	return nve_unpack(buf, w)
 end
 
+function unpack.I(bits, w)
+    local n = unpack.U(bits, w)
+    
+    if n > 2^(w-1) then
+        return n - 2^w
+    end
+    return n
+end
+
 -- bitmask of w bytes
 -- we need to read and unpack it as a string, not an unsigned, because otherwise
 -- we're limited to 52 bits
@@ -99,6 +128,12 @@ function unpack.m(fd, w)
 		end
 	end
 	return mask
+end
+
+function unpack.M(bits, w)
+    assert(bits.n + w <= #bits, function() return "not enough bits" end)
+    bits.n = bits.n + w
+    return {g_unpack(bits, bits.n-w+1, bits.n)}
 end
 
 -- fixed point bit aligned
@@ -122,8 +157,10 @@ function unpack.s(fd, w)
 	if w == 0 then return "" end
 	
     local buf,err = fd:read(w or "*a")
-    if not buf or #buf < w then
+    if not buf then
         error(function() return "read error: "..err end)
+    elseif #buf < w then
+        error(function() return "short read: expected "..w.." bytes, got "..#buf end)
     end
     return buf
 end
@@ -135,11 +172,24 @@ function unpack.u(fd, w)
 	return pve_unpack(buf, w)
 end
 
+function unpack.U(bits, w)
+    assert(bits.n + w <= #bits, function() return "not enough bits" end)
+    
+    bits.n = bits.n + w
+    
+    return struct.implode {g_unpack(bits, bits.n - w + 1, bits.n)}
+end
+
 -- skip/pad
 -- reads w bytes and discards them
 function unpack.x(fd, w)
 	fd:read(w)
 	return true
+end
+
+function unpack.X(bits, w)
+    assert(bits.n + w <= #bits, function() return "not enough bits" end)
+    bits.n = bits.n + w
 end
 
 -- null-terminated string
