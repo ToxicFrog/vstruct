@@ -122,8 +122,10 @@ function unpack.s(fd, w)
 	if w == 0 then return "" end
 	
     local buf,err = fd:read(w or "*a")
-    if not buf or #buf < w then
-        error(function() return "read error: "..err end)
+    if not buf then
+        error(function() return "read error: "..(err or "(unknown error)") end)
+    elseif #buf < w then
+        error(function() return "short read: wanted "..w.." bytes, got "..#buf end)
     end
     return buf
 end
