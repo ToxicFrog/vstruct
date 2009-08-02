@@ -47,7 +47,7 @@ end
 
 -- given a source, which is either a string or a file handle,
 -- unpack it into individual data based on the format string
-function unpack(fmt, source, untable)
+function unpack(fmt, source, to)
 	-- wrap it in a cursor so we can treat it like a file
 	if type(source) == 'string' then
 		source = cursor(source)
@@ -59,13 +59,13 @@ function unpack(fmt, source, untable)
 	-- it returns a function that when called with our source, will
 	-- unpack the data according to the format string and return all
 	-- values from said unpacking in a list
-    if untable then
+    if to == true then
         --local t = compile.unpack(fmt)(source)
         --print(t)
        -- print(_unpack(t))
     	return _unpack((compile.unpack(fmt)(source)))
     else
-        return compile.unpack(fmt)(source)
+        return compile.unpack(fmt)(source, type(to) == "table" and to or nil)
     end
 end
 
