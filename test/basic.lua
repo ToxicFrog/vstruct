@@ -15,7 +15,7 @@ local require,math,ipairs,string,tostring,print,os,pairs
 	= require,math,ipairs,string,tostring,print,os,pairs
 
 module((...))
-local struct = require(_PACKAGE:sub(1,-2))
+local struct = require(_NAME:match("^[^%.]+"))
 local name = (...):gsub('%.[^%.]+$', '')
 
 local function check_bm(m)
