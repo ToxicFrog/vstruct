@@ -45,6 +45,12 @@ function implode(mask, size)
 	return int
 end
 
+function parsetest(fmt)
+    require "util"
+    local ast = require "struct.ast"
+    table.print(ast.parse(fmt))
+end
+
 -- given a source, which is either a string or a file handle,
 -- unpack it into individual data based on the format string
 function unpack(fmt, source, untable)
