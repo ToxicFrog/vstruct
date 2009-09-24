@@ -1,65 +1,12 @@
 local ast = {}
 
-function ast.List()
-    local child = { width = 0 }
-    local List = { width = 0, child }
-    
-    function List:append(node)
-        if node.width then
-            if not child then
-                child = { width = 0 }
-                self[#self+1] = child
-            end
-            
-            if self.width then
-                self.width = self.width + node.width
-            end
-            
-            child[#child+1] = node
-            child.width = child.width + node.width
-        else
-            child = nil
-            self.width = nil
-            self[#self+1] = node
-        end
-    end
-    
-    return List
-end
-
-function ast.IO(name, width)
-    width = tonumber(width.text)
-    
-    -- FIXME validate width
-    
-    return {
-        tag = "io";
-        width = width;
-        type = name;
-    }
-end
-
-function ast.Name(key, value)
-    return {
-        tag = "name";
-        width = value.width;
-        key = key;
-        value = value;
-    }
-end
-
-function ast.Repeat(count, value)
-    return {
-        tag = "repeat";
-        width = (value.width and count * value.width) or nil;
-        count = count;
-        value = value;
-    }
+for _,terminal in ipairs { "IO", "List", "Name", "Table", "Repeat" } do
+    ast[terminal] = require ((...).."."..terminal)
 end
 
 function ast.parse(source)
     local lex = require "struct.lexer" (source)
-    local root = ast.List()
+    local root = ast.Table()
     
     for node in (function() return ast.next(lex) end) do
         root:append(node)
@@ -146,8 +93,7 @@ end
 function ast.table(lex)
     ast.require(lex, '{')
     
-    local group = ast.List()
-    group.tag = "table"
+    local group = ast.Table()
     
     while lex.peek().type ~= '}' do
         group:append(ast.next(lex))

@@ -48,7 +48,11 @@ end
 function parsetest(fmt)
     require "util"
     local ast = require "struct.ast"
-    table.print(ast.parse(fmt))
+--    ast.parse(fmt) --:show()
+    local t = ast.parse(fmt):unpack(nil,"")
+    print("--")
+    table.print(t)
+--    table.print(ast.parse(fmt):unpack(nil, ""))
 end
 
 -- given a source, which is either a string or a file handle,
