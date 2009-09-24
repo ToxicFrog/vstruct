@@ -7,8 +7,8 @@ local print = print
 
 module((...))
 
-cursor = require (_NAME..".cursor")
-compile = require (_NAME..".compile")
+--cursor = require (_NAME..".cursor")
+--compile = require (_NAME..".compile")
 
 function math.trunc(n)
 	if n < 0 then
