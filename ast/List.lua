@@ -33,16 +33,23 @@ return function()
     function List:unpack(fd, buf, data)
         for i,v in ipairs(self) do
             local val
-            if v.width then
-                if self.width then
+            
+            -- can't determine width of this subtree ahead of time
+            if not v.width then
+                val = v:unpack(fd, nil, data)
+                
+            -- can
+            else
+                -- were we passed in a preread?
+                if buf then
                     val = v:unpack(fd, buf:sub(1, v.width), data)
-                    buf = buf:sub(v.width - 1, -1)
+                    buf = buf:sub(v.width + 1, -1)
+                    
                 else
                     val = v:unpack(fd, fd:read(v.width), data)
                 end
-            else
-                val = v:unpack(fd, nil, data)
             end
+
             if val then
                 data[#data+1] = val
             end

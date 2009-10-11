@@ -1,4 +1,4 @@
---local io = require ((...):gsub("ast%.IO$", "io")
+local io = require ((...):gsub("ast%.IO$", "io"))
 
 return function(name, width)
     width = tonumber(width.text)
@@ -17,7 +17,8 @@ return function(name, width)
     end
     
     function IO:unpack(fd, buf, data)
-        return "<<%s %d>>" % name % width
+        return io(name, "unpack", fd, buf, data)
+--        return "<<%s %d>>" % name % width
     end
     
     return IO

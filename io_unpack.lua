@@ -16,12 +16,6 @@ local fp = require (_PACKAGE.."fp")
 
 local unpack = setmetatable({}, { __index = common })
 
--- boolean
--- true if any bit is 1, false otherwise
-function unpack.b(fd, w)
-	return unpack.u(fd, w) ~= 0
-end
-
 -- counted string
 -- a string immediately prefaced with its length as a uint
 function unpack.c(fd, w)
