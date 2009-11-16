@@ -17,18 +17,22 @@ end
 
 function ast.name(lex)
     local name = lex.next().text
-    local next = lex.next()
+    local next = lex.peek()
     
     if next.type == "number" then
-        return ast.IO(name, next)
+        return ast.IO(name, lex.next().text)
         
     elseif next.type == ":" then
+        ast.require(lex, ':')
         next = ast.next(lex)
         if next.tag == "io" or next.tag == "table" then
             return ast.Name(name, next)
         else
             ast.error(lex, "value (field or table)")
         end
+    
+    else
+        return ast.IO(name, nil)
     end
     
     ast.error(lex, "number or ':'")

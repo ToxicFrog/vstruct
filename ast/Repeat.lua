@@ -2,6 +2,7 @@ return function(count, value)
     local Repeat = {
         tag = "repeat";
         width = (value.width and count * value.width) or nil;
+        len = (count * value.len);
         count = count;
         value = value;
     }
@@ -20,5 +21,14 @@ return function(count, value)
         end
     end
    
+    function Repeat:pack(fd, data, key)
+        local buf = {}
+        for i=1,count do
+            buf[#buf+1] = value:pack(fd, data, key)
+            key = key + value.len
+        end
+        return table.concat(buf)
+    end
+    
     return Repeat
 end

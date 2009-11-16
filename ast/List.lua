@@ -1,11 +1,23 @@
 return function()
-    local List = { tag = "list", width = 0 }
+    local List = {
+        tag = "list";
+        width = 0;
+        len = 0;
+    }
     local child
     
     function List:append(node)
+        self.len = self.len + node.len
         if node.width then
             if not child then
-                child = { tag = "sublist", width = 0, show = self.show, unpack = self.unpack }
+                child = {
+                    tag = "sublist";
+                    width = 0;
+                    len = 0;
+                    show = self.show;
+                    unpack = self.unpack;
+                    pack = self.pack;
+                }
                 self[#self+1] = child
             end
             
@@ -15,6 +27,7 @@ return function()
             
             child[#child+1] = node
             child.width = child.width + node.width
+            child.len = child.len + node.len
         else
             child = nil
             self.width = nil
@@ -40,21 +53,35 @@ return function()
                 
             -- can
             else
-                -- were we passed in a preread?
+                -- were we passed a buffer to unpack from? if so, pass the first
+                -- (child-width) bytes from the buffer in, and advance the
+                -- buffer
                 if buf then
                     val = v:unpack(fd, buf:sub(1, v.width), data)
                     buf = buf:sub(v.width + 1, -1)
-                    
+                
+                -- if not, read the next (child-width) bytes from the fd and
+                -- pass that
                 else
                     val = v:unpack(fd, fd:read(v.width), data)
                 end
             end
 
-            if val then
+            if val ~= nil then
                 data[#data+1] = val
             end
         end
     end
     
+    function List:pack(fd, data, key)
+        local buf = {}
+        
+        for i,v in ipairs(self) do
+            buf[#buf+1] = v:pack(fd, data, key)
+            key = key + v.len
+        end
+        return table.concat(buf)
+    end
+
     return List
 end

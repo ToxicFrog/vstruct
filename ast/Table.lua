@@ -4,8 +4,6 @@ return function()
     local Table = {
         tag = "table";
         list = List();
-        value = {};
-        width = 0;
     }
     
     setmetatable(Table, { __index = Table.list })
@@ -20,8 +18,13 @@ return function()
     end
     
     function Table:unpack(fd, buf, data)
-        Table.list:unpack(fd, buf, Table.value)
-        return Table.value
+        local value = {}
+        self.list:unpack(fd, buf, value)
+        return value
+    end
+    
+    function Table:pack(fd, data, key)
+        return self.list:pack(fd, data, key)
     end
     
     return Table
