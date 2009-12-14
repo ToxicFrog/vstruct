@@ -34,12 +34,7 @@ local tests = {
     -- unsigned integers
     { raw = "\254\255\255"; format = "< u3"; val = 2^24-2; },
     -- signed integers
-    { raw = "\254\255\255"; format = "< i3"; val = -2; },
-    -- bitmasks
-    { raw = "\250"; format = "{m:m1}"; test = check_bm; },
-    -- fixed point
-    { raw = "\1\128"; format = "> P8.8"; val = 1.5; },
-    { raw = "\2\192"; format = "> p1.1"; val = 2.75; },
+    { raw = "\254\255\255"; format = "< {i3}"; val = -2; test = function(v) return v[1] == -2 end },
     -- plain strings
     { raw = "foobar"; format = "s4"; val = "foob"; },
     -- counted strings
@@ -47,6 +42,11 @@ local tests = {
     -- null terminated strings
     { raw = "foobar\0baz"; format = "z"; val = "foobar"; },
     { raw = "foobar\0baz"; format = "z10"; val = "foobar"; },
+    -- bitmasks
+    { raw = "\250"; format = "{m:m1}"; test = check_bm; },
+    -- fixed point
+    { raw = "\1\128"; format = "> P8.8"; val = 1.5; },
+    { raw = "\2\192"; format = "> p1.1"; val = 2.75; },
     -- floats
     { raw = c(0x00, 0x00, 0x00, 0x00); format = "< f4"; val = 0.0; },
     { raw = c(0x3f, 0x80, 0x00, 0x00); format = "> f4"; val = 1.0; },
