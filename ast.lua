@@ -30,9 +30,10 @@ function ast.name(lex)
     local name = lex.next().text
     local next = lex.peek()
     
-    if next.type == "number" then
+    if not next then
+        return ast.IO(name, nil)
+    elseif next.type == "number" then
         return ast.IO(name, lex.next().text)
-        
     elseif next.type == ":" then
         ast.require(lex, ':')
         next = ast.next(lex)
