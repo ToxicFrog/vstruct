@@ -10,6 +10,8 @@ module((...))
 cursor = require (_NAME..".cursor")
 --compile = require (_NAME..".compile")
 
+cache = true
+
 function math.trunc(n)
     if n < 0 then
         return math.ceil(n)

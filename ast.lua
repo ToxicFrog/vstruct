@@ -1,15 +1,26 @@
+local struct = require( (...):gsub("%.[^%.]+$","") )
+
 local ast = {}
+local cache = {}
 
 for _,terminal in ipairs { "IO", "List", "Name", "Table", "Repeat" } do
     ast[terminal] = require ((...).."."..terminal)
 end
 
 function ast.parse(source)
+    if struct.cache ~= nil and cache[source] then
+        return cache[source]
+    end
+
     local lex = require "struct.lexer" (source)
     local root = ast.Table()
     
     for node in (function() return ast.next(lex) end) do
         root:append(node)
+    end
+    
+    if struct.cache == true then
+        cache[source] = root
     end
     
     return root
