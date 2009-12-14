@@ -1,7 +1,7 @@
 -- cursor - a wrapper for strings that makes them look like files
 -- exports: seek read write
 -- read only supports numeric amounts
--- Copyright © 2008 Ben "ToxicFrog" Kelly; see COPYING
+-- Copyright (c) 2008 Ben "ToxicFrog" Kelly; see COPYING
 
 local cursor = {}
 
@@ -66,15 +66,15 @@ function cursor:write(buf)
 	return self
 end	
 
-function cursor:__call(source)
-	assert(type(source) == "string", "invalid first argument to cursor()")
-	return setmetatable(
-		{ str = source, pos = 0 },
-		cursor)
-end
-
 cursor.__index = cursor
 
-setmetatable(cursor, cursor)
+setmetatable(cursor, {
+    __call = function(self, source)
+    	assert(type(source) == "string", "invalid first argument to cursor()")
+        return setmetatable(
+	    	{ str = source, pos = 0 },
+            cursor)
+    end;
+})
 
 return cursor
