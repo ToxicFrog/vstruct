@@ -9,7 +9,7 @@ local function iorequire(format)
     local r,v = pcall(require, _M.."."..format)
 
     if not r then
-        error("struct: no support for format '"..format.."':\n"..v)
+        error("struct: no support for format '"..format.."':\n"..tostring(v))
     end
     
     return v                   
