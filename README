@@ -7,8 +7,10 @@ Contents
 		Naming
 		Grouping
 		Repetition
+        Bitpacks
 5.	Format Specifiers
-6.	Credits
+6.  Adding your own formats
+7.	Credits
 
 
 1. Overview
@@ -28,57 +30,79 @@ repetition, grouping of data into tables, and naming of values within tables.
 
 2. API
 ======	
-exports:
-	vstruct.pack(fmt, [fd], data)
-	vstruct.unpack(fmt, <fd or string>, [unpacked])
-	vstruct.explode(int)
-	vstruct.implode(table)
-	vstruct.cursor(string)
-	vstruct.compile.read(format)
-	vstruct.compile.write(format)
+
+Variables
+---------
+
+    vstruct.cache = (true|false|nil)
+
+Enables or disables cacheing of compiled format strings. This can significantly
+improve performance in the common case where you are re-using the same strings
+many times; if, on the other hand, you are generating lots of different strings,
+this will have unfortunate implications for memory use and should be turned off.
+(If you're doing both, see vstruct.compile below.)
+
+If true, cacheing is enabled.
+If false, new cache entries will not be created but old ones will still be used.
+If nil, cacheing is disabled entirely.
+
+
+Functions
+---------
+
+    vstruct.pack(fmt, [fd], data)
 
 pack takes a format string and a table of data and packs the contents into a
 buffer. If the fd argument is present, it will write the data directly to it
 using standard file io methods (write and seek), and return the fd; otherwise
-it will construct and return a string. In either case it also returns (as a
-second value) the number of bytes written - note that if the format involved
-seeks, this is not the same as the amount by which the write pointer moved
-or the size of the packed string.
+it will construct and return a string.
+
+
+    vstruct.unpack(fmt, <fd or string>, [unpacked])
 
 unpack takes a format string and a buffer or file to unpack from, and returns
-the unpacked data as a table. It also returns (as a second value) the number of
-bytes read - note that if the format string involved seeks, this is not the same
-as the difference between read pointer positions. If the _unpacked_ argument is
-true, it will return the unpacked data as a series of values rather than as a
-table, equivalent to using the standard Lua function unpack() on the return
-value. Note that this means it will not return the number of bytes read as an
-additional value.
+the unpacked data as a table. If the _unpacked_ argument is true, it will return
+the unpacked data as a series of values rather than as a table, equivalent to
+using the standard Lua function unpack() on the return value. If the _unpacked_
+argument is a table, it will pack the results into that table rather than
+returning a new one.
+
+
+    vstruct.explode(int)
+	vstruct.implode(table)
 
 explode converts a bitmask into a list of booleans, and implode does the
 converse. In such lists, list[1] is the least significant bit, and list[n] the
 most significant.
+
+
+    vstruct.cursor(string)
 
 cursor wraps a string in something that looks, at first glance, like a file.
 This permits strings to be wrapped and passed to the vstruct IO functions. The
 wrapped string supports :seek, and has limited support for :read (the only
 supported calling mode is :read(num_bytes)) and :write (as :write(buffer)).
 
-compile.read takes a format string and returns a function, which can later be
-passed a file (or file-like object - see vstruct.cursor) to perform a read
-operation. In effect, the following code:
-	f = vstruct.compile.read(fmt)
-	d = f(fd)
-Is equivalent to:
-	d = vstruct.unpack(fd, fmt)
-f can of course be called repeatedly, with different or the same fds each time.
 
-compile.write is the converse of compile.read. The emitted function expects a
-file and a table of data elements, so that:
-	f = vstruct.compile.write(fmt)
-	f(fd, data)
+    vstruct.compile(format)
+
+compile takes a format string and runs it through the compiler and code
+generator, but does not actually pack or unpack anything. Instead, it returns a
+table containing three values -
+
+    pack(fd, data) - equivalent to struct.pack(format, fd, data)
+    unpack(fd, [unpacked]) - equivalent to struct.unpack(format, fd, [unpacked])
+    source - a string containing the generated source for the format string.
+             Primarily of use when debugging.
+
+ In effect, the following code:
+	t = vstruct.compile(fmt)
+	d = t.unpack(fd)
+    t.pack(fd, d)
 Is equivalent to:
-	vstruct.pack(fd, fmt, data)
-As with compile.read, the emitted function is fully re-usable.
+	d = vstruct.unpack(fmt, fd)
+    vstruct.pack(fmt, fd, d)
+
 
 
 3. Warning!
@@ -91,6 +115,7 @@ true of numeric constants declared in Lua itself, of course, and other libraries
 which store values in lua numbers).
 Formats bfmsxz are unaffected by this, as they either do not use lua numbers or
 are guaranteed to fit inside them.
+
 
 4. The Format String
 ====================
@@ -125,6 +150,7 @@ If the same name is specified multiple times, or is combined with repetition
 Named and anonymous values can be freely mixed; the named values will be
 assigned to their given fields and the anonymous ones to sequential indices.
 
+
 Grouping
 --------
 Rather than generating or expecting a flat table, the library can be instructed to
@@ -141,6 +167,10 @@ Groups can be named, so formats like:
 	"flags:m1 coords:{ x:u4 y:u4 z:u4 }"
 Are permitted and meaningful.
 
+Names can also contain '.' characters, in which case table creation is implied;
+the following is equivalent to the above example:
+    "flags:m1 coords.x:u4 coords.y:u4 coords.z:u4"
+
 
 Repetition
 ----------
@@ -150,16 +180,48 @@ from the group by a '*'. For example:
 	"{ u4 } * 4"
 	"{ u4 } { u4 } { u4 } { u4 }"
 Are all equivalent. Note that the whitespace in the above examples is optional.
+
 In cases where you want to repeat format specifiers without implying a grouping,
 you can use (). For example:
 	"4 * (u4 b1)"
 Is equivalent to:
 	"u4 b1 u4 b1 u4 b1 u4"
-Like grouping, these can be nested.
+Like grouping, these can be nested arbitrarily.
+
+Finally, individual format items can also be repeated, as in "4 * u4".
+
+
+Bitpacks
+--------
+Bitpacks provide support for formats that store data bit-aligned inside larger
+fields - for example, using a uint16_t to store three five-bit unsigneds and a
+boolean.
+
+Bitpacks have the form:
+
+    '[' size '|' formats ']'
+
+'size' is the size, in *bytes*, of the field as a whole. 'formats' is the list
+of interior formats, with widths in *bits*. For example, the above would be
+represented as:
+
+    "[2| u5 u5 u5 b1 ]"
+
+Bitpacks presently support only the following interior formats:
+    b   boolean
+    i   signed int
+    m   bitmask
+    u   unsigned int
+    x   skip/pad
+See "Format Specifiers", below, for details on how they work. The usual naming,
+grouping, and repetition constructs are fully supported.
+
+Bitpacks respect endianness.
 
 
 5. Format Specifiers
 ====================
+
 
 Endianness Controls
 -------------------
@@ -189,7 +251,7 @@ data format instead.
 -A
 	Seek backwards A bytes.
 aW
-	Align to word width W (ie, seek to the next address which is a multiple of W)
+	Align to word width W (seek to the next address which is a multiple of W)
 
 
 Data Format Specifiers
@@ -228,18 +290,12 @@ mW	Bitmask.
 	See also: vstruct.implode, vstruct.explode.
 
 pW	Signed fixed point rational.
-	Width is in the format "I.F"; the value before the dot is the number of
-	bytes in the integer part, and the value after, in the fractional part.
-	Read: a fixed point rational of I+F bytes.
-	Write: a fixed point rational of I+F bytes. Values which cannot be exactly
-	represented in the specified width are truncated.
+	Width is in the format "I,F"; the value before the comma is the number of
+	bits in the integer part, and the value after, in the fractional part.
+	Read: a fixed point rational of 8*(I+F) bytes.
+	Write: a fixed point rational of 8*(I+F) bytes. Values which cannot be
+    exactly	represented in the specified width are truncated.
 	Affected by endianness.
-
-PW	Signed fixed point rational with bit-aligned subfields
-	Equivalent to pW, except that the decimal point does not need to be byte
-	aligned; for example, formats such as P20.12 are possible.
-	Note that underlying reads must still occur in byte multiples. Using a W
-	such that I+F is not a multiple of 8 is an error.
 
 sW	String.
 	Read: reads exactly W bytes and returns them as a string. If W is omitted,
@@ -270,8 +326,76 @@ zW	Null terminated string.
 	out entire and then null terminates it).
 
 
+6. Adding New Formats
+=====================
 
-6. Credits
+These instructions might be a bit unclear, and are mostly here so that I don't
+forget what the API is before 1.1 final is released. Suggestions for
+improvements are welcome; failing that, check the io/ directory for some real-
+world examples.
+
+
+Where to put them
+-----------------
+When vstruct first sees a format, it attempts to load it using
+
+    require(libname..".io."..format)
+    
+Assuming you've installed vstruct as vstruct, then, putting support for a new
+format F in <lua library path>/vstruct/io/F.lua will work.
+
+At runtime, you can use package.preload equivalently:
+    
+    package.preload["vstruct.io.F"] = <loader for F>
+
+
+What they should do
+-------------------
+
+When loaded, a format module should return a table containing some or all of the
+following functions. Note that whenever '...' appears in these signatures, it
+represents the comma-seperated arguments provided in the format string -
+typically nil or a single number, but some formats (such as p, fixed point) need
+more than one.
+
+    hasdata()
+    
+Returns true if, when packing, this format consumes a value from the data table.
+
+
+    width(...)
+
+Returns the exact amount of data this format will consume from the input if
+unpack is called, or the exact amount it will append to the output if pack is
+called, in bytes. If this cannot be determined until the functions are actually
+called, it should return nil.
+    
+
+    pack(fd, data, ...)
+    
+If possible, pack data into a string and return it. If not, manipulate fd
+directly to append data to it.
+    
+
+    unpack(fd, buffer, ...)
+    
+If width was specified, buffer will be a string of exactly width bytes; unpack
+it and return the value. If it wasn't, buffer will be nil and it's up to unpack
+to get the data it needs from the fd.
+
+
+    packbits(bit, data, ...)
+    
+Pack data bit by bit by passing each bit, LSB first, to the bit() function, as
+0 or 1.
+
+
+    unpackbits(bit, ...)
+
+Unpack data bit by bit. Each call to bit() will return 0 or 1, LSB first.
+    
+    
+7. Credits
 ==========
 	While most of the library code was written by me (Ben Kelly), the existence
 of this library owes itself to many others:
@@ -280,7 +404,8 @@ of this library owes itself to many others:
 and Luiz Henrique de Figueiredo's "lpack" library, as well as the "struct"
 available in Python.
 	sanooj, from #lua, has done so much testing and bug reporting that at this
-point he's practically a co-author.
+point he's practically a co-author; the 'struct-test-gen' module in test/ is
+his work.
 	The overall library design and  interface are the result of much discussion
 with rici, sanooj, Keffo, snogglethorpe, Spark, kozure, Vornicus, McMartin, and
 probably several others I've forgotten about on IRC (#lua on freenode and #code
