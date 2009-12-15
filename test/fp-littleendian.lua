@@ -1,4 +1,4 @@
-package.path = "./?/init.lua;".. package.path 
+--package.path = "./?/init.lua;".. package.path 
 local vstruct = require"vstruct"
 local inf = math.huge
 
