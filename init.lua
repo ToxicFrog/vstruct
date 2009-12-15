@@ -2,7 +2,7 @@
 -- Copyright � 2008 Ben "ToxicFrog" Kelly; see COPYING
 
 local table,math,type,require,assert,_unpack = table,math,type,require,assert,unpack
-
+local debug = debug
 local print = print
 
 module((...))
@@ -67,19 +67,26 @@ function unpack(fmt, src, dst)
     end
     
     local t = ast.parse(fmt)
-    return t:unpack(src, nil, dst or {})
+    return t.unpack(src, dst or {})
 end
 
 function pack(fmt, dst, data)
     local ast = require "struct.ast"
+    local str
     
     if not data then
         data = dst
         dst = cursor("")
+        str = true
     end
     
     local t = ast.parse(fmt)
-    return t:pack(dst, data, 1)
+    local v = t.pack(dst, data)
+    if str then
+        return v.str
+    else
+        return v
+    end
 end
 
 -- given a format string and a list of data, pack them

@@ -3,7 +3,7 @@ local struct = require( (...):gsub("%.[^%.]+$","") )
 local ast = {}
 local cache = {}
 
-for _,terminal in ipairs { "IO", "List", "Name", "Table", "Repeat" } do
+for _,terminal in ipairs { "IO", "List", "Name", "Table", "Repeat", "Generator", "Root", "Bitpack" } do
     ast[terminal] = require ((...).."."..terminal)
 end
 
@@ -13,11 +13,13 @@ function ast.parse(source)
     end
 
     local lex = require "struct.lexer" (source)
-    local root = ast.Table()
+    local root = ast.Root(ast.List())
     
     for node in (function() return ast.next(lex) end) do
         root:append(node)
     end
+    
+    root = root:gen(ast.Generator())
     
     if struct.cache == true then
         cache[source] = root
@@ -63,12 +65,14 @@ function ast.next(lex)
     elseif tok.type == '{' then
         return ast.table(lex)
     
+    elseif tok.type == '[' then
+        return ast.bitpack(lex)
+        
     elseif tok.type == "name" then
         return ast.name(lex)
     
     elseif tok.type == "number" then
-        -- it's either a repeat or a bitpack
-        return ast.repeat_or_bitpack(lex)
+        return ast.repetition(lex)
         
     elseif tok.type == "control" then
         return ast.control(lex)
@@ -78,18 +82,11 @@ function ast.next(lex)
     end
 end
 
-function ast.repeat_or_bitpack(lex)
+function ast.repetition(lex)
     local count = tonumber(lex.next().text)
-    local next = lex.next()
-    
-    -- is it a repeat?
-    if next.type == "*" then
-        next = ast.next(lex)
-        return ast.Repeat(count, next)
-    
-    else
-        ast.error(lex, "* (bitpacks not supported yet)")
-    end
+    ast.require(lex, "*");
+
+    return ast.Repeat(count, ast.next(lex))
 end
 
 function ast.group(lex)
@@ -119,12 +116,30 @@ function ast.table(lex)
     return group
 end
 
+function ast.bitpack(lex)
+    ast.require(lex, "[")
+    
+    local bitpack = ast.Bitpack(tonumber(ast.require(lex, "number").text))
+    
+    ast.require(lex, "|")
+    
+    while lex.peek().type ~= "]" do
+        bitpack:append(ast.next(lex))
+    end
+    
+    ast.require(lex, "]")
+    bitpack:finalize()
+    return bitpack
+end
+
 function ast.require(lex, type)
     local t = lex.next()
     
     if t.type ~= type then
         ast.error(lex, type)
     end
+    
+    return t
 end
 
 function ast.error(lex, expected)

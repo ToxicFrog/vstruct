@@ -34,6 +34,5 @@ return function(format, method, ...)
     
     assert(fmt[method], "No support for method '"..tostring(method).."' in IO module '"..format.."'")
     
-    --print("IO", method, ...)
     return fmt[method](...)
 end

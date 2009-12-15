@@ -10,13 +10,17 @@ lexeme (false) 	    "%s+"	-- whitespace
 lexeme (false)      "%-%-[^\n]*" -- comments
 lexeme "name"	    "([-+@<>=])"
 lexeme "name"       "([%a_][%a_.]*)"
-lexeme "number"     "(%d[%d.]*)"
+lexeme "number"     "(%d[%d.,]*)"
 lexeme "{"          "%{"
 lexeme "}"          "%}"
 lexeme "("          "%("
 lexeme ")"          "%)"
 lexeme ":"          "%:"
 lexeme "*"          "%*"
+-- bitpack support holy shit
+lexeme "["          "%["
+lexeme "]"          "%]"
+lexeme "|"          "%|"
 
 return function(source)
     local orig = source
