@@ -7,6 +7,7 @@ end
 
 function be.width(n)
     assert(n == nil, "'>' is an endianness control, and does not have width")
+    return 0
 end
 
 function be.unpack()
