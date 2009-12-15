@@ -21,7 +21,6 @@ local struct = require(_NAME:match("^[^%.]+"))
 local name = (...):gsub('%.[^%.]+$', '')
 
 local function check_bm(m)
-    m = m.m
     return m[8] and m[7] and m[6] and m[5]
 	and m[4] and not m[3] and m[2] and not m[1]
 end
@@ -34,7 +33,7 @@ local tests = {
     -- unsigned integers
     { raw = "\254\255\255"; format = "< u3"; val = 2^24-2; },
     -- signed integers
-    { raw = "\254\255\255"; format = "< {i3}"; val = -2; test = function(v) return v[1] == -2 end },
+    { raw = "\254\255\255"; format = "< i3"; val = -2 },
     -- plain strings
     { raw = "foobar"; format = "s4"; val = "foob"; },
     -- counted strings
@@ -43,10 +42,32 @@ local tests = {
     { raw = "foobar\0baz"; format = "z"; val = "foobar"; },
     { raw = "foobar\0baz"; format = "z10"; val = "foobar"; },
     -- bitmasks
-    { raw = "\250"; format = "{m:m1}"; test = check_bm; },
+    { raw = "\250"; format = "m1"; test = check_bm; },
+    -- skip/pad
+    { raw = "\0\0\0\0\2"; format = "x4u1"; val = 2 },
+    -- seek
+    { raw = "\0\0\2\0\0"; format = "@2 u1 x2"; val = 2 },
+    { raw = "\0\0\2\0\0"; format = "+2 u1 x2"; val = 2 },
+    { raw = "\0\0\2\0\0"; format = "+4 -2 u1 x2"; val = 2 },
+    -- endianness
+    { raw = "\0\1"; format = "< u2"; val = 256 },
+    { raw = "\0\1"; format = "> u2"; val = 1 },
+    { raw = "\1\1"; format = "= u2"; val = 257 },
+    -- bitpacks
+    { raw = c(0x0F, 0x00); format = "< [2| x4 u4 x8]"; val = 0 },
+    { raw = c(0x0F, 0x00); format = "< [2| u4 x12]"; val = 15 },
+    { raw = c(0x0F, 0x00); format = "> [2| x8 u4 x4]"; val = 15 },
+    { raw = c(0x0F, 0x00); format = "< [2| i4 x12]"; val = -1 },
+    { raw = c(0x0F, 0x00); format = "> [2| x8 i4 x4]"; val = -1 },
+    { raw = c(0xF0); format = "[1| x4 b4]"; val = true },
+    { raw = c(0x00); format = "[1| x4 b4]"; val = false },
+    { raw = c(0x0F,0xA0); format = "> [2| x4 m8 x4]"; test = check_bm },
+    -- FIXME - names
+    -- FIXME - tables
+    -- FIXME - repetition
     -- fixed point
-    { raw = "\1\128"; format = "> P8.8"; val = 1.5; },
-    { raw = "\2\192"; format = "> p1.1"; val = 2.75; },
+    { raw = "\1\128"; format = "> p8,8"; val = 1.5; },
+    { raw = "\2\192"; format = "> p8,8"; val = 2.75; },
     -- floats
     { raw = c(0x00, 0x00, 0x00, 0x00); format = "< f4"; val = 0.0; },
     { raw = c(0x3f, 0x80, 0x00, 0x00); format = "> f4"; val = 1.0; },
@@ -72,7 +93,7 @@ end
 
 function check(test)
     local val, pass, raw
-    local fmt = "%7.7s %42.42s%2.2s %17.17s %4.4s %3.3s"
+    local fmt = "%16.16s %33.33s%2.2s %17.17s %4.4s %3.3s"
 
     val = struct.unpack(test.format, test.raw)[1]
     pass = test.test
@@ -90,8 +111,11 @@ function check(test)
         local new_val = struct.unpack(test.format, raw)[1]
         pass = test.test and test.test(val) or new_val == test.val
     end
+
     print(fmt:format(test.format, od(raw), "<=", tostring(val), pass and "PASS" or "FAIL", pass and "" or " !!!"):sub(1,79))
 end
+
+struct.unpack('< @0 u4 m4 @4 { u4 u4 } @8 foo:{ z4 z4 i4 } 4*(u6)', string.rep('-', 100))
 
 for i,test in ipairs(tests) do
     check(test)
