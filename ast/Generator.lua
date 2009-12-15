@@ -10,6 +10,7 @@ return function()
     local ra_left = nil
     local indent = 0
     local bitpack = false
+    local loopmul = 1
     
     local function append(...)
         source[#source+1] = string.rep(" ", indent)..string.format(...)
@@ -57,7 +58,7 @@ return function()
             , args or "")
 
         if readahead then
-            ra_left = ra_left - width
+            ra_left = ra_left - width * loopmul
             assert(ra_left >= 0
                 , string.format("code generation consistency failure: readahead=%d, left=%f"
                     , readahead
@@ -73,7 +74,7 @@ return function()
     function Generator:readahead(n)
         if n and n > 0 and not readahead then
             readahead = n
-            ra_left = n
+            ra_left = n * loopmul
             append('readahead(%d)', n)
         end
     end
@@ -81,15 +82,11 @@ return function()
     function Generator:startloop(n)
         append('for _=1,%d do', n)
         indent = indent + 2
-        if readahead then
-            ra_left = ra_left / n
-        end
+        loopmul = loopmul * n
     end
     
     function Generator:endloop(n)
-        if readahead then
-            ra_left = math.floor(ra_left * n)
-        end
+        loopmul = loopmul / n
         indent = indent - 2
         append('end')
     end

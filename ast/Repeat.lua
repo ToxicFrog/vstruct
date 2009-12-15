@@ -12,9 +12,11 @@ return function(count, value)
     end
     
     function Repeat:gen(generator)
-        generator:startloop(count)
-        value:gen(generator)
-        generator:endloop(count)
+        if count > 0 then
+            generator:startloop(count)
+            value:gen(generator)
+            generator:endloop(count)
+        end
     end
     
     return Repeat

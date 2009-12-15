@@ -8,7 +8,11 @@ end
 function c.unpack(fd, _, width)
     assert(width)
     local buf = fd:read(width)
-    return fd:read(io("u", "unpack", nil, buf, width))
+    local len = io("u", "unpack", nil, buf, width)
+    if len == 0 then
+        return ""
+    end
+    return fd:read(len)
 end
 
 function c.pack(fd, data, width)

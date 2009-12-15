@@ -3,13 +3,17 @@
 local io = require ((...):gsub("%.[^%.]+$", ""))
 local s = {}
 
+function s.width(w)
+    return tonumber(w)
+end
+
 function s.unpack(fd, buf, width)
     if width then
         assert(#buf == width, "sanity failure: length of buffer does not match length of string format")
         return buf
     end
     
-    return fd:read()
+    return fd:read('*a')
 end
 
 function s.pack(_, data, width)

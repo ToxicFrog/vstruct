@@ -32,24 +32,23 @@ function ast.name(lex)
     local name = lex.next().text
     local next = lex.peek()
     
-    if not next then
-        return ast.IO(name, nil)
-    elseif next.type == "number" then
+    if next and next.type == "number" and not lex.whitespace() then
         return ast.IO(name, lex.next().text)
-    elseif next.type == ":" then
-        ast.require(lex, ':')
-        next = ast.next(lex)
-        if next.tag == "io" or next.tag == "table" then
-            return ast.Name(name, next)
-        else
-            ast.error(lex, "value (field or table)")
-        end
-    
     else
         return ast.IO(name, nil)
     end
+end
+
+function ast.key(lex)
+    local name = lex.next().text
+    local next = lex.peek()
     
-    ast.error(lex, "number or ':'")
+    next = ast.next(lex)
+    if next.tag == "io" or next.tag == "table" then
+        return ast.Name(name, next)
+    else
+        ast.error(lex, "value (field or table)")
+    end
 end
 
 function ast.next(lex)
@@ -71,6 +70,9 @@ function ast.next(lex)
     elseif tok.type == "name" then
         return ast.name(lex)
     
+    elseif tok.type == "key" then
+        return ast.key(lex)
+        
     elseif tok.type == "number" then
         return ast.repetition(lex)
         

@@ -13,7 +13,7 @@ function z.pack(_, data, width)
     
     -- truncate to field width
 	if #data >= width then
-		data = data:sub(1, w-1)
+		data = data:sub(1, width-1)
 	end
 	
     return io("s", "pack", _, data.."\0", width)

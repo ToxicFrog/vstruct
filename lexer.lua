@@ -8,16 +8,16 @@ end
 
 lexeme (false) 	    "%s+"	-- whitespace
 lexeme (false)      "%-%-[^\n]*" -- comments
+lexeme "key"        "([%a_][%w_.]*):"
 lexeme "name"	    "([-+@<>=])"
-lexeme "name"       "([%a_][%a_.]*)"
+lexeme "name"       "([%a_]+)"
 lexeme "number"     "(%d[%d.,]*)"
 lexeme "{"          "%{"
 lexeme "}"          "%}"
 lexeme "("          "%("
 lexeme ")"          "%)"
-lexeme ":"          "%:"
+--lexeme ":"          "%:"
 lexeme "*"          "%*"
--- bitpack support holy shit
 lexeme "["          "%["
 lexeme "]"          "%]"
 lexeme "|"          "%|"
@@ -25,6 +25,7 @@ lexeme "|"          "%|"
 return function(source)
     local orig = source
     local index = 1
+    local hadwhitespace = false
            
     local function where()
         return ("character %d ('%s')."):format(index, source:sub(1,4))
@@ -39,17 +40,26 @@ return function(source)
         error (("Lexical error in format string at %s."):format(where()))
     end
 
-   local function eat_whitespace()
-       if #source == 0 then return end
-       local match,size = find_match()
+    local function eat_whitespace()
+        local function aux()
+            if #source == 0 then return end
+            local match,size = find_match()
+            
+            if not match.name then
+                hadwhitespace = true
+                source = source:sub(size+1, -1)
+                index = index + size
+                return aux()
+            end
+        end
+        hadwhitespace = false
+        return aux()
+    end
 
-       if not match.name then
-           source = source:sub(size+1, -1)
-           index = index + size
-           return eat_whitespace()
-       end
-   end
-
+    local function whitespace()
+        return hadwhitespace
+    end
+    
    local function next()
        eat_whitespace()
 
@@ -77,6 +87,7 @@ return function(source)
        next = next;
        peek = peek;
        where = where;
+       whitespace = whitespace;
        tokens = function() return next end;
    }
 end
