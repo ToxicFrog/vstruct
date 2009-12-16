@@ -16,6 +16,6 @@ function a.unpack(fd, _, align)
         fd:seek("cur", align - (cur % align))
     end
 end
-seek.pack = seek.unpack
+a.pack = a.unpack
 
-return seek
+return a

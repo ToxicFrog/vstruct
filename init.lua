@@ -67,7 +67,11 @@ function unpack(fmt, src, dst)
     end
     
     local t = ast.parse(fmt)
-    return t.unpack(src, dst or {})
+    if dst == true then
+        return _unpack(t.unpack(src, {}))
+    else
+        return t.unpack(src, dst or {})
+    end
 end
 
 function pack(fmt, dst, data)
