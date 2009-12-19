@@ -292,8 +292,8 @@ mW	Bitmask.
 pW	Signed fixed point rational.
 	Width is in the format "I,F"; the value before the comma is the number of
 	bits in the integer part, and the value after, in the fractional part.
-	Read: a fixed point rational of 8*(I+F) bytes.
-	Write: a fixed point rational of 8*(I+F) bytes. Values which cannot be
+	Read: a fixed point rational of (I+F)/8 bytes.
+	Write: a fixed point rational of (I+F)/8 bytes. Values which cannot be
     exactly	represented in the specified width are truncated.
 	Affected by endianness.
 
