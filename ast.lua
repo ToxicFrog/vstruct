@@ -1,4 +1,5 @@
-local struct = require( (...):gsub("%.[^%.]+$","") )
+local struct = require( (...):gsub("%.ast$","") )
+local lexer = require( (...):gsub("%.ast$", ".lexer") )
 
 local ast = {}
 local cache = {}
@@ -12,7 +13,7 @@ function ast.parse(source)
         return cache[source]
     end
 
-    local lex = require "struct.lexer" (source)
+    local lex = lexer(source)
     local root = ast.Root(ast.List())
     
     for node in (function() return ast.next(lex) end) do

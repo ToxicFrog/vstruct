@@ -1,4 +1,5 @@
 local io = require ((...):gsub("%.[^%.]+$", ""))
+local struct = require ((...):gsub("%.io.m$", ""))
 local m = {}
 
 function m.unpack(_, buf, width)
