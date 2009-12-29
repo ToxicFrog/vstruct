@@ -1,5 +1,6 @@
 local unpackenv = require ((...):gsub("ast%.Generator$", "unpack"))
 local packenv = require ((...):gsub("ast%.Generator$", "pack"))
+local cursor = require ((...):gsub("ast%.Generator$", "cursor")) 
 
 return function()
     local Generator = {}
@@ -35,19 +36,59 @@ return function()
         local u_env = unpackenv(data)
         local p_env = packenv(data)
         
+        local _unpack = unpack
+        
         local function unpack(fd, data)
+            -- autobox strings
+            if type(fd) == "string" then
+                fd = cursor(fd)
+            end
+            
+            -- fd must have file duck type
+            assert(fd.read, "invalid fd argument to vstruct.unpack: must be a string or file-like object")
+            
+            -- data must be true ('return unpacked results')
+            -- or false/absent ('create new table')
+            -- or a table to fill in
+            assert(data == nil or type(data) == "boolean" or type(data) == "table"
+                , "invalid data argument to vstruct.unpack: if present, must be table or boolean") 
+            
             setfenv(f, u_env)
-            return f(fd, data)
+            
+            if data == true then
+                return _unpack(f(fd, {}))
+            else
+                return f(fd, data or {})
+            end
         end
         
         local function pack(fd, data)
+            if fd and not data then
+                data,fd = fd,nil
+            end
+            
+            assert(type(data) == "table", "invalid data argument to vstruct.pack: must be a table")
+            
+            local realfd
+            
+            if not fd or type(fd) == "string" then
+                realfd = cursor(fd or "")
+            else
+                realfd = fd
+            end
+            
             setfenv(f, p_env)
-            return f(fd, data)
+            local result = f(realfd, data)
+            if realfd == fd then
+                return result
+            else
+                return result.str
+            end
         end
         
         return { pack=pack, unpack=unpack, source=s }
     end
-    
+
     function Generator:io(name, hasvalue, width, args)
         append('%sio(%q, %s, %s%s%s)'
             , bitpack and "bp" or ""

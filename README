@@ -65,7 +65,8 @@ the unpacked data as a table. If the _unpacked_ argument is true, it will return
 the unpacked data as a series of values rather than as a table, equivalent to
 using the standard Lua function unpack() on the return value. If the _unpacked_
 argument is a table, it will pack the results into that table rather than
-returning a new one.
+returning a new one. If it is neither true nor a table, it will create a new
+table, pack the results into that, and return it.
 
 
     vstruct.explode(int)

@@ -48,38 +48,16 @@ function implode(mask, size)
     return int
 end
 
-function unpack(fmt, src, dst)
+function unpack(fmt, ...)
     assert(type(fmt) == "string", "invalid first argument to vstruct.unpack")
-    assert(src, "missing second argument to vstruct.unpack")
-    
-    if type(src) == "string" then
-        src = cursor(src)
-    end
     
     local t = ast.parse(fmt)
-    if dst == true then
-        return _unpack(t.unpack(src, {}))
-    else
-        return t.unpack(src, dst or {})
-    end
+    return t.unpack(...)
 end
 
-function pack(fmt, dst, data)
-    local str
-    
-    if not data then
-        data = dst
-        dst = cursor("")
-        str = true
-    end
-    
+function pack(fmt, ...)
     local t = ast.parse(fmt)
-    local v = t.pack(dst, data)
-    if str then
-        return v.str
-    else
-        return v
-    end
+    return t.pack(...)
 end
 
 return struct
