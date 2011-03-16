@@ -10,8 +10,6 @@
 -- error handling: seek past start, read past end, invalid widths,
 --		non-isomorphic input tables
 
-require "util"
-
 local c = string.char
 local require,math,ipairs,string,tostring,print,os,pairs,unpack,table
 	= require,math,ipairs,string,tostring,print,os,pairs,unpack,table

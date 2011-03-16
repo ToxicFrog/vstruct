@@ -1,5 +1,5 @@
 --package.path = "./?/init.lua;".. package.path 
-local vstruct = require"vstruct"
+local vstruct = require "vstruct"
 local inf = math.huge
 
 -- work around a bug in the Lua constant table optimizer

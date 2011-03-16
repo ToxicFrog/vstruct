@@ -71,7 +71,7 @@ local assert, ipairs, pairs, loadstring, pcall =
 local require, setmetatable, tonumber, tostring, type =
    require, setmetatable, tonumber, tostring, type
 
-local struct = require"struct"; struct.cache = nil
+local struct = require "vstruct"; struct.cache = nil
 local __EOG__ = __EOG__
 
 local ceil,floor,fmod = math.ceil, math.floor, math.fmod
