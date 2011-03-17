@@ -1,7 +1,8 @@
 -- cursor - a wrapper for strings that makes them look like files
 -- exports: seek read write
 -- read only supports numeric amounts
--- Copyright (c) 2008 Ben "ToxicFrog" Kelly; see COPYING
+
+-- Copyright (c) 2011 Ben "ToxicFrog" Kelly; see COPYING
 
 local cursor = {}
 

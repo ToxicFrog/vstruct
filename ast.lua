@@ -1,13 +1,30 @@
-local struct = require( (...):gsub("%.ast$","") )
-local lexer = require( (...):gsub("%.ast$", ".lexer") )
+-- Abstract Syntax Tree module for vstruct
+-- This module implements the parser for vstruct format definitions. It is a
+-- fairly simple recursive-descent parser that constructs an AST using Lua
+-- tables, and then generates lua source from it.
+
+-- See ast/*.lua for the implementations of various node types in the AST,
+-- and see lexer.lua for the implementation of the lexer.
+
+-- Copyright (c) 2011 Ben "ToxicFrog" Kelly
+
+local struct = require "vstruct"
+local lexer  = require "vstruct.lexer"
 
 local ast = {}
 local cache = {}
 
-for _,terminal in ipairs { "IO", "List", "Name", "Table", "Repeat", "Generator", "Root", "Bitpack" } do
-    ast[terminal] = require ((...).."."..terminal)
+-- load the implementations of the various AST node types
+for _,node in ipairs { "IO", "List", "Name", "Table", "Repeat", "Generator", "Root", "Bitpack" } do
+    ast[node] = require ((...).."."..node)
 end
 
+-- given a source string, compile it
+-- returns a table containing pack and unpack functions and the original
+-- source - see README#vstruct.compile for a description.
+--
+-- if (struct.cache) is non-nil, will return the cached version, if present
+-- if (struct.cache) is true, will create a new cache entry, if needed
 function ast.parse(source)
     if struct.cache ~= nil and cache[source] then
         return cache[source]
@@ -28,6 +45,13 @@ function ast.parse(source)
     
     return root
 end
+
+-- used by the rest of the parser to report syntax errors
+function ast.error(lex, expected)
+    error("vstruct: parsing format string at "..lex.where()..": expected "..expected..", got "..lex.peek().type)
+end
+
+-- Everything below this line is internal to the recursive descent parser
 
 function ast.name(lex)
     local name = lex.next().text
@@ -143,10 +167,6 @@ function ast.require(lex, type)
     end
     
     return t
-end
-
-function ast.error(lex, expected)
-    error("vstruct: parsing format string at "..lex.where()..": expected "..expected..", got "..lex.peek().type)
 end
 
 return ast

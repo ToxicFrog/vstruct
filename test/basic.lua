@@ -14,9 +14,7 @@ local c = string.char
 local require,math,ipairs,string,tostring,print,os,pairs,unpack,table
 	= require,math,ipairs,string,tostring,print,os,pairs,unpack,table
 
-module((...))
-local struct = require(_NAME:match("^[^%.]+"))
-local name = (...):gsub('%.[^%.]+$', '')
+local struct = require "vstruct"
 
 local function check_bm(m)
     return m[8] and m[7] and m[6] and m[5]

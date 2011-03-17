@@ -1,4 +1,10 @@
-local io = require ((...):gsub("unpack$", "io"))
+-- Implements the unpack operation for vstruct.
+-- This is actually only used by ast.Generator, but is sufficiently complex
+-- that it gets its own file.
+
+-- Copyright (c) 2011 Ben "ToxicFrog" Kelly
+
+local io = require "vstruct.io"
 
 return function(refs)
     local env = {}

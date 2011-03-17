@@ -1,3 +1,9 @@
+-- Implements the lexer for vstruct format strings.
+-- Returns a function which, given a source string, returns a table of lexer
+-- operations closed over that source.
+
+-- Copyright (c) 2011 Ben "ToxicFrog" Kelly
+
 local lexis = {}
 
 local function lexeme(name)

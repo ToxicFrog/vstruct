@@ -1,24 +1,29 @@
 -- vstruct, the versatile struct library
--- Copyright � 2008 Ben "ToxicFrog" Kelly; see COPYING
+
+-- Copyright (C) 2011 Ben "ToxicFrog" Kelly; see COPYING
 
 local table,math,type,require,assert,_unpack = table,math,type,require,assert,unpack
 local debug = debug
 local print = print
 
-module((...))
+module "vstruct"
 
-cursor = require (_NAME..".cursor")
-ast = require (_NAME..".ast")
-
+cursor = require "vstruct.cursor"
+ast    = require "vstruct.ast"
 
 cache = true
 
-function math.trunc(n)
-    if n < 0 then
-        return math.ceil(n)
-    else
-        return math.floor(n)
-    end
+-- this is needed by some IO formats as well as init itself
+-- FIXME: should it perhaps be a vstruct internal function rather than
+-- installing it in math?
+if not math.trunc then
+	function math.trunc(n)
+		if n < 0 then
+			return math.ceil(n)
+		else
+			return math.floor(n)
+		end
+	end
 end
 
 -- turn an int into a list of booleans
@@ -48,6 +53,8 @@ function implode(mask, size)
     return int
 end
 
+-- Given a format string, a buffer or file, and an optional third argument,
+-- unpack data from the buffer or file according to the format string
 function unpack(fmt, ...)
     assert(type(fmt) == "string", "invalid first argument to vstruct.unpack")
     
@@ -55,9 +62,18 @@ function unpack(fmt, ...)
     return t.unpack(...)
 end
 
+-- Given a format string, an optional file-like, and a table of data,
+-- pack data into the file-like (or create and return a string of packed data)
+-- according to the format string
 function pack(fmt, ...)
     local t = ast.parse(fmt)
     return t.pack(...)
 end
 
-return struct
+-- Given a format string, compile it and return a table containing the original
+-- source and the pack/unpack functions derived from it.
+function compile(fmt)
+	return ast.parse(fmt)
+end
+
+return _M
