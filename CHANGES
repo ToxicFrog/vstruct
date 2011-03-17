@@ -1,5 +1,25 @@
-1.0
----
+1.1 (planned)
+-------------
+Test suite upgrades.
+LuaDist compatibility.
+Assorted bugfixes
+
+1.1 beta 1
+----------
+New test set (contributed by Sanooj) which randomly generates new test cases.
+New parser and lexer, with greater extensibility and better error reporting.
+Bitpack support.
+
+1.0.2
+-----
+Bugfix release.
+
+1.0.1
+-----
+Bugfix release.
+
+1.0 final
+---------
 Bugfixes to read error handling
 Ability to return unpacked values rather than tables
 
