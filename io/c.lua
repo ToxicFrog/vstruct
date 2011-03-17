@@ -1,4 +1,6 @@
-local io = require ((...):gsub("%.[^%.]+$", ""))
+-- counted strings
+
+local io = require "vstruct.io"
 local c = {}
 
 function c.width(n)

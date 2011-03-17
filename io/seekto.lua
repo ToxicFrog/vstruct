@@ -1,4 +1,5 @@
-local io = require ((...):gsub("%.[^%.]+$", ""))
+-- @ seek to a constant offset
+
 local seek = {}
 
 function seek.hasvalue()

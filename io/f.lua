@@ -1,5 +1,7 @@
-local io = require ((...):gsub("%.[^%.]+$", ""))
-local struct = require ((...):gsub("%.io%.[^%.]+$", ""))
+-- IEEE floating point floats, doubles and quads
+
+local struct = require "vstruct"
+local io     = require "vstruct.io"
 
 local sizes = {
 	[4] = {1,  8, 23};

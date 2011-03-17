@@ -1,4 +1,6 @@
-local io = require ((...):gsub("%.[^%.]+$", ""))
+-- null-terminated strings
+
+local io = require "vstruct.io"
 local z = {}
 
 function z.width(n)

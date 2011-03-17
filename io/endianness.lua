@@ -1,3 +1,7 @@
+-- the actual endianness controls. These should not be used directly, but
+-- are instead invoked by the <=> formats (bigendian, littleendian, and
+-- hostendian) to do the actual work.
+
 local e = {}
 
 local endianness;
@@ -16,7 +20,7 @@ end
 
 -- determine if the host system is big-endian or not, by dumping an empty
 -- function and looking at the endianness flag
--- this is kind of hackish
+-- HACK HACK HACK
 function e.host()
     if string.byte(string.dump(function() end)) == 0x00 then
         e.big()

@@ -1,4 +1,6 @@
-local io = require ((...):gsub("%.[^%.]+$", ""))
+-- align-to
+
+local io = require "vstruct.io"
 local a = {}
 
 function a.hasvalue()
@@ -16,6 +18,7 @@ function a.unpack(fd, _, align)
         fd:seek("cur", align - (cur % align))
     end
 end
+
 a.pack = a.unpack
 
 return a

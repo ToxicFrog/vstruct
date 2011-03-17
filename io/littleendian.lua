@@ -1,4 +1,6 @@
-local io = require ((...):gsub("%.[^%.]+$", ""))
+-- < set endianness: little
+
+local io = require "vstruct.io"
 local le = {}
 
 function le.hasvalue()

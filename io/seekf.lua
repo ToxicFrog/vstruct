@@ -1,4 +1,5 @@
-local io = require ((...):gsub("%.[^%.]+$", ""))
+-- + seek forward a constant amount
+
 local seek = {}
 
 function seek.hasvalue()

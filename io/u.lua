@@ -1,4 +1,6 @@
-local io = require ((...):gsub("%.[^%.]+$", ""))
+-- unsigned ints
+
+local io     = require "vstruct.io"
 local u = {}
 
 function u.unpack(_, buf)

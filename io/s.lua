@@ -1,6 +1,6 @@
--- support for fixed length strings
+-- fixed length strings
 
-local io = require ((...):gsub("%.[^%.]+$", ""))
+local io = require "vstruct.io"
 local s = {}
 
 function s.width(w)

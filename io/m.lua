@@ -1,5 +1,7 @@
-local io = require ((...):gsub("%.[^%.]+$", ""))
-local struct = require ((...):gsub("%.io.m$", ""))
+-- bitmasks
+
+local struct = require "vstruct"
+local io     = require "vstruct.io"
 local m = {}
 
 function m.unpack(_, buf, width)

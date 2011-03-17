@@ -1,5 +1,9 @@
-local io = require ((...):gsub("%.[^%.]+$", ""))
+-- fixed point
+-- format is pINTEGER_WIDTH,FRACTIONAL_WIDTH
+-- widths are in *bits* even when operating in byte mode!
+-- FIXME: this should support bitpacks
 
+local io = require "vstruct.io"
 local p = {}
 
 function p.width(int, frac)
