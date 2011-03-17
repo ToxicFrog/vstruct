@@ -81,7 +81,7 @@ function ast.next(lex)
         return ast.control(lex)
         
     else
-        ast.error(lex, "'(', '{', name, number, control, or io specifier")
+        ast.error(lex, "'(', '{', '[', name, number, control, or io specifier")
     end
 end
 
