@@ -1,6 +1,6 @@
-local unpackenv = require ((...):gsub("ast%.Generator$", "unpack"))
-local packenv = require ((...):gsub("ast%.Generator$", "pack"))
-local cursor = require ((...):gsub("ast%.Generator$", "cursor")) 
+local unpackenv = require "vstruct.unpack"
+local packenv   = require "vstruct.pack"
+local cursor    = require "vstruct.cursor"
 
 return function()
     local Generator = {}

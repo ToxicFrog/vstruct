@@ -1,4 +1,4 @@
-local List = require ((...):gsub("Table$", "List"))
+local List = require "vstruct.ast.List"
 
 local WRAPPER = {}
 

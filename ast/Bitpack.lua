@@ -1,4 +1,4 @@
-local List = require ((...):gsub("Bitpack$", "List"))
+local List = require "vstruct.ast.List"
 
 return function(size)
     local Bitpack = {

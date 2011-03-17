@@ -1,4 +1,4 @@
-local io = require ((...):gsub("ast%.IO$", "io"))
+local io = require "vstruct.io"
 
 return function(name, args)
     local argv = {}
