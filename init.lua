@@ -8,9 +8,16 @@ local print = print
 
 module "vstruct"
 
-cursor = require "vstruct.cursor"
-ast    = require "vstruct.ast"
+_VERSION = "1.1"
 
+cursor = require "vstruct.cursor"
+
+local ast    = require "vstruct.ast"
+
+-- cache control for the parser
+-- true: cache is read/write (new formats will be cached, old ones retrieved)
+-- false: cache is read-only
+-- nil: cache is disabled
 cache = true
 
 -- this is needed by some IO formats as well as init itself
