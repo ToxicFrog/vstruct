@@ -1,5 +1,3 @@
-package.path = "./?/init.lua;" .. package.path
-
 -- Config
 local CONF = {
    VERBOSE = false,		-- Spew verbosely while testing?
@@ -10,6 +8,8 @@ local CONF = {
    MAX_DEPTH = 5,	        -- Limit on nesting depth of test formats.
    COMPOUND_LENGTH = 2,		-- # formats in a sequence.
    SEED = false,		-- Seed for generating tests.
+   
+   NROF_TESTS = 2^10,  -- number of random test cases to run
 }
 
 -- Features to use when making format strings to test.
@@ -26,7 +26,6 @@ local USE = {
 
 -- Non-config
 local PROTECT_STRUCT = true	-- If set, wrap calls to struct with pcall.
-local STOP_ON_ERROR = true	-- Stop on the first error.
 local TEST_KIND = nil		--"read"|"write"
 
 -- Should every format string explicitly set the endianness at the start?
@@ -72,6 +71,8 @@ local require, setmetatable, tonumber, tostring, type =
    require, setmetatable, tonumber, tostring, type
 
 local struct = require "vstruct"; struct.cache = nil
+local test = require "vstruct.test.common"
+local record = test.record
 local __EOG__ = __EOG__
 
 local ceil,floor,fmod = math.ceil, math.floor, math.fmod
@@ -404,20 +405,14 @@ local function perform_write_test(test, endian)
 
    success = success and eq(got_data, want_data)
 
-   if not success or CONF.VERBOSE then
-      io.write(
-	       "pack_test",
-	       dump{
-		  got_data = got_data and as_hex(got_data) or nil,
-		  want_data = as_hex(want_data),
-		  format = format,
-		  values = values,
-		  error = errmsg,
-		  ok = success
-	       },
-	       "\n")
-      assert(success or not STOP_ON_ERROR, "STOP ON ERROR")
-   end
+   record("random write test", success, dump {
+      got_data = got_data and as_hex(got_data) or nil,
+      want_data = as_hex(want_data),
+      format = format,
+      values = values,
+      error = errmsg,
+      ok = success
+   })
 end
 
 local function perform_read_test(test, endian)
@@ -446,20 +441,14 @@ local function perform_read_test(test, endian)
 
    success = success and eq(got_values, want_values)
 
-   if not success or CONF.VERBOSE then
-      io.write(
-	       "unpack_test",
-	       dump{
-		  got_values = got_values,
-		  want_values = want_values,
-		  from_data = as_hex(from_data),
-		  format = format,
-		  error = errmsg,
-		  ok = success
-	       },
-	       "\n")
-      assert(success or not STOP_ON_ERROR, "STOP ON ERROR")
-   end
+   record("random read test", success, dump {
+      got_values = got_values,
+      want_values = want_values,
+      from_data = as_hex(from_data),
+      format = format,
+      error = errmsg,
+      ok = success
+   })
 end
 
 local ScalarTest = Test:new{
@@ -1146,6 +1135,7 @@ if USE.LEFT_REPETITION then
 end
 
 local function main_write()
+    test.group "randomly generated write tests"
    local state = State:new(CONF.SEED or os.time())
    state.width = CONF.WIDTH
    state.precision = CONF.PRECISION
@@ -1168,7 +1158,7 @@ local function main_write()
       end
    end
 
-   while true do
+   for i=1,CONF.NROF_TESTS do
       for _,e in ipairs{"<",">"} do
 	 state.endian = e
 	 local t = gen_random_test(state, state.width, state.precision)
@@ -1178,6 +1168,7 @@ local function main_write()
 end
 
 local function main_read()
+    test.group "randomly generated read tests"
    local state = State:new(CONF.SEED or os.time())
    state.width = CONF.WIDTH
    state.precision = CONF.PRECISION
@@ -1202,7 +1193,7 @@ local function main_read()
       end
    end
 
-   while true do
+   for i=1,CONF.NROF_TESTS do
       for _,e in ipairs{"<",">"} do
 	 state.endian = e
 	 local t = gen_random_test(state, state.width, state.precision)
