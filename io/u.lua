@@ -24,8 +24,7 @@ end
 function u.unpackbits(bit, width)
     local n = 0
     for i=1,width do
-        local b = bit()
-        n = n + b * 2^(i-1)
+        n = n * 2 + bit()
     end
     return n
 end
@@ -47,9 +46,8 @@ function u.pack(_, data, width)
 end
 
 function u.packbits(bit, data, width)
-    for i=1,width do
-        bit(data % 2)
-        data = math.floor(data/2)
+    for i=width-1,0,-1 do
+        bit(math.floor(data/2^i) % 2)
     end
 end
 

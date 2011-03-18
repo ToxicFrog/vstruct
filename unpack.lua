@@ -87,19 +87,19 @@ return function(refs)
 
             local e = io("endianness", "get")
             
-            local bbit = 0
-            local bbyte = e == "big" and #bitpack or 1
-            local bdelta = e == "big" and -1 or 1
+            local bbit = 7
+            local bbyte = e == "big" and 1 or #bitpack
+            local bdelta = e == "big" and 1 or -1
             
             function nextbit()    
-                local v
-                v = math.floor(bitpack[bbyte]/(2^bbit)) % 2
-                if bbit < 7 then
-                    bbit = bbit+1
-                else
-                    bbit = 0
-                    bbyte = bbyte+bdelta
+                local v = math.floor(bitpack[bbyte]/(2^bbit)) % 2
+                
+                bbit = (bbit - 1) % 8
+                
+                if bbit == 7 then -- we just wrapped around
+                    bbyte = bbyte + bdelta
                 end
+
                 return v
             end
         else
