@@ -32,7 +32,12 @@ return function()
         append('return finalize()')
         
         local s = table.concat(source, "\n")
-        local f = assert(loadstring(s))
+        local f,err = loadstring(s)
+        
+        if not f then
+            error(err.."\n--- internal error in code generator ---\n--- report this as a bug in vstruct ---\n"..s.."\n--- internal error in code generator ---\n")
+        end
+        
         local u_env = unpackenv(data)
         local p_env = packenv(data)
         
