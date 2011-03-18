@@ -17,7 +17,7 @@ lexeme (false)      "%-%-[^\n]*" -- comments
 lexeme "key"        "([%a_][%w_.]*):"
 lexeme "name"	    "([-+@<>=])"
 lexeme "name"       "([%a_]+)"
-lexeme "number"     "(%d[%d.,]*)"
+lexeme "number"     "([%d.,]+)"
 lexeme "{"          "%{"
 lexeme "}"          "%}"
 lexeme "("          "%("
