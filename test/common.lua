@@ -66,12 +66,14 @@ function test.autotest(name, format, buffer, data, output)
 end
 
 function test.report()
+    local allfailed = 0
 	for _,group in ipairs(test.results) do
 		local failed = 0
 		print("\t=== "..group.name.." ===")
 
 		for _,test in ipairs(group) do
 		    if not test.result then
+		        failed = failed + 1
 		        print("FAIL", test.name)
 		        if type(test.data) == 'string' and test.data:match("%z") then
 		            print("", (test.data:gsub("%z", ".")))
@@ -84,7 +86,10 @@ function test.report()
 		print("\tTotal: ", #group)
 		print("\tFailed:", failed)
 		print()
+		allfailed = allfailed + failed
 	end
+	
+	return allfailed
 end
 
 -- determine host endianness - HACK HACK HACK

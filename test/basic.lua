@@ -1,14 +1,12 @@
--- we need to test all the different formats, at minimum
--- this means bimPpsuxz for now
--- Copyright � 2008 Ben "ToxicFrog" Kelly; see COPYING
+-- "basic" test module for vstruct
+-- does not test floating point operations - see test/fp-*endian.lua for those
+-- Copyright (c) 2011 Ben "ToxicFrog" Kelly; see COPYING
 
--- test cases
--- simple: read and write of each format, seeks, endianness controls
--- complex: naming, tables, repetition, combinations of all of these,
---      nested tables, multi formats per string
--- non-obvious: seek past end of file
--- error handling: seek past start, read past end, invalid widths,
---      non-isomorphic input tables
+-- FIXME - stuff still needing a test case:
+-- * seek past end of file
+-- * input table doesn't match format string
+-- * format string is badly formed
+-- * format string is semantically nonsensical (compile and runtime cases)
 
 local test = require "vstruct.test.common"
 
@@ -66,12 +64,3 @@ T("names", "> coords:{ x:u1 y:u1 } coords.z:u1", x"01 02 03", { coords = { x = 1
 
 T("UCS-2 z",  "> z,2",  x"0061 0062 0000 FFFF", "\0a\0b", x"0061 0062 0000")
 T("UCS-2 z8", "> z8,2", x"0061 0062 0000 FFFF", "\0a\0b", x"0061 0062 0000 0000")
-
--- floats are handled by the fp-*endian test modules
-
-    -- FIXME - names
-    -- FIXME - tables
-    -- FIXME - repetition
-    -- FIXME - grouping
-
-test.report()
