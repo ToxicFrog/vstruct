@@ -317,14 +317,22 @@ xW	Skip/pad.
 	Read: read and discard the next W bytes.
 	Write: write W zero bytes.
 
-zW	Null terminated string.
-	Read: reads exactly W bytes. Returns everything up to the first zero byte.
-	If W is omitted, reads up to the next zero byte.
-	Write: writes exactly W bytes.
-	If the input is shorter than W, zero pads the output.
-	If as long or longer, truncates to W-1 and writes a zero byte at the end.
-	If W is omitted, uses the string length plus one (ie, writes the string
-	out entire and then null terminates it).
+zW,C
+    Null terminated string.
+    W, if present, is the string length (in bytes).
+    C, if present, is the character width (in bytes).
+    The "," is mandatory if C is specified and optional otherwise.
+    
+    Read: reads exactly W bytes.
+    Returns everything up to the first zero character.
+    If W is omitted, reads until it encounters a zero character. That character
+    is read but not returned.
+    
+    Write: writes exactly W bytes.
+    If the input is shorter than W, zero pads the output.
+    If the input is longer, truncates to (W-C) and nul terminates.
+    If W is omitted, writes the string out in full and then nul terminates it.
+    Nul termination is performed with a full character (C bytes long).
 
 
 6. Adding New Formats
