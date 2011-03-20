@@ -41,8 +41,12 @@ T("big-endian", "> u2",     x"00 01", 1)
 
 if test.bigendian() then
     T("host-endian","= u2", x"01 00", 256)
+    T("endianness leak (1)", "< u2", x"00 01", 256)
+    T("endianness leak (2)", "u2", x"00 01", 1)
 else
     T("host-endian","= u2", x"01 00", 1)
+    T("endianness leak (1)", "> u2", x"00 01", 1)
+    T("endianness leak (2)", "u2", x"00 01", 256)
 end
 
 T("bitpack [>b]",   "> [2| x15 b1 ]",  x"00 01", true)
@@ -64,3 +68,6 @@ T("names", "> coords:{ x:u1 y:u1 } coords.z:u1", x"01 02 03", { coords = { x = 1
 
 T("UCS-2 z",  "> z,2",  x"0061 0062 0000 FFFF", "\0a\0b", x"0061 0062 0000")
 T("UCS-2 z8", "> z8,2", x"0061 0062 0000 FFFF", "\0a\0b", x"0061 0062 0000 0000")
+
+T("repeated repeat", "2*2*u1", x"01 01 01 01", { 1, 1, 1, 1 })
+

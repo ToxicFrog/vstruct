@@ -58,6 +58,8 @@ return function(refs)
         istack = {}
         
         key = nil
+        
+        io("endianness", "host")
     end
     
     function env.readahead(n)

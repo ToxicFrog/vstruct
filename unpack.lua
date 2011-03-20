@@ -41,6 +41,8 @@ return function(refs)
         stack = {}
         
         key = nil
+
+        io("endianness", "host")
     end
     
     function env.readahead(n)
