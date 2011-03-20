@@ -107,6 +107,8 @@ As automatic setting of globals by modules is increasingly discouraged, the latt
     ======
 
 vstruct, once loaded, exports the following variables and functions.
+
+In this section, a *format string* means the string used to describe an on-disk format, controlling how data is packed or unpacked. Format strings are described in sections 5 (the actual syntax of the format string) and 6 (the individual data formats supported).
     
     4.1 Variables
     -------------

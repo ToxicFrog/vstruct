@@ -1,0 +1,3 @@
+- ability to select entire backends (eg, load from io_ffi/ rather than io/)
+- ability for backends to call other backends (ffi falls back to plain for u3)
+- autodetect availabiity of struct, lstruct, or ffi on load; choose backend accordingly
