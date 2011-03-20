@@ -2,7 +2,10 @@
 -------------
 Test suite upgrades.
 LuaDist compatibility.
-Assorted bugfixes
+Assorted bugfixes.
+Widechar support for 'z' format.
+Change in 'p' format to make it consistent with the other formats.
+Change in bitpacks to read MSB first.
 
 1.1 beta 1
 ----------
