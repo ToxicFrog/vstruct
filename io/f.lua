@@ -126,4 +126,4 @@ function f.pack(_, data, width)
     return writer(data, unpack(sizes[width], 2))
 end
 
-do return f end
+return f

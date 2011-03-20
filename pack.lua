@@ -138,14 +138,5 @@ return function(refs)
         return fd
     end
     
-    do return env end
-    
-    return setmetatable({}, {
-        __index = function(_, key)
-            return function(...)
-                print("pack", key, ...)
-                return env[key](...)
-            end
-        end;
-    })
+    return env
 end

@@ -122,14 +122,5 @@ return function(refs)
         return data
     end
     
-    do return env end
-    
-    return setmetatable({}, {
-        __index = function(_, key)
-            return function(...)
-                print("unpack", key, ...)
-                return env[key](...)
-            end
-        end;
-    })
+    return env
 end
