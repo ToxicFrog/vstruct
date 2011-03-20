@@ -6,7 +6,15 @@
 -- cleanly if all of them passed; if any failed, reports the failed tests
 -- on stdout and then raises an error.
 
-local test = require "vstruct.test.common"
+local test = pcall(require, "vstruct.test.common")
+
+-- maybe we aren't installed, and just need to deduce a custom package.path
+-- from the location of this file
+if not test then
+    local libdir = arg[0]:gsub("[^/\\]+$", "").."../"
+    package.path = package.path..";"..libdir.."?.lua;"..libdir.."?/init.lua"
+    test = require "vstruct.test.common"
+end
 
 require "vstruct.test.basic"
 require "vstruct.test.fp-bigendian"
