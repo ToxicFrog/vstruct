@@ -3,8 +3,8 @@
 local io = require "vstruct.io"
 local z = {}
 
-function z.width(n)
-    return tonumber(n)
+function z.width(width, cwidth)
+    return width
 end
 
 -- null terminated string
