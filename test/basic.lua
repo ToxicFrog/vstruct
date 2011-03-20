@@ -58,8 +58,8 @@ T("bitpack [<i]",   "< [2| 4*i4 ]",  x"12 EF", {-2,-1,1,2})
 T("bitpack [>m]",   "> [2| m5 m3 x8 ]",  x"12 00", {{false,false,false,true,false},{false,true,false}})
 T("bitpack [<m]",   "< [2| m5 m3 x8 ]",  x"00 12", {{false,false,false,true,false},{false,true,false}})
 
-T("fixed point >",  "> p8,8", x"40 80", 64.5)
-T("fixed point <",  "< p8,8", x"40 80", -127.75)
+T("fixed point >",  "> p2,8", x"40 80", 64.5)
+T("fixed point <",  "< p2,8", x"40 80", -127.75)
 
 T("repetition", "> 4*u1", x"01 02 03 04", { 1, 2, 3, 4 })
 T("groups", "> 2*(u1 i1)", x"01 FF 02 FE", { 1, -1, 2, -2 })

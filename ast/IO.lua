@@ -3,8 +3,8 @@ local io = require "vstruct.io"
 local function argv2str(argv)
     local args = {}
     
-    for i,v in ipairs(argv) do
-        args[i] = tostring(v)
+    for i=1,argv.n do
+        args[i] = tostring(argv[i])
     end
     
     return table.concat(args, ", ")
@@ -18,7 +18,9 @@ return function(name, args)
         local n = 1
         
         for arg in args:gmatch("([^,]*),") do
-            if #arg == 0 then arg = "nil" end
+            if #arg == 0 then arg = nil
+            elseif tonumber(arg) then arg = tonumber(arg)
+            end
             argv.n = argv.n +1
             argv[argv.n] = arg
         end

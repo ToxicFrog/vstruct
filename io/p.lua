@@ -6,24 +6,18 @@
 local io = require "vstruct.io"
 local p = {}
 
-function p.width(int, frac)
-    assert( (int+frac) % 8 == 0, "fixed point number is not byte-aligned")
+function p.width(width, frac)
+    assert(width*8 >= frac, "fixed point number has more fractional bits than total bits")
     
-    return (int+frac)/8
+    return width
 end
 
-function p.unpack(fd, buf, int, frac)
-    int = tonumber(int)
-    frac = tonumber(frac)
-
-    return io("i", "unpack", fd, buf, (int+frac)/8)/(2^frac)
+function p.unpack(fd, buf, width, frac)
+    return io("i", "unpack", fd, buf, width)/(2^frac)
 end
 
-function p.pack(fd, data, int, frac)
-    int = tonumber(int)
-    frac = tonumber(frac)
-    
-    return io("i", "pack", fd, data * 2^frac, (int+frac)/8)
+function p.pack(fd, data, width, frac)
+    return io("i", "pack", fd, data * 2^frac, width)
 end
 
 return p
