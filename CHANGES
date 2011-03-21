@@ -1,5 +1,9 @@
-1.1 (planned)
+1.2 (planned)
 -------------
+Automatically use FFI, if available, to speed up common operations.
+
+1.1
+---
 Test suite upgrades.
 LuaDist compatibility.
 Assorted bugfixes.
