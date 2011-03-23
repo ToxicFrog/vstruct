@@ -6,14 +6,23 @@
 -- cleanly if all of them passed; if any failed, reports the failed tests
 -- on stdout and then raises an error.
 
-local test = pcall(require, "vstruct.test.common")
+local test,err = pcall(require, "vstruct.test.common")
 
 -- maybe we aren't installed, and just need to deduce a custom package.path
 -- from the location of this file
-if not test then
+-- if arg is undefined, we were loaded with require and can draw no conclusions
+if not test and arg then
     local libdir = arg[0]:gsub("[^/\\]+$", "").."../"
     package.path = package.path..";"..libdir.."?.lua;"..libdir.."?/init.lua"
+    
+    -- clear "failure" entries in package.path
+    package.loaded["vstruct.test.common"] = nil
+    package.loaded["vstruct"] = nil
+    
+    -- retry
     test = require "vstruct.test.common"
+else
+    error(err)
 end
 
 require "vstruct.test.basic"
