@@ -28,7 +28,9 @@ T("fixed str",  "s4",       "foobar", "foob", "foob")
 
 T("counted str","< c4",     x"06000000".."foobar", "foobar")
 
-T("bitmask",    "m1",       x"FA", {{ false, true, false, true, true, true, true, true }})
+T("bitmask",    "> m1",     x"FA", {{ false, true, false, true, true, true, true, true }})
+T("bitmask",    "> m2",     x"FA 78", {{ false, false, false, true; true, true, true, false; false, true, false, true; true, true, true, true }})
+T("bitmask",    "< m2",     x"78 FA", {{ false, false, false, true; true, true, true, false; false, true, false, true; true, true, true, true }})
 
 T("skip/pad",   "x4u1",     x"00 00 00 00 02", 2)
 
