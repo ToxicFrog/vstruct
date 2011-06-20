@@ -17,10 +17,12 @@ end
 
 function e.big()
     endianness = "big"
+    return endianness
 end
 
 function e.little()
     endianness = "little"
+    return endianness
 end
 
 -- select whichever endianness the host system uses

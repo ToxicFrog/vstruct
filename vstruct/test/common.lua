@@ -92,9 +92,9 @@ function test.report()
 	return allfailed
 end
 
--- determine host endianness - HACK HACK HACK
+-- determine host endianness
 function test.bigendian()
-    return string.byte(string.dump(function() end)) == 0x00
+    return require "vstruct.io" ("endianness", "host") == "big"
 end
 
 return test
