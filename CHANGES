@@ -6,6 +6,7 @@ Automatically use FFI, if available, to speed up common operations.
 -----
 Bug fixes in the test suite.
 Endianness detection now works properly in luajit.
+Autodetect endianness on library load.
 
 1.1
 ---

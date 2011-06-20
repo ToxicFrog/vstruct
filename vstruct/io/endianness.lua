@@ -25,19 +25,9 @@ end
 
 -- select whichever endianness the host system uses
 local bigendian
-function e.host()
-    local function aux(be)
-        return be and e.big() or e.little()
-    end
-    
-
-    -- we cache the result in "bigendian_system" to avoid creating an dumping
-    -- a function every single time anything happens
-    if bigendian ~= nil then
-        return aux(bigendian)
-    
+function e.probe()
     -- if we're running in luajit, we can just query the FFI library
-    elseif jit then
+    if jit then
         bigendian = require("ffi").abi("be")
         
     -- if we're not, we dump an empty function and see if the first byte is nul
@@ -49,11 +39,17 @@ function e.host()
     -- if neither jit nor string.dump is available, we guess wildly that it's
     -- a little-endian system (and emit a warning)
     else
-        io.stderr:write("[vstruct] Warning: can't determine endianness of host system, assuming litle-endian")
+        io.stderr:write("[vstruct] Warning: can't determine endianness of host system, assuming litle-endian\n")
         bigendian = false
     end
-    
-    return aux(bigendian)
+end
+
+function e.host()
+    if bigendian then
+        return e.big()
+    else
+        return e.little()
+    end
 end
 
 function e.get()

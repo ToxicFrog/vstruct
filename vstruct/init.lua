@@ -12,13 +12,16 @@ _VERSION = "1.1"
 
 cursor = require "vstruct.cursor"
 
-local ast    = require "vstruct.ast"
+local ast = require "vstruct.ast"
 
 -- cache control for the parser
 -- true: cache is read/write (new formats will be cached, old ones retrieved)
 -- false: cache is read-only
 -- nil: cache is disabled
 cache = true
+
+-- detect system endianness on startup
+require "vstruct.io" ("endianness", "probe")
 
 -- this is needed by some IO formats as well as init itself
 -- FIXME: should it perhaps be a vstruct internal function rather than
