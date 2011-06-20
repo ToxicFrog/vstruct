@@ -2,6 +2,11 @@
 -------------
 Automatically use FFI, if available, to speed up common operations.
 
+1.1.1
+-----
+Bug fixes in the test suite.
+Endianness detection now works properly in luajit.
+
 1.1
 ---
 Test suite upgrades.

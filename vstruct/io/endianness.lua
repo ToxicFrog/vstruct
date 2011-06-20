@@ -23,15 +23,37 @@ function e.little()
     endianness = "little"
 end
 
--- determine if the host system is big-endian or not, by dumping an empty
--- function and looking at the endianness flag
--- HACK HACK HACK
+-- select whichever endianness the host system uses
+local bigendian
 function e.host()
-    if string.byte(string.dump(function() end)) == 0x00 then
-        e.big()
-    else
-        e.little()
+    local function aux(be)
+        return be and e.big() or e.little()
     end
+    
+
+    -- we cache the result in "bigendian_system" to avoid creating an dumping
+    -- a function every single time anything happens
+    if bigendian ~= nil then
+        return aux(bigendian)
+    
+    -- if we're running in luajit, we can just query the FFI library
+    elseif jit then
+        bigendian = require("ffi").abi("be")
+        
+    -- if we're not, we dump an empty function and see if the first byte is nul
+    -- or not. HACK HACK HACK - this is unlikely to work in anything but the
+    -- reference implementation.
+    elseif string.dump then
+        bigendian = string.byte(string.dump(function() end)) == 0x00
+        
+    -- if neither jit nor string.dump is available, we guess wildly that it's
+    -- a little-endian system (and emit a warning)
+    else
+        io.stderr:write("[vstruct] Warning: can't determine endianness of host system, assuming litle-endian")
+        bigendian = false
+    end
+    
+    return aux(bigendian)
 end
 
 function e.get()

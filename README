@@ -308,6 +308,10 @@ Each operation starts in *host endian* mode - the endianness is set to match tha
     Sets the endianness to big-endian (eg, PPC processors)
 =
     Resets the endianness to match that of the host system
+
+The means by which host-endianness is detected is, at present, implementation specific. Under luaJIT, it uses the ffi library (specifically, the ffi.abi function). Under standard lua, it uses string.dump on an empty function and checks the bytecode header. If neither of these is available, it emits a warning and assumes little-endian.
+
+If you have a lua implementation for which this approach fails (either crashing, or getting the wrong answer), please file a bug report.
     
     
     6.2 Seeking
@@ -481,3 +485,5 @@ While most of the library code was written by me (Ben Kelly), the existence of t
 * sanooj, from #lua on freenode, has done so much testing and bug reporting that at this point he's practically a co-author; the 'struct-test-gen' module in test/ is his work.
 * The overall library design and interface are the result of much discussion with rici, sanooj, Keffo, snogglethorpe, Spark, kozure, Vornicus, McMartin, and probably several others I've forgotten about on IRC (#lua on freenode and #code on nightstar).
 * Finally, without Looking Glass Studios to make System Shock, and Team TSSHP (in particular Jim "hairyjim" Cameron) to reverse engineer it, I wouldn't have had a reason to write this library in the first place.
+
+:wrap=soft:
