@@ -1,5 +1,7 @@
 local vstruct = require "vstruct"
 
+vstruct.cache = nil
+
 local char,ord = string.char,string.byte
 
 local test = { results = {} }
