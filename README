@@ -1,7 +1,7 @@
     Contents
     ========
 
-1.	Overview
+1.  Overview
 2.  Warning about numeric precision
 3.  Setup
     3.1 Installation
@@ -267,7 +267,7 @@ Could be expressed by either of these format strings:
     
 A bitpack consists of multiple data items packed into a single item (typically an int) with no regard for byte-alignment - for example, something that stores three five-bit ints and a one-bit boolean in a single 16-bit int.
 
-These are expressed in vstruct as '[' size '|' items ']', where 'size' is the size of the entire bitpack in *bytes* and 'items' is a sequence of data items with their sizes in 'bits'. The above example would be expressed thus:
+These are expressed in vstruct as '[' size '|' items ']', where 'size' is the size of the entire bitpack in *bytes* and 'items' is a sequence of data items with their sizes in *bits*. The above example would be expressed thus:
 
     "[2| u5 u5 u5 b1 ]"
     
@@ -298,7 +298,7 @@ By convention, in this section, upper-case single letters represent decimal numb
     6.1 Controlling endianness
     --------------------------
     
-At any given moment, when pacing or unpacking, vstruct is in either "big-endian" or "little-endian" most. These affect the order in which it expects bytes to appear for formats 'f', 'u', 'i', and 'm'; the initial string length in 'c'; and when reading or writing the bytes that make up a bitpack. In big-endian mode it expects the most significant byte to occur first; in little-endian mode, the least sigificant byte. (There is at present no support for more esoteric modes like middle-endian.)
+At any given moment, when packing or unpacking, vstruct is in either "big-endian" or "little-endian" mode. These affect the order in which it expects bytes to appear for formats 'f', 'u', 'i', and 'm', the initial string length in 'c', and the order of bytes in a bitpack. In big-endian mode it expects the most significant byte to occur first; in little-endian mode, the least sigificant byte. (There is at present no support for more esoteric modes like middle-endian.)
 
 Each operation starts in *host endian* mode - the endianness is set to match that of the host system. It can subsequently be controlled with the following characters in the format string:
 
@@ -465,7 +465,7 @@ If width() returned a value earlier, buffer will be a string of exactly that man
 
     packbits(bit, data, ...)
     
-This is called when the operation is performed inside a bitpack. Each call to bit() should pass it either 0 or 1, and it will pack that bit, MSB first. bit() does not presently accept multiple arguments to pack multiple bits at once.
+This is called when the operation is performed inside a bitpack. Data should be packed bit-by-bit; to pack a bit B (which must be 0 or 1), call bit(B), MSB first. bit() does not presently accept multiple arguments to pack multiple bits at once.
 
 --------
 
