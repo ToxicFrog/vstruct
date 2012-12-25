@@ -5,3 +5,5 @@
 - autodetect availability of struct, lstruct, or bit on load; choose backend accordingly
 - error handling test suite
 - backreferences, eg, "n:u4 $n*f8" rather than "n:u4", n.."*f8"
+- 5.2 support
+- format combinators

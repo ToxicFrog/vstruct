@@ -2,6 +2,10 @@
 -------------
 Automatically use FFI, if available, to speed up common operations.
 
+HEAD
+----
+Remove use of module()
+
 1.1.1
 -----
 Bug fixes in the test suite.

@@ -6,11 +6,14 @@ local table,math,type,require,assert,_unpack = table,math,type,require,assert,un
 local debug = debug
 local print = print
 
-module "vstruct"
+local vstruct = {}
+package.loaded.vstruct = {}
 
-_VERSION = "1.1"
+vstruct._NAME = "vstruct"
+vstruct._VERSION = "1.1"
+vstruct._M = vstruct
 
-cursor = require "vstruct.cursor"
+vstruct.cursor = require "vstruct.cursor"
 
 local ast = require "vstruct.ast"
 
@@ -18,7 +21,7 @@ local ast = require "vstruct.ast"
 -- true: cache is read/write (new formats will be cached, old ones retrieved)
 -- false: cache is read-only
 -- nil: cache is disabled
-cache = true
+vstruct.cache = true
 
 -- detect system endianness on startup
 require "vstruct.io" ("endianness", "probe")
@@ -39,7 +42,7 @@ end
 -- turn an int into a list of booleans
 -- the length of the list will be the smallest number of bits needed to
 -- represent the int
-function explode(int, size)
+function vstruct.explode(int, size)
     assert(int, "vstruct.explode: missing argument")
     size = size or 0
     
@@ -53,7 +56,7 @@ end
 
 -- turn a list of booleans into an int
 -- the converse of explode
-function implode(mask, size)
+function vstruct.implode(mask, size)
     size = size or #mask
     
     local int = 0
@@ -65,7 +68,7 @@ end
 
 -- Given a format string, a buffer or file, and an optional third argument,
 -- unpack data from the buffer or file according to the format string
-function unpack(fmt, ...)
+function vstruct.unpack(fmt, ...)
     assert(type(fmt) == "string", "invalid first argument to vstruct.unpack")
     
     local t = ast.parse(fmt)
@@ -75,15 +78,15 @@ end
 -- Given a format string, an optional file-like, and a table of data,
 -- pack data into the file-like (or create and return a string of packed data)
 -- according to the format string
-function pack(fmt, ...)
+function vstruct.pack(fmt, ...)
     local t = ast.parse(fmt)
     return t.pack(...)
 end
 
 -- Given a format string, compile it and return a table containing the original
 -- source and the pack/unpack functions derived from it.
-function compile(fmt)
+function vstruct.compile(fmt)
 	return ast.parse(fmt)
 end
 
-return _M
+return vstruct
