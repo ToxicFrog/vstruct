@@ -2,8 +2,9 @@
 -------------
 Automatically use FFI, if available, to speed up common operations.
 
-HEAD
+1.1.2
 ----
+5.2 support
 Remove use of module()
 
 1.1.1

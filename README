@@ -27,7 +27,7 @@
     1. Overview
     ===========
 
-VStruct is a library for Lua 5.1. It provides functions for manipulating binary data, in particular for unpacking binary files or byte buffers into Lua values and for packing Lua values back into files or buffers. Supported data types include:
+VStruct is a library for Lua 5.1 and 5.2. It provides functions for manipulating binary data, in particular for unpacking binary files or byte buffers into Lua values and for packing Lua values back into files or buffers. Supported data types include:
 
   * signed and unsigned integers of arbitrary byte width
   * fixed and floating point numbers
@@ -54,9 +54,9 @@ Formats not listed above are not subject to this limitation, as they either do n
     3.1 Installation
     ----------------
     
-vstruct is a pure-lua module, and as such requires no seperate build step; it can be installed as-is.
+vstruct is a pure-lua module, and as such requires no seperate build step; it can be installed as-is. It supports both 5.1 and 5.2, and will automatically detect which one you are using.
 
-To install it, copy the 'vstruct/' directory from the vstruct distribution into a directory that is searched by package.path, such that 'require "vstruct"' will load vstruct/init.lua and 'require "vstruct.foo"' will load vstruct/foo.lua. On linux, this can be accomplished by installing it to any of the following directories:
+To install it, copy the 'vstruct/' directory from the vstruct distribution into a directory that is searched by package.path, such that 'require "vstruct"' will load vstruct/init.lua and 'require "vstruct.foo"' will load vstruct/foo.lua. On linux, with Lua 5.1, this can be accomplished by installing it to any of the following directories:
 
     /usr/lib/lua/5.1/
     /usr/share/lua/5.1/
