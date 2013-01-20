@@ -481,7 +481,7 @@ The converse of packbits. Each call to bits() returns the next bit, MSB first.
 While most of the library code was written by me (Ben Kelly), the existence of this library owes itself to many others.
 
 * The original inspiration came from Roberto Ierusalimschy's "struct" library and Luiz Henrique de Figueiredo's "lpack" library, as well as the "struct" available in Python.
-* The floating point code was contributed by Peter Cawley on lua-l.
+* The floating point code was contributed by Peter Cawley ("corsix") on lua-l, as was support for Lua 5.2.
 * sanooj, from #lua on freenode, has done so much testing and bug reporting that at this point he's practically a co-author; the 'struct-test-gen' module in test/ is his work.
 * The overall library design and interface are the result of much discussion with rici, sanooj, Keffo, snogglethorpe, Spark, kozure, Vornicus, McMartin, and probably several others I've forgotten about on IRC (#lua on freenode and #code on nightstar).
 * Finally, without Looking Glass Studios to make System Shock, and Team TSSHP (in particular Jim "hairyjim" Cameron) to reverse engineer it, I wouldn't have had a reason to write this library in the first place.
