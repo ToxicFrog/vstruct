@@ -2,6 +2,7 @@
 
 local struct = require "vstruct"
 local io     = require "vstruct.io"
+local unpack = table.unpack or unpack
 
 local sizes = {
 	[4] = {1,  8, 23};
