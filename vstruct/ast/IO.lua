@@ -1,4 +1,5 @@
 local io = require "vstruct.io"
+local unpack = table.unpack or unpack
 
 local function argv2str(argv)
     local args = {}

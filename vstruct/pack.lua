@@ -5,6 +5,7 @@
 -- Copyright (c) 2011 Ben "ToxicFrog" Kelly
 
 local io = require "vstruct.io"
+local unpack = table.unpack or unpack
 
 return function(refs)
     local env = {}

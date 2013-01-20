@@ -3,6 +3,7 @@ local vstruct = require "vstruct"
 vstruct.cache = nil
 
 local char,ord = string.char,string.byte
+local unpack = table.unpack or unpack
 
 local test = { results = {} }
 

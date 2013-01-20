@@ -2,6 +2,9 @@ local unpackenv = require "vstruct.unpack"
 local packenv   = require "vstruct.pack"
 local cursor    = require "vstruct.cursor"
 
+local lua52 = tonumber(_VERSION:match"%d+%.%d+") >= 5.2
+local loadstring = lua52 and load or loadstring
+
 return function()
     local Generator = {}
     
@@ -23,6 +26,9 @@ return function()
     end
     
     function Generator:init()
+        if lua52 then
+            append('local _,_,_ENV = ...')
+        end
         append('initialize(...)')
         append('')
     end
@@ -41,7 +47,7 @@ return function()
         local u_env = unpackenv(data)
         local p_env = packenv(data)
         
-        local _unpack = unpack
+        local _unpack = table.unpack or unpack
         
         local function unpack(fd, data)
             -- autobox strings
@@ -58,12 +64,14 @@ return function()
             assert(data == nil or type(data) == "boolean" or type(data) == "table"
                 , "invalid data argument to vstruct.unpack: if present, must be table or boolean") 
             
-            setfenv(f, u_env)
+            if not lua52 then
+                setfenv(f, u_env)
+            end
             
             if data == true then
-                return _unpack(f(fd, {}))
+                return _unpack(f(fd, {}, u_env))
             else
-                return f(fd, data or {})
+                return f(fd, data or {}, u_env)
             end
         end
         
@@ -82,8 +90,10 @@ return function()
                 realfd = fd
             end
             
-            setfenv(f, p_env)
-            local result = f(realfd, data)
+            if not lua52 then
+              setfenv(f, p_env)
+            end
+            local result = f(realfd, data, p_env)
             if realfd == fd then
                 return result
             else
