@@ -40,6 +40,8 @@ local MACHINE_ENDIAN = "<"	-- Native endianness.
 
 local COMPOUND_SEP = " "
 
+local loadstring = loadstring or load
+
 -- Parse arguments and sort then out into USE vs. CONF options.
 for _,given_arg in ipairs(arg) do
    local k,v = given_arg:match("^([^=]+)=(.+)")
@@ -65,8 +67,8 @@ end
 local io, math, os, string, table =
    io, math, os, string, table
 
-local assert, ipairs, pairs, loadstring, pcall =
-   assert, ipairs, pairs, loadstring, pcall
+local assert, ipairs, pairs, pcall =
+   assert, ipairs, pairs, pcall
 local require, setmetatable, tonumber, tostring, type =
    require, setmetatable, tonumber, tostring, type
 
