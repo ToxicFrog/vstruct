@@ -51,6 +51,8 @@ return function(refs)
         buffer = fd:read(n)
         bufsize = n
         bufpos = 0
+
+        assert(buffer and #buffer == bufsize, "readahead couldn't get enough data, expected " .. bufsize .. ", got " .. (buffer and #buffer or 0))
     end
     
     function env.name(name)
