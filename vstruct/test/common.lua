@@ -43,7 +43,7 @@ end
 -- result is the boolean pass/fail
 -- message is an optional string, and will be displayed to the user as 
 -- "note" or "fail" depending on the value of result
-function test.record(name, result, data)
+function test.record(name, result, data, message)
 	table.insert(test.current_group, { name=name, result=result, message=message, data=data })
 end
 
@@ -66,6 +66,22 @@ function test.autotest(name, format, buffer, data, output)
 	
 	record(name.." (P )", eq(packed, output), test.od(packed))
 	record(name.." (PU)", eq(unpacked, data), unpack(unpacked))
+end
+
+-- test whether an error is properly reported
+-- this will call fn(...), and verify that it raises an error that matches
+-- the pattern
+function test.errortest(name, pattern, fn, ...)
+    local res,err = pcall(fn, ...)
+    if res then
+        test.record(name, false, "Expected error("..pattern.."), got success")
+    else
+        if err:match(pattern) then
+            test.record(name, true, err)
+        else
+            test.record(name, false, "Expected error("..pattern.."), got "..err)
+        end
+    end
 end
 
 function test.report()

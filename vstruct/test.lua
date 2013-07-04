@@ -31,6 +31,7 @@ end
 require "vstruct.test.basic"
 require "vstruct.test.fp-bigendian"
 require "vstruct.test.fp-littleendian"
+require "vstruct.test.error"
 
 if arg and #arg > 0 then
     require "vstruct.test.struct-test-gen"
