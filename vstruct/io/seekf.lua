@@ -11,7 +11,7 @@ function seek.width()
 end
 
 function seek.unpack(fd, _, offset)
-    fd:seek("cur", offset)
+    assert(fd:seek("cur", offset))
 end
 seek.pack = seek.unpack
 
