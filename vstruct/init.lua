@@ -69,8 +69,6 @@ end
 -- Given a format string, a buffer or file, and an optional third argument,
 -- unpack data from the buffer or file according to the format string
 function vstruct.unpack(fmt, ...)
-    assert(type(fmt) == "string", "invalid first argument to vstruct.unpack")
-    
     local t = ast.parse(fmt)
     return t.unpack(...)
 end

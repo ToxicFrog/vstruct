@@ -26,6 +26,8 @@ end
 -- if (struct.cache) is non-nil, will return the cached version, if present
 -- if (struct.cache) is true, will create a new cache entry, if needed
 function ast.parse(source)
+    assert(type(source) == "string", "vstruct: bad argument to vstruct API (format string expected, got "..type(source)..")")
+
     if struct.cache ~= nil and cache[source] then
         return cache[source]
     end

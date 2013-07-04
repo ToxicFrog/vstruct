@@ -5,6 +5,14 @@ local cursor    = require "vstruct.cursor"
 local lua52 = tonumber(_VERSION:match"%d+%.%d+") >= 5.2
 local loadstring = lua52 and load or loadstring
 
+local function checkmethod(obj, name)
+    local function check()
+        return obj[name]
+    end
+    local r,e = pcall(check)
+    return (r and e)
+end
+
 return function()
     local Generator = {}
     
@@ -56,7 +64,7 @@ return function()
             end
             
             -- fd must have file duck type
-            assert(fd.read, "invalid fd argument to vstruct.unpack: must be a string or file-like object")
+            assert(checkmethod(fd, "read"), "invalid fd argument to vstruct.unpack: must be a string or file-like object")
             
             -- data must be true ('return unpacked results')
             -- or false/absent ('create new table')
@@ -89,6 +97,9 @@ return function()
             else
                 realfd = fd
             end
+            
+            -- fd must have file duck type
+            assert(checkmethod(realfd, "write"), "invalid fd argument to vstruct.pack: must be a string or file-like object")
             
             if not lua52 then
               setfenv(f, p_env)
