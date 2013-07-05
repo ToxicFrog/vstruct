@@ -15,50 +15,50 @@ local T = test.autotest
 
 test.group "basic tests"
 
-T("true",       "> b8",     x"0000 0000 0000 0001", true)
-T("false",      "> b8",     x"0000 0000 0000 0000", false)
+T("true",   "> b8",   x"0000 0000 0000 0001", true)
+T("false",    "> b8",   x"0000 0000 0000 0000", false)
 
-T("unsigned",   "< u3",     x"FE FF FF", 2^24-2)
-T("signed",     "< i3",     x"FE FF FF", -2)
+T("unsigned", "< u3",   x"FE FF FF", 2^24-2)
+T("signed",   "< i3",   x"FE FF FF", -2)
 
-T("c str",      "z",        "foobar\0baz", "foobar", "foobar\0")
-T("padded str", "z10",      "foobar\0baz", "foobar", "foobar\0\0\0\0")
+T("c str",    "z",    "foobar\0baz", "foobar", "foobar\0")
+T("padded str", "z10",    "foobar\0baz", "foobar", "foobar\0\0\0\0")
 
-T("fixed str",  "s4",       "foobar", "foob", "foob")
+T("fixed str",  "s4",   "foobar", "foob", "foob")
 
-T("counted str","< c4",     x"06000000".."foobar", "foobar")
+T("counted str","< c4",   x"06000000".."foobar", "foobar")
 
-T("bitmask",    "> m1",     x"FA", {{ false, true, false, true, true, true, true, true }})
-T("bitmask",    "> m2",     x"FA 78", {{ false, false, false, true; true, true, true, false; false, true, false, true; true, true, true, true }})
-T("bitmask",    "< m2",     x"78 FA", {{ false, false, false, true; true, true, true, false; false, true, false, true; true, true, true, true }})
+T("bitmask",  "> m1",   x"FA", {{ false, true, false, true, true, true, true, true }})
+T("bitmask",  "> m2",   x"FA 78", {{ false, false, false, true; true, true, true, false; false, true, false, true; true, true, true, true }})
+T("bitmask",  "< m2",   x"78 FA", {{ false, false, false, true; true, true, true, false; false, true, false, true; true, true, true, true }})
 
-T("skip/pad",   "x4u1",     x"00 00 00 00 02", 2)
+T("skip/pad", "x4u1",   x"00 00 00 00 02", 2)
 
-T("seek @",     "@2 u1x2",  x"00 00 02 00 00", 2)
-T("seek +",     "+2 u1x2",  x"00 00 02 00 00", 2)
-T("seek -",     "+4-2 u1x2",x"00 00 02 00 00", 2)
+T("seek @",   "@2 u1x2",  x"00 00 02 00 00", 2)
+T("seek +",   "+2 u1x2",  x"00 00 02 00 00", 2)
+T("seek -",   "+4-2 u1x2",x"00 00 02 00 00", 2)
 
 T("little-endian", "< u2",  x"00 01", 256)
-T("big-endian", "> u2",     x"00 01", 1)
+T("big-endian", "> u2",   x"00 01", 1)
 
 if test.bigendian() then
-    T("host-endian","= u2", x"01 00", 256)
-    T("endianness leak (1)", "< u2", x"00 01", 256)
-    T("endianness leak (2)", "u2", x"00 01", 1)
+  T("host-endian","= u2", x"01 00", 256)
+  T("endianness leak (1)", "< u2", x"00 01", 256)
+  T("endianness leak (2)", "u2", x"00 01", 1)
 else
-    T("host-endian","= u2", x"01 00", 1)
-    T("endianness leak (1)", "> u2", x"00 01", 1)
-    T("endianness leak (2)", "u2", x"00 01", 256)
+  T("host-endian","= u2", x"01 00", 1)
+  T("endianness leak (1)", "> u2", x"00 01", 1)
+  T("endianness leak (2)", "u2", x"00 01", 256)
 end
 
-T("bitpack [>b]",   "> [2| x15 b1 ]",  x"00 01", true)
-T("bitpack [<b]",   "< [2| x15 b1 ]",  x"01 00", true)
-T("bitpack [>u]",   "> [2| 4*u4 ]",  x"12 34", {1,2,3,4})
-T("bitpack [<u]",   "< [2| 4*u4 ]",  x"12 34", {3,4,1,2})
-T("bitpack [>i]",   "> [2| 4*i4 ]",  x"12 EF", {1,2,-2,-1})
-T("bitpack [<i]",   "< [2| 4*i4 ]",  x"12 EF", {-2,-1,1,2})
-T("bitpack [>m]",   "> [2| m5 m3 x8 ]",  x"12 00", {{false,false,false,true,false},{false,true,false}})
-T("bitpack [<m]",   "< [2| m5 m3 x8 ]",  x"00 12", {{false,false,false,true,false},{false,true,false}})
+T("bitpack [>b]", "> [2| x15 b1 ]",  x"00 01", true)
+T("bitpack [<b]", "< [2| x15 b1 ]",  x"01 00", true)
+T("bitpack [>u]", "> [2| 4*u4 ]",  x"12 34", {1,2,3,4})
+T("bitpack [<u]", "< [2| 4*u4 ]",  x"12 34", {3,4,1,2})
+T("bitpack [>i]", "> [2| 4*i4 ]",  x"12 EF", {1,2,-2,-1})
+T("bitpack [<i]", "< [2| 4*i4 ]",  x"12 EF", {-2,-1,1,2})
+T("bitpack [>m]", "> [2| m5 m3 x8 ]",  x"12 00", {{false,false,false,true,false},{false,true,false}})
+T("bitpack [<m]", "< [2| m5 m3 x8 ]",  x"00 12", {{false,false,false,true,false},{false,true,false}})
 
 T("fixed point >",  "> p2,8", x"40 80", 64.5)
 T("fixed point <",  "< p2,8", x"40 80", -127.75)

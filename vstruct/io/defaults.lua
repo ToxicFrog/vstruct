@@ -9,16 +9,16 @@ local defaults = {}
 -- If the format doesn't do any, should return 0. If the amount cannot be
 -- determined ahead of time (for example, format c) should return nil.
 function defaults.width(n)
-    assert(tonumber(n), "format requires a width")
-    return tonumber(n)
+  assert(tonumber(n), "format requires a width")
+  return tonumber(n)
 end
 
 function defaults.validate()
-    return true
+  return true
 end
 
 function defaults.hasvalue()
-    return true
+  return true
 end
 
 return defaults

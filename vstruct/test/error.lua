@@ -34,7 +34,7 @@ E("invalid-arg-p3", "invalid data argument to vstruct.pack", vstruct.pack, "@0",
 
 -- format string is ill-formed
 -- format string is well-formed but nonsensical
-    -- zero-length fields
-    -- bitfield width doesn't match width of contents
-    -- no support for format
+  -- zero-length fields
+  -- bitfield width doesn't match width of contents
+  -- no support for format
 -- input table doesn't match format string

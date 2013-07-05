@@ -7,7 +7,7 @@ local z = 0
 local nz = -z
 
 local function T(n, buf)
-    return test.autotest(tostring(n), "< f8", buf, n)
+  return test.autotest(tostring(n), "< f8", buf, n)
 end
 
 test.group("little-endian ieee doubles")

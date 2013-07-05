@@ -3,15 +3,15 @@
 local seek = {}
 
 function seek.hasvalue()
-    return false
+  return false
 end
 
 function seek.width()
-    return nil
+  return nil
 end
 
 function seek.unpack(fd, _, offset)
-    assert(fd:seek("set", offset))
+  assert(fd:seek("set", offset))
 end
 seek.pack = seek.unpack
 

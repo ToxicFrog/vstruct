@@ -13,33 +13,33 @@ local defaults = require "vstruct.io.defaults"
 local formats = {}
 
 local function iorequire(format)
-    local r,v = pcall(require, "vstruct.io."..format)
+  local r,v = pcall(require, "vstruct.io."..format)
 
-    if not r then
-        error("vstruct: no support for format '"..format.."':\n"..tostring(v))
-    end
-    
-    return v                   
+  if not r then
+    error("vstruct: no support for format '"..format.."':\n"..tostring(v))
+  end
+  
+  return v           
 end
 
 local controlnames = {
-    seekf   = "+";
-    seekb   = "-";
-    seekto  = "@";
-    bigendian   = ">";
-    littleendian= "<";
-    hostendian  = "=";
+  seekf = "+";
+  seekb = "-";
+  seekto  = "@";
+  bigendian = ">";
+  littleendian= "<";
+  hostendian  = "=";
 }
 
 for name,symbol in pairs(controlnames) do
-    package.preload["vstruct.io."..symbol] = function() return iorequire(name) end
+  package.preload["vstruct.io."..symbol] = function() return iorequire(name) end
 end
 
 return function(format, method, ...)
-    local fmt = formats[format]
-        or setmetatable(iorequire(format), { __index = defaults })
-    
-    assert(fmt[method], "No support for method '"..tostring(method).."' in IO module '"..format.."'")
-    
-    return fmt[method](...)
+  local fmt = formats[format]
+    or setmetatable(iorequire(format), { __index = defaults })
+  
+  assert(fmt[method], "No support for method '"..tostring(method).."' in IO module '"..format.."'")
+  
+  return fmt[method](...)
 end
