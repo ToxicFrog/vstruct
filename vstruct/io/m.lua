@@ -6,10 +6,6 @@ local unpack = table.unpack or unpack
 local m = {}
 
 function m.unpack(_, buf, width)
-  -- luaJIT 2.0b7 generates incorrect code for this function otherwise, even
-  -- with optimizations turned off
-  if jit then jit.off(true, true) end
-  
   local mask = {}
   local e = io("endianness", "get")
   
