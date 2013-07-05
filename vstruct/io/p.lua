@@ -7,6 +7,8 @@ local io = require "vstruct.io"
 local p = {}
 
 function p.width(width, frac)
+  assert(tonumber(width), "format requires a width")
+  assert(tonumber(frac), "format requires a fractional-part width")
   assert(width*8 >= frac, "fixed point number has more fractional bits than total bits")
   
   return width

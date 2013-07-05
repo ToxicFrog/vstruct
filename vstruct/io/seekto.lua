@@ -6,7 +6,8 @@ function seek.hasvalue()
   return false
 end
 
-function seek.width()
+function seek.width(w)
+  assert(tonumber(w), "format requires a width")
   return nil
 end
 

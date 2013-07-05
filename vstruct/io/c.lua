@@ -3,7 +3,8 @@
 local io = require "vstruct.io"
 local c = {}
 
-function c.width(n)
+function c.width(w)
+  assert(tonumber(w), "format requires a width")
   return nil
 end
 
