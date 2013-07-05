@@ -81,7 +81,7 @@ end
 function ast.next(lex)
   local tok = lex.peek()
   
-  if not tok then
+  if tok.type == "EOF" then
     return nil
   end
   
@@ -111,6 +111,18 @@ function ast.next(lex)
   end
 end
 
+function ast.next_until(lex, type)
+  return function()
+    local tok = lex.peek()
+    
+    if tok.type == type or tok.type == 'EOF' then
+      return nil
+    end
+    
+    return ast.next(lex)
+  end
+end
+
 function ast.repetition(lex)
   local count = tonumber(lex.next().text)
   ast.require(lex, "*");
@@ -124,8 +136,8 @@ function ast.group(lex)
   local group = ast.List()
   group.tag = "group"
   
-  while lex.peek().type ~= ')' do
-    group:append(ast.next(lex))
+  for next in ast.next_until(lex, ')') do
+    group:append(next)
   end
   
   ast.require(lex, ')')
@@ -137,8 +149,8 @@ function ast.table(lex)
   
   local group = ast.Table()
   
-  while lex.peek().type ~= '}' do
-    group:append(ast.next(lex))
+  for next in ast.next_until(lex, '}') do
+    group:append(next)
   end
   
   ast.require(lex, '}')
@@ -152,8 +164,8 @@ function ast.bitpack(lex)
   
   ast.require(lex, "|")
   
-  while lex.peek().type ~= "]" do
-    bitpack:append(ast.next(lex))
+  for next in ast.next_until(lex, ']') do
+    bitpack:append(next)
   end
   
   ast.require(lex, "]")
@@ -180,7 +192,7 @@ format -> commands
 command -> repeat | bitpack | group | named | value | control 
 
 repeat -> NUMBER '*' command | command '*' NUMBER
-bitpack -> NUMBER '|' commands '|'
+bitpack -> '[' NUMBER '|' commands ']'
 group -> '(' commands ')'
 
 named -> NAME ':' value

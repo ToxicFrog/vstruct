@@ -33,7 +33,7 @@ return function(source)
   local hadwhitespace = false
   
   local function where()
-    return ("character %d ('%s')."):format(index, source:sub(1,4))
+    return ("character %d ('%s')"):format(index, source:sub(1,4))
   end
 
   local function find_match()
@@ -68,7 +68,7 @@ return function(source)
   local function next()
     eat_whitespace()
 
-    if #source == 0 then return nil end
+    if #source == 0 then return { text = nil, type = "EOF" } end
 
     local lexeme,size,text = find_match()
 
@@ -81,7 +81,7 @@ return function(source)
   local function peek()
     eat_whitespace()
 
-    if #source == 0 then return nil end
+    if #source == 0 then return { text = nil, type = "EOF" } end
 
     local lexeme,size,text = find_match()
 
