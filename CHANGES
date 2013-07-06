@@ -1,9 +1,24 @@
+2.0 (planned)
+-------------
+Format combinators.
+Support for other struct libraries (lpack/lstruct) as backends.
+
 1.2 (planned)
 -------------
-Automatically use FFI, if available, to speed up common operations.
+Automatically use FFI and bit32, if available, to speed up common operations.
+Better error handling, and more error handling options for the user.
+Backreferences.
+Cross-references.
+
+1.1.3 (work in progress)
+-----
+Improved error reporting for compile and runtime errors.
+Tests for error reporting.
+README is now in Github Flavoured Markdown format.
+Documentation updates.
 
 1.1.2
-----
+-----
 5.2 support
 Remove use of module()
 

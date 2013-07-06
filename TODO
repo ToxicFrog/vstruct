@@ -1,8 +1,0 @@
-- ability to select entire backends (eg, load from io_jit/ rather than io/)
-    - luajit bitop backend
-    - lua-5.2 bitop backend
-- ability for backends to call other backends (jit falls back to plain for u3)
-- autodetect availability of struct, lstruct, or bit on load; choose backend accordingly
-- error handling test suite
-- backreferences, eg, "n:u4 $n*f8" rather than "n:u4", n.."*f8"
-- format combinators
