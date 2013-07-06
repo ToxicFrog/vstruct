@@ -65,3 +65,5 @@ for format in plain_formats:gmatch(".") do
 end
 
 -- input table doesn't match format string
+E("bad-data-missing-name", "malformed table passed to pack: no value for name 't'", vstruct.pack, "t:{ x:u4 }", {})
+E("bad-data-missing-nested", "malformed table passed to pack: no value for name 't.x'", vstruct.pack, "t.x:u4", {})

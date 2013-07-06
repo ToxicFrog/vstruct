@@ -19,11 +19,11 @@ return function(refs)
       value = data[index]
       index = index+1
     else
-      local data = data
-      for name in key:gmatch("([^%.]+)%.") do
-        data = assert(data[name], "malformed table passed to pack")
+      value = data
+      for name in key:gmatch("([^%.]+)") do
+        value = value[name]
+        assert(value ~= nil, "malformed table passed to pack: no value for name '"..key.."' at '"..name.."'")
       end
-      value = data[key:match("[^%.]+$")]
       key = nil
     end
     return value
