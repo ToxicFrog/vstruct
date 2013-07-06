@@ -17,6 +17,7 @@ return function(refs)
     local value
     if not key then
       value = data[index]
+      assert(value ~= nil, "malformed table passed to pack: no value at index "..index)
       index = index+1
     else
       value = data
