@@ -122,59 +122,62 @@ In this section, a *format string* means the string used to describe an on-disk 
 
 ### Variables ###
 
+These variables are used to control various settings of the library at runtime. At present there is only one public setting, but others may be added in the future.
 
 --------
 
     vstruct.cache = (true|false|nil)
 
-Enables or disables cacheing of compiled format strings. This can noticeably improve performance in the common case where you are re-using the same strings many times; if, on the other hand, you are generating lots of different strings, this will increase memory usage - perhaps significantly - for no performance benefit. 
+Enables or disables caching of compiled format strings. This can improve performance in the common case where you are re-using the same format strings many times; if, on the other hand, you are generating lots of different format strings, this will increase memory usage - perhaps significantly - for no performance benefit. 
 
-If true, cacheing is enabled.
-If false, new cache entries will not be created but old ones will still be used.
-If nil, the cache is disabled entirely.
+If true, enables caching. If false, existing cache entries will be used, but new ones will not be created. If nil, the cache is entirely disabled.
+
+The default is nil.
+
+
 ### Functions ###
 
     vstruct.cursor(string)
 
-Wraps a string so that it can be used as a file. The returned object ('cur') supports cur:seek, cur:read(num_bytes) and cur:write(string), with the same behaviours as the file methods of the same names. In general, vstruct will attempt to automatically wrap strings if they are passed to it where a file is expected; this function is primarily useful when more control over the process is required.
+Wraps a string so that it can be used as a file. The returned object ('cur') supports cur:seek, cur:read(num_bytes) and cur:write(string), with the same behaviours as the file methods of the same names. In general, vstruct will attempt to automatically wrap strings if they are passed to it where a file is expected (and unwrap them before returning them); this function is primarily useful when more control over the process is required.
 
 To access the wrapped string, use cur.str; to determine where the read/write pointer is, use cur.pos.
 
 --------
-    
+
     vstruct.unpack(fmt, <fd or string>, [unpacked])
 
-unpack takes a format string and a buffer or file to unpack from, and returns a table of unpacked data items. The items will appear in the table with the same order and/or names that they appeared in the format string.
+`unpack` takes a format string and a buffer or file to unpack from, and returns a table of unpacked data items. The items will appear in the table with the same order and/or names that they had in the format string.
 
-If the 'unpacked' argument is present and true, vstruct will return the data items as individual return values rather than as a table, as in the following example:
+If the `unpacked` argument is present and true, `unpack` will return the data items as individual return values rather than as a table, as in the following example:
 
     vstruct.unpack("3*u1", buf)         -- { 1, 2, 3 }
     vstruct.unpack("3*u1", buf, true)   -- 1, 2, 3
 
-If the 'unpacked' argument is present and a table, vstruct will pack the items into this table in-place and return the table. Existing entries in the table will not be cleared (but might be overwritten by named entries). Numbered entries will always be appended, not overwritten:
+If the `unpacked` argument is present and a table, `unpack` will pack the items into this table in-place and return the table. Existing entries in the table will not be cleared (but might be overwritten by named entries). Numbered entries will always be appended, not overwritten:
 
     t = { 0, 0, 0 }
-    vstruct.unpack("3*u1", buf, t)      -- t == { 0, 0, 0, 1, 2, 3 }
+    vstruct.unpack("3*u1 x:u1", buf, t)      -- t == { 0, 0, 0, 1, 2, 3; x = 4 }
 
 --------
 
     vstruct.pack(fmt, [fd], data)
 
-pack takes a format string and a table of data and packs the contents of the table. If the fd argument is present, it will write the data directly to it using standard file io methods; if fd is a string, it will wrap it with vstruct.cursor first.
+`pack` takes a format string and a table of data and packs the contents of the table. If the `fd` argument is present, it will write the data directly to it using standard file io methods; if `fd` is a string, it will wrap it with `vstruct.cursor` first.
 
-If fd is omitted entirely, it will pack the data into a string and return the string (not the cursor wrapping it); in effect, the following two expressions are equivalent:
+If `fd` is omitted entirely, it will pack the data into a string and return the resulting string.
 
-    vstruct.pack(fmt, vstruct.cursor(""), data).str
-    vstruct.pack(fmt, data)
+The structure of the table is expected to be the same as the structure that would be created by a call to unpack with the same format string; in effect, you should be able to take the result of unpack and pass it to pack unaltered (and get the same packed data back), and vice versa.
 
-The structure of the table is expected to be the same as the structure would be created by a call to unpack with the same format string; in effect, you should be able to take the result of unpack and pass it to pack unaltered (and get the same packed data back), and vice versa.
-    
 --------
-    
-    vstruct.explode(int)
-	vstruct.implode(table)
 
-explode converts a bitmask (in integer format) into a list of booleans, and implode does the converse. In such lists, list[1] is the least significant bit, and list[n] the most significant.
+    vstruct.explode(int)
+    vstruct.implode(table)
+
+`explode` converts a bitmask (in integer format) into a list of booleans, and implode does the converse. In such lists, list[1] is the least significant bit, and list[n] the most significant.
+
+    vstruct.explode(0xF0)                     -- { 0, 0, 0, 0, 1, 1, 1, 1 }
+    vstruct.impode { 0, 0, 0, 0, 1, 1, 1, 1 } -- 0xF0
 
 --------
 
@@ -276,6 +279,8 @@ These are expressed in vstruct as `'[' size '|' items ']'`, where `size` is the 
     "[2| u5 u5 u5 b1 ]"
 
 Bitpacks read their contents MSB to LSB; in the above example, the boolean is the least significant bit of the enclosing 2-byte int.
+
+The declared total size of the bitpack, and the sizes of the individual items inside it, *must* match; if they do not, the format string will not compile. If there are bits inside the pack you are not interested in, use the `x` (skip/pad) format to ignore them.
 
 Despite being conceptually packed into ints, bitpacks are not subject to numeric precision limitations (although the data items inside them might be, if they are large enough); a 100-byte bitpack will unpack just a accurately as a 1-byte one.
 
