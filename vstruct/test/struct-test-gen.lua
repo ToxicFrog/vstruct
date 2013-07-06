@@ -31,7 +31,7 @@ local TEST_KIND = nil   --"read"|"write"
 -- Should every format string explicitly set the endianness at the start?
 -- Setting this to true mask(s|ed?) a bug where the endianness controls leak
 -- between calls to struct.pack().
-local PREFIX_ENDIAN = true
+local PREFIX_ENDIAN = false
 local PREFIX_ENDIAN_SEP = " " --"" gives format string parse errors
 
 local TOKEN_SEP = ""    -- Separator between tokens.
