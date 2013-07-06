@@ -1,7 +1,9 @@
 ## Contents ##
 
 1.  Overview
-2.  Warning about numeric precision
+2.  Warnings
+    1. Numeric Precision
+    2. Known Incompatibilities
 3.  Setup
     1. Installation
     2. Testing
@@ -39,9 +41,22 @@ In addition, the library supports seeking, alignment, and byte order controls, r
 
 ## 2. Warnings ##
 
-When reading and writing numeric formats, vstruct is inherently limited by lua's number format, which is by default the IEEE 754 double. What this means in practice is that formats i, u, c, and p (see section 6) may be subject to data loss, if they contain more than 52 significant bits. (The same is true of numeric constants declared in Lua itself, of course, and other libraries which store values in lua numbers). In other words - be careful when manipulating data, especially 64-bit ints, that may not fit in Lua's native types.
+### 2.1 Numeric Precision ###
+
+When reading and writing numeric formats, vstruct is inherently limited by lua's number format, which is by default the IEEE 754 double. What this means in practice is that formats `i`, `u`, `c`, and `p` (see section 6) may be subject to data loss, if they contain more than 52 significant bits. (The same is true of numeric constants declared in Lua itself, of course, and other libraries which store values in lua numbers). In other words - be careful when manipulating data, especially 64-bit ints, that may not fit in Lua's native types.
 
 Formats not listed above are not subject to this limitation, as they either do not use Lua numbers at all, or do so only in ways that are guaranteed to be lossless.
+
+
+### 2.2 Known Incompatibilities ###
+
+Versions of Lua prior to 5.1 are not supported, as vstruct makes extensive use of features introduced in 5.1.
+
+LuaJIT 2.0b7 has a bug in the code generator that affects vstruct. This is fixed in 2.0b9. If you need to run vstruct in 2.0b7, you will need to disable JIT compilation for the `m.unpack` function:
+
+    jit.off(require("vstruct.io.m").unpack, true)
+
+The `strict` module raises an error when using vstruct outside of LuaJIT, as it checks for the presence of LuaJIT by checking if the global variable `jit` is defined (resulting in a "variable not declared" error). This can be worked around by setting `jit = false` before loading vstruct.
 
 
 ## 3. Setup ##
