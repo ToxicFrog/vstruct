@@ -118,6 +118,16 @@ vstruct, once loaded, exports the following variables and functions.
 In this section, a *format string* means the string used to describe an on-disk format, controlling how data is packed or unpacked. Format strings are described in sections 5 (the actual syntax of the format string) and 6 (the individual data formats supported).
 
 
+### Error Handling ###
+
+In vstruct, all errors are *hard errors*: they are raised with `error` and must be caught with `pcall`. The vstruct API functions will always either return a valid result or raise an error. Barring bugs in vstruct itself, the only errors one is likely to encounter involve invalid arguments to the API - wrong types, a syntactically invalid format string, or a data table that doesn't match up with the format string. The one potential surprise is seeking past the start of a file; in the standard `io` library, this is a soft error (returning `nil,error`), while in vstruct this will immediately raise.
+
+There are also some conditions which are *not* currently treated as errors:
+
+  * Seeking past the end of the file. This will extend the file when writing; it is an error when reading only if you subsequently attempt to read data without seeking back into the bounds of the file.
+  * Lossy numeric conversion. In particular, passing a float where an int is expected will truncate the float, and trying to read a number with more bits of precision than Lua supports will give you as many bits as it can manage.
+  * Passing numbers where strings are expected, or numeric strings where numbers are expected, is permitted *in some cases* due to Lua's automatic coercion between strings and numbers. This may not always be the case, so I recommend not relying on this.
+  * One can often substitute any boolean true value when `true` is expected, or nil when `false` is expected. As above, this is not guaranteed to work and is not to be relied on.
 
 
 ### Variables ###
