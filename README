@@ -27,11 +27,11 @@
 
 ## 1. Overview ##
 
-VStruct is a library for Lua 5.1 and 5.2. It provides functions for manipulating binary data, in particular for unpacking binary files or byte buffers into Lua values and for packing Lua values back into files or buffers. Supported data types include:
+VStruct is a library for Lua 5.1 and 5.2 and LuaJIT 2. It provides functions for manipulating binary data, in particular for unpacking binary files or byte buffers into Lua values and for packing Lua values back into files or buffers. Supported data types include:
 
-  * signed and unsigned integers of arbitrary byte width
+  * signed and unsigned integers of arbitrary size
   * fixed and floating point numbers
-  * plain, counted and null-terminated strings
+  * fixed-size, length-prefixed, and null-terminated strings
   * booleans and bitmasks
   * bit-packed integers, booleans and bitmasks
   
@@ -62,18 +62,20 @@ The `strict` module raises an error when using vstruct outside of LuaJIT, as it 
 ## 3. Setup ##
 
 ### 3.1 Installation ###
-vstruct is a pure-lua module, and as such requires no seperate build step; it can be installed as-is. It supports both 5.1 and 5.2, and will automatically detect which one you are using.
 
-To install it, copy the 'vstruct/' directory from the vstruct distribution into a directory that is searched by package.path, such that 'require "vstruct"' will load vstruct/init.lua and 'require "vstruct.foo"' will load vstruct/foo.lua. On linux, with Lua 5.1, this can be accomplished by installing it to any of the following directories:
+vstruct is a pure-lua module, and as such requires no seperate build step; it can be installed as-is. It supports Lua 5.1 and 5.2 and luaJIT, automatically detecting which one you are using as needed; the only difference in installation procedures between these is where you install it to.
 
+The initializer is `vstruct/init.lua`, so it should be installed in a way that means `require "vstruct"` will load that file, and that `require "vstruct.foo"` will load `vstruct/foo.lua`. In a default install of Lua 5.1 on Linux, you can do this simply by copying the `vstruct/` directory from the vstruct distribution into any of these directories:
 
   * /usr/local/share/lua/5.1
   * /usr/share/lib/5.1
   * /usr/local/lib/lua/5.1
   * /usr/lib/lua/5.1
-Or by modifying package.path to include the following entries (assuming that $LIBDIR is the directory *containing* vstruct/):
 
 This also works for Lua 5.2, replacing the `5.1` in each path with `5.2`.
+
+If you install it elsewhere, you can accomplish this by modifying `package.path` to include the following entries (assuming that `$LIBDIR` is the directory *containing* `vstruct/`):
+
   * $LIBDIR/?.lua
   * $LIBDIR/?/init.lua
     
@@ -98,15 +100,14 @@ With the same behaviour - it will load cleanly if the tests succeeded and raise 
 
 ### 3.3 Loading ###
     
-vstruct makes itself available under name 'vstruct'; the module returns itself when loaded, and also sets a global 'vstruct', so either of the following will work:
+vstruct makes itself available under the name `vstruct`. Note that, in accordance with current module conventions, it does *not* assign the module to a global; you must assign the return value of `require` yourself:
 
-    require "vstruct"
-    print(vstruct._VERSION)
-    
     local vstruct = require "vstruct"
     print(vstruct._VERSION)
     
-As automatic setting of globals by modules is increasingly discouraged, the latter form is preferred; the former is likely to go away at some point.
+vstruct does make one global modification when loaded: if the function `math.trunc` is not already defined, it will install its own definition.
+
+
 
 ## 4. API ##
 
