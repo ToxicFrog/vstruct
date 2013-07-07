@@ -111,11 +111,9 @@ vstruct does make one global modification when loaded: if the function `math.tru
 
 ## 4. API ##
 
+vstruct, once loaded, exports a number of variables and functions, all of them available in the table returned by `require "vstruct"`.
 
-
-vstruct, once loaded, exports the following variables and functions.
-
-In this section, a *format string* means the string used to describe an on-disk format, controlling how data is packed or unpacked. Format strings are described in sections 5 (the actual syntax of the format string) and 6 (the individual data formats supported).
+In this section, a *format string* means the string used to describe a binary format, controlling how data is packed or unpacked. The syntax for format strings is described in section 5; the semantics in section 6. They are not be confused with the format strings used by `string.format`.
 
 
 ### Error Handling ###
