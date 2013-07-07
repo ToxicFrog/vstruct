@@ -42,7 +42,7 @@ E("invalid-format-{", "expected.*, got EOF", vstruct.compile, "{")
 E("invalid-format-(", "expected.*, got EOF", vstruct.compile, "(")
 E("invalid-format-[", "expected.*, got EOF", vstruct.compile, "[")
 E("invalid-format-*", "expected.*or io specifier, got %*", vstruct.compile, "*4")
-E("invalid-format-no-width", "format requires a width", vstruct.compile, "u u4")
+E("invalid-format-no-width", "format requires a size", vstruct.compile, "u u4")
 
 -- format string is well-formed but nonsensical
 -- note that empty groups and tables and zero-length repeats make it easier to dynamically construct format strings, and are thus allowed
@@ -60,7 +60,7 @@ E("bad-format-x-byte", "bad argument.*value out of range", vstruct.pack, "x1,300
 local sized_formats = "abcimpux@+-"
 local plain_formats = "<>="
 for format in sized_formats:gmatch(".") do
-    E("bad-format-size-missing-"..format, "format requires a width", vstruct.compile, format)
+    E("bad-format-size-missing-"..format, "format requires a size", vstruct.compile, format)
 end
 for format in plain_formats:gmatch(".") do
     E("bad-format-size-present-"..format, "is an endianness control, and does not have width", vstruct.compile, format.."1")

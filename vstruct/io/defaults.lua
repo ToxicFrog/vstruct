@@ -8,8 +8,8 @@ local defaults = {}
 -- equals the amount that will be RWd.
 -- If the format doesn't do any, should return 0. If the amount cannot be
 -- determined ahead of time (for example, format c) should return nil.
-function defaults.width(n)
-  assert(tonumber(n), "format requires a width")
+function defaults.size(n)
+  assert(tonumber(n), "format requires a size")
   return tonumber(n)
 end
 

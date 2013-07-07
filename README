@@ -523,23 +523,26 @@ Returns true if, when packing, this format consumes a value from the table of in
 
 --------
 
+    size(...)
     width(...)
 
-Returns the exact amount of data, in bytes, that this format will consume from the input if unpack is called, or the exact amount it will append to the output if pack is called. If this cannot yet be determined (for example, 'z' with no arguments or any usage of 'c'), it should return nil. 
+Returns the exact amount of data, in bytes, that this format will consume from the input if unpack is called, or the exact amount it will append to the output if pack is called. If this cannot yet be determined (for example, 'z' with no arguments or any usage of 'c'), it should return nil.
+
+Historically, this function was called `width`. It is now officially called `size`; however, vstruct will also recognize the older `width` function. Its use is deprecated and it will eventually be completely unsupported.
 
 --------
 
     pack(fd, data, ...)
 
-If `width()` returned a value earlier, this *must* ignore `fd`, pack `data` into a string, and return the string - the caller will handle writing the string to the fd in an efficient manner. If it did not, this function may freely choose either to return a packed string, or to manipulate `fd` directly (in which case it should return nil).
+If `size()` returned a value earlier, this *must* ignore `fd`, pack `data` into a string, and return the string - the caller will handle writing the string to the fd in an efficient manner. If it did not, this function may freely choose either to return a packed string, or to manipulate `fd` directly (in which case it should return nil).
 
-Some operators, of course, must manipulate `fd` directly by their very nature (such as seek controls); when possible, however, one should endeavour to pre-calculate widths and return packed strings.
+Some operators, of course, must manipulate `fd` directly by their very nature (such as seek controls); when possible, however, one should endeavour to pre-calculate sizes and return packed strings.
 
 --------
 
     unpack(fd, buffer, ...)
 
-If `width()` returned a value earlier, `buffer` will be a string of exactly that many bytes; `unpack` *must* ignore `fd` and return the value represented by the buffer. If `width()` returned nil, unpack must manipulate `fd` directly to get the data it needs.
+If `size()` returned a value earlier, `buffer` will be a string of exactly that many bytes; `unpack` *must* ignore `fd` and return the value represented by the buffer. If `size()` returned nil, unpack must manipulate `fd` directly to get the data it needs.
 
 --------
 

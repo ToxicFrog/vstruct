@@ -9,8 +9,7 @@
 -- Copyright (c) 2011 Ben "ToxicFrog" Kelly
 
 local defaults = require "vstruct.io.defaults"
-
-local formats = {}
+local mt = { __index = defaults }
 
 local function iorequire(format)
   local r,v = pcall(require, "vstruct.io."..format)
@@ -18,7 +17,10 @@ local function iorequire(format)
   if not r then
     error("vstruct: no support for format '"..format.."':\n"..tostring(v))
   end
+
+  setmetatable(v, mt)
   
+  v.width = v.width or v.size
   return v           
 end
 
@@ -36,8 +38,7 @@ for name,symbol in pairs(controlnames) do
 end
 
 return function(format, method, ...)
-  local fmt = formats[format]
-    or setmetatable(iorequire(format), { __index = defaults })
+  local fmt = iorequire(format)
   
   assert(fmt[method], "No support for method '"..tostring(method).."' in IO module '"..format.."'")
   

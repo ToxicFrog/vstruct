@@ -8,7 +8,7 @@ function a.hasvalue()
 end
 
 function a.width(w)
-  assert(tonumber(w), "format requires a width")
+  assert(tonumber(w), "format requires a size")
   return nil
 end
 
