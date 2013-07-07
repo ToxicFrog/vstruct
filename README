@@ -464,10 +464,12 @@ Affected by endianness.
 
 --------
 
-    xS    -- Skip/pad.
+    xS,V  -- Skip/pad.
+
+`,V` is optional, and defaults to 0 if omitted.
 
 Read: read and discard the next `S` bytes.
-Write: write `S` zero bytes.
+Write: write `S` bytes with value `V`. Within a bitpack, the only valid values for `V` are 0 or 1.
 
 This format does not consume input data or produce output data. However, unlike the seek controls (`@+-a`), it can be used even when the input or output does not support seeking (e.g. when reading from a pipe or socket).
 

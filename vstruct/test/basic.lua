@@ -33,6 +33,7 @@ T("bitmask",  "> m2",   x"FA 78", {{ false, false, false, true; true, true, true
 T("bitmask",  "< m2",   x"78 FA", {{ false, false, false, true; true, true, true, false; false, true, false, true; true, true, true, true }})
 
 T("skip/pad", "x4u1",   x"00 00 00 00 02", 2)
+T("skip/pad value", "x4,255u1",   x"FF FF FF FF 02", 2)
 
 T("seek @",   "@2 u1x2",  x"00 00 02 00 00", 2)
 T("seek +",   "+2 u1x2",  x"00 00 02 00 00", 2)
@@ -59,6 +60,7 @@ T("bitpack [>i]", "> [2| 4*i4 ]",  x"12 EF", {1,2,-2,-1})
 T("bitpack [<i]", "< [2| 4*i4 ]",  x"12 EF", {-2,-1,1,2})
 T("bitpack [>m]", "> [2| m5 m3 x8 ]",  x"12 00", {{false,false,false,true,false},{false,true,false}})
 T("bitpack [<m]", "< [2| m5 m3 x8 ]",  x"00 12", {{false,false,false,true,false},{false,true,false}})
+T("bitpack [x,v]", "> [2| x8,1 x8,0 ]", x"FF 00", {})
 
 T("fixed point >",  "> p2,8", x"40 80", 64.5)
 T("fixed point <",  "< p2,8", x"40 80", -127.75)

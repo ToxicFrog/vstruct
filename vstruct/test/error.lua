@@ -54,6 +54,8 @@ E("bad-format-large-bitpack", "bitpack contents are larger than containing bitpa
 E("bad-format-size-missing-f", "only supports widths 4", vstruct.compile, 'f')
 E("bad-format-size-wrong-f", "only supports widths 4", vstruct.compile, 'f1')
 E("bad-format-fraction-p", "format requires a fractional%-part width", vstruct.compile, 'p4')
+E("bad-format-x-bit", "invalid value to `x` format in bitpack: 0 or 1 required, got 2", vstruct.pack, "[1|x8,2]", {})
+E("bad-format-x-byte", "bad argument.*value out of range", vstruct.pack, "x1,300", {})
 -- note that s and z can be used either with or without a width specifier
 local sized_formats = "abcimpux@+-"
 local plain_formats = "<>="
