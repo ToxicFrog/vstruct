@@ -306,13 +306,14 @@ At present, only formats `b`, `u`, `i`, `x` and `m` are supported inside bitpack
 
 ## 6. Data Items ##
 
-This section describes the individual fragments of data that make up the bulk of a format string, as well as the seek and endianness controls available.
+This section describes the individual field types that make up the bulk of a format string, as well as the seek and endianness controls available. All data items consist of a single letter or punctuation character, optionally followed by one or more comma-separated numbers indicating the size of the corresponding field (or other parameters specific to the type).
 
-By convention, in this section, upper-case single letters represent decimal numbers to be filled in when the format string is written; W in particular represents the width of the given field, and A an address or offset in the packed data - both in bytes.
+By convention, in this section, upper-case single letters represent decimal numbers to be filled in when the format string is written. In particular, *S* is consistently used to mean the size, in bytes, of a field, and *A* an address or offset in the packed data.
 
 
 ### 6.1 Controlling Endianness ###
     
+At any given moment, when packing or unpacking, vstruct is in either *big-endian* or *little-endian* mode. These affect the order in which it expects bytes to appear for formats `f`, `u`, `i`, and `m`, for the initial string length in `c`, and for the bytes making up a bitpack. In big-endian mode it expects the most significant byte to occur first; in little-endian mode, the least sigificant byte. (There is at present no support for more esoteric modes like middle-endian.)
 
 Each operation starts in *host-endian* mode - the endianness is set to match that of the host system. It can subsequently be controlled with the following characters in the format string:
 
@@ -347,71 +348,71 @@ vstruct supports seeking in the underlying buffer or file; these operations will
 
     @A
 
-Seek to absolute address A.
+Seek to absolute address `A`.
 
 --------
 
     +A
 
-Seek forward A bytes.
+Seek forwards `A` bytes.
 
 --------
 
     -A
 
-Seek backwards A bytes.
+Seek backwards `A` bytes.
 
 --------
 
-    aW
+    aS
 
-Align to word width W (seek to the next address which is a multiple of W)
+Align to word size `S` (seek to the next address which is a multiple of `S`). If the current address is `S`-aligned already, this is a no-op.
 
 
-### Reading and Writing ###
+### 6.3 Reading and Writing ###
 	
 The following items perform actual reading and writing of data.
 
 --------
 
-    bW    -- Boolean.
+    bS    -- Boolean.
 
-Read: as `uW`, but returns true if the result is non-zero and false otherwise.
-Write: as `uW` with input 1 if true and 0 otherwise.
+Read: as `uS`, but returns true if the result is non-zero and false otherwise.
+Write: as `uS` with input 1 if true and 0 otherwise.
 	
 Note that when writing, the output for true is integer 1, not all bits 1.
 
 --------
 
-    cW    -- Length-prefixed ("counted") string.
+    cS    -- Length-prefixed ("counted") string.
 
-Read: `uW` to determine the length of the string `W'`, followed by `sW'`.
-Write: the length of the string as `uW`, followed by the string itself.
+Read: `uS` to determine the length of the string `S'`, followed by `sS'`.
+Write: the length of the string as `uS`, followed by the string itself.
 	
 The counted string is a common idiom where a string is immediately prefixed with its length, as in:
 
     size_t len;
 		char[] str;
 
-The counted string format can be used to easily read and write these. The width provided is the width of the len field, which is treated as an unsigned int. Only the string itself is returned (when unpacking) or required (when packing). Internally, this is implemented as `u` followed by `s`; consequently, it is affected by endianness.
+The counted string format can be used to easily read and write these. The size provided is the size of the `len` field, which is treated as an unsigned int. Only the string itself is returned (when unpacking) or required (when packing). Internally, this is implemented as `u` followed by `s`; consequently, it is affected by endianness.
 
 --------
 
-    fW    -- IEEE 754 floating point.
+    fS    -- IEEE 754 floating point.
 
 Read: a float, double, or quad.
 Write: a float, double, or quad.
 
-Valid widths are 4 (float) 8 (double) and 16 (quad). Note that quads have more precision than the default lua number format (double), and thus may not unpack exactly unless you're using a custom lua build.
+Valid sizes are 4 (float) 8 (double) and 16 (quad). Note that quads have more precision than the default lua number format (double), and thus may not unpack exactly unless you're using a custom lua build.
 	
 Affected by endianness.
 
 --------
 
-    iW    -- Signed integer.
+    iS    -- Signed integer.
 
-Read: a signed integer of width `W` bytes.
-Write: a signed integer of width `W` bytes.
+Read: a signed integer with `S` bytes of precision.
+Write: a signed integer with `S` bytes of precision.
 
 When writing, floating point values will be truncated, not rounded.
 
@@ -419,10 +420,10 @@ Affected by endianness.
 
 --------
 
-    mW    -- Bitmask.
+    mS    -- Bitmask.
 
-Read: as `uW`, but explodes the result into a list of booleans, one per bit.
-Write: implodes the input value, then writes it as `uW`.
+Read: as `uS`, but explodes the result into a list of booleans, one per bit.
+Write: implodes the input value, then writes it as `uS`.
 	
 In effect, a `u` that automatically calls `vstruct.implode/explode`.
 
@@ -430,12 +431,12 @@ Affected by endianness.
 
 --------
 
-    pW,F  -- Signed fixed point.
+    pS,F  -- Signed fixed point.
 
-W is, as usual, the width of the entire number in *bytes*. F is the number of *bits* of fractional precision. Thus, a 24.8 fixed point number would have format "p4,8".
+`S` is, as usual, the size of the entire field in *bytes*. `F` is the number of *bits* of fractional precision. Thus, a 24.8 fixed point number (24 bits integer, 8 bits fraction, 32 bits total) would have format `"p4,8"`.
 
-Read: a `W`-byte fixed point number with `F` bits of fractional precision.
-Write: a `W`-byte fixed point number long with `F` bits of fractional precision.
+Read: a `S`-byte fixed point number with `F` bits of fractional precision.
+Write: a `S`-byte fixed point number long with `F` bits of fractional precision.
 	
 When writing, values which cannot be precisely expressed in the given precision will be truncated, not rounded.
 
@@ -443,19 +444,19 @@ Affected by endianness.
 
 --------
 
-    sW    -- Fixed-length string.
+    sS    -- Fixed-length string.
 
-W is optional.
+`S` is optional.
 
-Read: reads exactly `W` bytes and returns them as a string. If `W` is omitted, reads until EOF.
-Write: writes exactly `W` bytes (truncating or nul-padding the given string, if `W` does not match the string length). If `W` is omitted, autodetects it from the string length.
+Read: reads exactly `S` bytes and returns them as a string. If `S` is omitted, reads until EOF.
+Write: writes exactly `S` bytes; if the given string is too long, it will be truncated, and if too short, it will be nul-padded. If `S` is omitted, it is considered equal to the length of the string (i.e. it will write the contents of the string without truncation or padding).
 
 --------
 
-    uW    -- Unsigned integer.
+    uS    -- Unsigned integer.
 
-Read: an unsigned integer of width W bytes.
-Write: an unsigned integer of width W bytes.
+Read: an unsigned integer with `S` bytes of precision.
+Write: an unsigned integer with `S` bytes of precision.
 	
 On write, non-integer values will be truncated. Negative values will be written in absolute form.
 
@@ -463,26 +464,26 @@ Affected by endianness.
 
 --------
 
-    xW    -- Skip/pad.
+    xS    -- Skip/pad.
 
-Read: read and discard the next W bytes.
-Write: write W zero bytes.
+Read: read and discard the next `S` bytes.
+Write: write `S` zero bytes.
 
 This format does not consume input data or produce output data. However, unlike the seek controls (`@+-a`), it can be used even when the input or output does not support seeking (e.g. when reading from a pipe or socket).
 
 --------
 
-    zW,C  -- Nul terminated/nul padded string.
+    zS,C  -- Nul terminated/nul padded string.
 
-`W` and `C` are both optional. The `,` is mandatory if `C` is present and optional otherwise.
+`S` and `C` are both optional. The `,` is mandatory if `C` is present.
   
-`W`, if present, is the length of the string (in *bytes*, not characters).
+`S`, if present, is the length of the string (in *bytes*, not characters).
 
 `C`, if present, is the size in *bytes* of individual characters in the string. The default is 1.  It is important when operating on wide-character strings to specify `C` correctly, so that sequences like "00 66 00 67" are not incorrectly interpreted as ending the string.
 
-Read: reads exactly `W` bytes, and returns everything up to the first nul *character*. If `W` is omitted, reads until it encounters a nul. The nul is read, but not included in the returned string.
+Read: reads exactly `S` bytes, and returns everything up to the first nul *character*. If `S` is omitted, reads until it encounters a nul. The nul is read, but not included in the returned string.
 
-Write: writes exactly `W` bytes. If the input is shorter than `W`, nul pads the output; if longer, truncates it to `W - C` bytes and ends it with a nul. If `W` is omitted entirely, the string is written out in full and nul terminated.
+Write: writes exactly `S` bytes. If the input is shorter than `S`, nul pads the output; if longer, truncates it to `S - C` bytes and nul terminates it. If `S` is omitted entirely, the string is written out in full and nul terminated.
 
 When nul terminating, or looking for a nul character to detect the end of the string, `C` zero bytes, `C`-aligned relative to the start of the string, are used. In particular, this means that the following 6-byte string:
 
