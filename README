@@ -67,17 +67,17 @@ vstruct is a pure-lua module, and as such requires no seperate build step; it ca
 
 The initializer is `vstruct/init.lua`, so it should be installed in a way that means `require "vstruct"` will load that file, and that `require "vstruct.foo"` will load `vstruct/foo.lua`. In a default install of Lua 5.1 on Linux, you can do this simply by copying the `vstruct/` directory from the vstruct distribution into any of these directories:
 
-  * /usr/local/share/lua/5.1
-  * /usr/share/lib/5.1
-  * /usr/local/lib/lua/5.1
-  * /usr/lib/lua/5.1
+  * `/usr/local/share/lua/5.1/`
+  * `/usr/share/lib/5.1/`
+  * `/usr/local/lib/lua/5.1/`
+  * `/usr/lib/lua/5.1/`
 
 This also works for Lua 5.2, replacing the `5.1` in each path with `5.2`.
 
 If you install it elsewhere, you can accomplish this by modifying `package.path` to include the following entries (assuming that `$LIBDIR` is the directory *containing* `vstruct/`):
 
-  * $LIBDIR/?.lua
-  * $LIBDIR/?/init.lua
+  * `$LIBDIR/?.lua`
+  * `$LIBDIR/?/init.lua`
     
 Note that installing it to `./` will *not* work unless you also add an entry for `./?/init.lua` to `package.path`; by default, lua will look for `./?.lua` but not `./?/init.lua`.
 
@@ -116,7 +116,7 @@ vstruct, once loaded, exports a number of variables and functions, all of them a
 In this section, a *format string* means the string used to describe a binary format, controlling how data is packed or unpacked. The syntax for format strings is described in section 5; the semantics in section 6. They are not be confused with the format strings used by `string.format`.
 
 
-### Error Handling ###
+### 4.1 Error Handling ###
 
 In vstruct, all errors are *hard errors*: they are raised with `error` and must be caught with `pcall`. The vstruct API functions will always either return a valid result or raise an error. Barring bugs in vstruct itself, the only errors one is likely to encounter involve invalid arguments to the API - wrong types, a syntactically invalid format string, or a data table that doesn't match up with the format string. The one potential surprise is seeking past the start of a file; in the standard `io` library, this is a soft error (returning `nil,error`), while in vstruct this will immediately raise.
 
@@ -128,7 +128,7 @@ There are also some conditions which are *not* currently treated as errors:
   * One can often substitute any boolean true value when `true` is expected, or nil when `false` is expected. As above, this is not guaranteed to work and is not to be relied on.
 
 
-### Variables ###
+### 4.2 Variables ###
 
 These variables are used to control various settings of the library at runtime. At present there is only one public setting, but others may be added in the future.
 
@@ -143,7 +143,7 @@ If true, enables caching. If false, existing cache entries will be used, but new
 The default is nil.
 
 
-### Functions ###
+### 4.3 Functions ###
 
     vstruct.cursor(string)
 
@@ -191,7 +191,7 @@ The structure of the table is expected to be the same as the structure that woul
 
     vstruct.compile(format)
 
-`compile` takes a format string and runs it through the compiler and code generator, but does not actually pack or unpack anything. Instead, it returns a table containing three values -
+`compile` takes a format string and runs it through the compiler and code generator, but does not actually pack or unpack anything. Instead, it returns a table containing three values:
 
   * `pack(fd, data)` - equivalent to `struct.pack(format, fd, data)`
   * `unpack(fd, [unpacked])` - equivalent to `struct.unpack(format, fd, [unpacked])`
@@ -210,7 +210,7 @@ Is equivalent to:
 
 
 
-## Format string syntax ##
+## 5. Format string syntax ##
 
 A format string consists of a series of *format items*. A format item is:
 
@@ -226,7 +226,7 @@ These are explained in detail in the rest of this section, apart from data items
 In general, whitespace may be omitted where the result is unambiguous, and when present, the amount and type of whitespace is irrelevant. Comments are considered to be whitespace.
 
 
-### Repeat markers ###
+### 5.1 Repeat markers ###
 
 A repeat marker consists of a decimal number *N*, followed by a *, followed by a format item (or a group of such items enclosed in parentheses). The following item is repeated N times. For example, these three format strings:
 
@@ -241,7 +241,7 @@ Can be expressed more concisely as these:
     "3*(u2 u2 u4) m2"
 
 
-### Tables ###
+### 5.2 Tables ###
     
 A table consists of any number of format items enclosed in curlybraces. When unpacking, the items contained in the table will be packed into their own subtable in the output; when packing, items contained in the table will e searched for in a subtable. For example, this format string:
 
@@ -262,7 +262,7 @@ Note the outer table; unpack returns all unpacked values in a table by default, 
 Within a format string, tables may be nested arbitrarily.
 
 
-### Names ###
+### 5.3 Names ###
     
 A name consists of a valid Lua identifier, or sequence of such identifiers separated with '.', followed by a ':'. It must be followed by a data item or a table. The following item will be stored in/retrieved from a field with the given name, rather than being (un)packed sequentially as is the default.
 
@@ -278,7 +278,7 @@ Could be expressed by either of these format strings:
     "coords:{} coords.x:u4 coords.y:u4 coords.z:u4"
 
 
-### Bitpacks ###
+### 5.4 Bitpacks ###
     
 A bitpack consists of multiple data items packed into a single item (typically an int) with no regard for byte-alignment - for example, something that stores three five-bit ints and a one-bit boolean in a single 16-bit int.
 
@@ -304,16 +304,15 @@ It will be read in the following manners in big- and little-endian modes
 At present, only formats `b`, `u`, `i`, `x` and `m` are supported inside bitpacks.
 
 
-## Data Items ##
+## 6. Data Items ##
 
 This section describes the individual fragments of data that make up the bulk of a format string, as well as the seek and endianness controls available.
 
 By convention, in this section, upper-case single letters represent decimal numbers to be filled in when the format string is written; W in particular represents the width of the given field, and A an address or offset in the packed data - both in bytes.
 
 
-### Controlling Endianness ###
+### 6.1 Controlling Endianness ###
     
-At any given moment, when packing or unpacking, vstruct is in either *big-endian* or *little-endian* mode. These affect the order in which it expects bytes to appear for formats `f`, `u`, `i`, and `m`, the initial string length in `c`, and the order of bytes in a bitpack. In big-endian mode it expects the most significant byte to occur first; in little-endian mode, the least sigificant byte. (There is at present no support for more esoteric modes like middle-endian.)
 
 Each operation starts in *host-endian* mode - the endianness is set to match that of the host system. It can subsequently be controlled with the following characters in the format string:
 
@@ -340,9 +339,9 @@ The means by which host-endianness is detected is, at present, implementation sp
 If you have a lua implementation for which this approach fails (either crashing, or getting the wrong answer), please file a bug report.
     
 
-### Seeking ###
+### 6.2 Seeking ###
 
-vstruct supports seeking in the underlying buffer or file; these operations will translate into a call to the :seek() method. Note that attempting to use these when unpacking from or packing to a non-seekable stream (such as stdout) will generate a runtime error. In that case, use 'x' (the skip/pad format) instead.
+vstruct supports seeking in the underlying buffer or file; these operations will translate into a call to the :seek() method. Note that attempting to use these when unpacking from or packing to a non-seekable stream (such as stdout) will generate a runtime error. In that case, use `x` (the skip/pad format) instead.
 
 --------
 
@@ -493,12 +492,12 @@ Will be one byte long (plus one byte termination) under `"z6,1"`, but four bytes
 
 
 
-## Adding new IO operations ##
+## 7. Adding new IO operations ##
     
 If you want to add support for a new data type, or modify or replace an existing one, this is how you do it. To see how the current ones are implemented, look at the files in vstruct/io/; any new formats added will use the same API.
 
 
-### How IO operations are loaded ###
+### 7.1 How IO operations are loaded ###
     
 When vstruct first sees an operation - say `"p2,8"` - it first breaks it down into two parts - the `op` ("p") and the `args` (2,8). It then attempts to load a handler for this operation using:
 
@@ -509,7 +508,7 @@ Typically, this will load the file `vstruct/io/<op>.lua` - in our above example,
 `package.preload` can also be used; for example, `package.preload["vstruct.io.p"]` can be used to override the version of `p` that comes with vstruct.
 
 
-### How they are used ###
+### 7.2 How they are used ###
 
 When loaded, the handler for an IO operation returns a table containing some or all of the following functions. Note that '...' here means the arguments as given in the format string - '2,8' in the above example.
 
@@ -523,7 +522,7 @@ Returns true if, when packing, this format consumes a value from the table of in
 
     width(...)
 
-Returns the exact amount of data this format will consume from the input if unpack is called, or the exact amount it will append to the output if pack is called, in bytes. If this cannot yet be determined (for example, 'z' with no arguments or any usage of 'c'), it should return nil. 
+Returns the exact amount of data, in bytes, that this format will consume from the input if unpack is called, or the exact amount it will append to the output if pack is called. If this cannot yet be determined (for example, 'z' with no arguments or any usage of 'c'), it should return nil. 
 
 --------
 
@@ -553,7 +552,7 @@ The converse of packbits. Each call to `bits()` returns the next bit, MSB first.
 
 
     
-## Credits ##
+## 8. Credits ##
     
 While most of the library code was written by me (Ben Kelly), the existence of this library owes itself to many others.
 
