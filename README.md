@@ -425,7 +425,7 @@ Affected by endianness.
 Read: as `uS`, but explodes the result into a list of booleans, one per bit.
 Write: implodes the input value, then writes it as `uS`.
 	
-In effect, a `u` that automatically calls `vstruct.implode/explode`.
+In effect, a `u` that automatically calls `vstruct.implode/explode`; unlike `u`, however, it can operate on fields of arbitrarily large size without loss of precision, regardless of what numeric type lua is using.
 
 Affected by endianness.
 
