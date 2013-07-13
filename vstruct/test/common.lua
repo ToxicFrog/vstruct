@@ -47,30 +47,43 @@ function test.record(name, result, data, message)
   table.insert(test.current_group, { name=name, result=result, message=message, data=data })
 end
 
-function test.autotest(name, format, buffer, data, output)
+-- automatically test packing and unpacking. obuf and oval are optional,
+-- and default to the same values as ibuf and ival.
+-- This tests the following operations:
+-- unpack(ibuf) == oval
+-- pack(unpack(ibuf)) == obuf
+-- pack(ival) == obuf
+-- unpack(pack(ival)) == oval
+function test.autotest(name, format, ibuf, ival, obuf, oval)
   local eq = test.eq
   local record = test.record
   
-  output = output or buffer
-  
-  if type(data) ~= "table" then data = {data} end
+  obuf = obuf or ibuf
+  oval = oval or ival
+
+  assert(type(obuf) == type(ibuf))
+  assert(type(obuf) == "string")
+
+  if type(ival) ~= "table" then ival = {ival} end
+  if type(oval) ~= "table" then oval = {oval} end
 
   local function tester()
-    local unpacked = vstruct.unpack(format, buffer)
-    local packed = vstruct.pack(format, unpacked)
-    
-    record(name.." (U )", eq(unpacked, data), unpack(unpacked))
-    record(name.." (UP)", eq(packed, output), test.od(packed))
+    local f = vstruct.compile(format)
 
-    local packed = vstruct.pack(format, data)
-    local unpacked = vstruct.unpack(format, packed)
-    
-    record(name.." (P )", eq(packed, output), test.od(packed))
-    record(name.." (PU)", eq(unpacked, data), unpack(unpacked))
+    local U = f.unpack(ibuf)
+    local UP = f.pack(U)
+    local P = f.pack(ival)
+    local PU = f.unpack(P)
+
+    record(name.." (U )", eq(U, oval), unpack(U))
+    record(name.." (UP)", eq(UP, obuf), test.od(UP))
+
+    record(name.." (P )", eq(P, obuf), test.od(P))
+    record(name.." (PU)", eq(PU, oval), unpack(PU))
   end
 
   xpcall(tester, function(err)
-      record(name.." !ERR", false, "Error executing test: "..err)
+      record(name.." !ERR", false, debug.traceback("Error executing test: "..err))
     end)
 end
 
