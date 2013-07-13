@@ -2,12 +2,6 @@
 -- does not test floating point operations - see test/fp-*endian.lua for those
 -- Copyright (c) 2011 Ben "ToxicFrog" Kelly; see COPYING
 
--- FIXME - stuff still needing a test case:
--- * seek past end of file
--- * input table doesn't match format string
--- * format string is badly formed
--- * format string is semantically nonsensical (compile and runtime cases)
-
 local test = require "vstruct.test.common"
 
 local x = test.x

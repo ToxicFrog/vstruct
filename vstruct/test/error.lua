@@ -1,8 +1,6 @@
--- FIXME - stuff still needing a test case:
--- * seek past end of file
--- * input table doesn't match format string
--- * format string is badly formed
--- * format string is semantically nonsensical (compile and runtime cases)
+-- tests for error conditions
+-- checks that vstruct properly raises an error (and raises the *correct* error)
+-- when things go wrong
 
 local test = require "vstruct.test.common"
 local vstruct = require "vstruct"
