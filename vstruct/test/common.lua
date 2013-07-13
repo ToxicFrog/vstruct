@@ -54,18 +54,24 @@ function test.autotest(name, format, buffer, data, output)
   output = output or buffer
   
   if type(data) ~= "table" then data = {data} end
-  
-  local unpacked = vstruct.unpack(format, buffer)
-  local packed = vstruct.pack(format, unpacked)
-  
-  record(name.." (U )", eq(unpacked, data), unpack(unpacked))
-  record(name.." (UP)", eq(packed, output), test.od(packed))
 
-  local packed = vstruct.pack(format, data)
-  local unpacked = vstruct.unpack(format, packed)
-  
-  record(name.." (P )", eq(packed, output), test.od(packed))
-  record(name.." (PU)", eq(unpacked, data), unpack(unpacked))
+  local function tester()
+    local unpacked = vstruct.unpack(format, buffer)
+    local packed = vstruct.pack(format, unpacked)
+    
+    record(name.." (U )", eq(unpacked, data), unpack(unpacked))
+    record(name.." (UP)", eq(packed, output), test.od(packed))
+
+    local packed = vstruct.pack(format, data)
+    local unpacked = vstruct.unpack(format, packed)
+    
+    record(name.." (P )", eq(packed, output), test.od(packed))
+    record(name.." (PU)", eq(unpacked, data), unpack(unpacked))
+  end
+
+  xpcall(tester, function(err)
+      record(name.." !ERR", false, "Error executing test: "..err)
+    end)
 end
 
 -- test whether an error is properly reported
