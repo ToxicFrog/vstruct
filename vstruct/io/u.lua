@@ -32,6 +32,7 @@ end
 function u.pack(_, data, width)
   local s = ""
   local e = io("endianness", "get")
+  data = math.trunc(data)
   
   for i=1,width do
     if e == "big" then

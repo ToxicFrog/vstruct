@@ -24,6 +24,8 @@ function i.unpackbits(bit, width)
 end
 
 function i.pack(_, data, width)
+  data = math.trunc(data)
+  
   if data < 0 then
     data = data + 2^(width*8)
   end
