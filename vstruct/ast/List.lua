@@ -15,6 +15,7 @@ return function()
           unpack = self.unpack;
           pack = self.pack;
           gen = self.gen;
+          execute = self.execute;
         }
         self[#self+1] = child
       end
@@ -37,6 +38,12 @@ return function()
       if node.show then
         node:show()
       end
+    end
+  end
+
+  function List:execute(env)
+    for i,child in ipairs(self) do
+      child:execute(env)
     end
   end
   

@@ -41,6 +41,17 @@ return function(name, args)
   function IO:gen(generator)
     generator:io(name, io(name, "hasvalue"), width, argv.n > 0 and argv2str(argv))
   end
-  
+
+  function IO:execute(env)
+    local hasvalue = io(name, "hasvalue")
+    local fn = env._bitpack and "bpio" or "io"
+
+    if width and not env._bitpack then
+      env.readahead(width)
+    end
+
+    env[fn](name, hasvalue, width, unpack(argv, 1, argv.n))
+  end
+
   return IO
 end

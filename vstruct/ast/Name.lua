@@ -15,6 +15,11 @@ return function(key, value)
     generator:name(key)
     value:gen(generator)
   end
+
+  function Name:execute(env)
+    env.name(key)
+    value:execute(env)
+  end
   
   return Name
 end

@@ -18,6 +18,14 @@ return function(count, value)
       generator:endloop(count)
     end
   end
+
+  function Repeat:execute(env)
+    if count > 0 then
+      for i=1,count do
+        value:execute(env)
+      end
+    end
+  end
   
   return Repeat
 end

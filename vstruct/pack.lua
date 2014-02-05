@@ -65,6 +65,7 @@ return function(refs)
   end
   
   function env.readahead(n)
+    do return end
     assert(bufpos == bufsize, "internal consistency failure: overlapping readahead")
     
     buffer = {}
@@ -109,6 +110,7 @@ return function(refs)
   
   function env.bitpack(width)
     if width then
+      env._bitpack = true
       bitpack = {}
       for i=1,width do
         bitpack[i] = 0
@@ -131,6 +133,7 @@ return function(refs)
       end
     else
       write(string.char(unpack(bitpack)))
+      env._bitpack = nil
       bitpack = nil
     end
   end

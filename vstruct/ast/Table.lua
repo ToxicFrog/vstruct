@@ -59,6 +59,12 @@ return function()
     self.list:gen(generator)
     generator:endtable()
   end
+
+  function Table:execute(env)
+    env.push()
+    self.list:execute(env)
+    env.pop()
+  end
   
   return Table
 end

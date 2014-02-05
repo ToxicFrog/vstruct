@@ -41,7 +41,7 @@ return function()
     append('')
   end
   
-  function Generator:finalize()
+  function Generator:finalize(ast)
     append('')
     append('return finalize()')
     
@@ -50,6 +50,12 @@ return function()
     
     if not f then
       error(err.."\n--- internal error in code generator ---\n--- report this as a bug in vstruct ---\n"..s.."\n--- internal error in code generator ---\n")
+    end
+
+    if _VSTRUCT_USE_AST_WALK then
+      function f(...)
+        return ast:execute(...)
+      end
     end
     
     local u_env = unpackenv(data)

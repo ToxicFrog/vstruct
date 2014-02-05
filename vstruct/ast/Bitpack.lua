@@ -28,6 +28,13 @@ return function(size)
     children:gen(generator)
     generator:bitpack()
   end
+
+  function Bitpack:execute(env)
+    env.readahead(size)
+    env.bitpack(size)
+    children:execute(env)
+    env.bitpack()
+  end
   
   return Bitpack
 end
