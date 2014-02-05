@@ -7,12 +7,6 @@ return function(child)
     return env.finalize()
   end
 
-  function Root:gen(generator)
-    generator:init()
-    child:gen(generator)
-    return generator:finalize(self)
-  end
-  
   function Root:append(...)
     return child:append(...)
   end

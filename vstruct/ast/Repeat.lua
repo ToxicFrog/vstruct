@@ -11,14 +11,6 @@ return function(count, value)
     value:show()
   end
   
-  function Repeat:gen(generator)
-    if count > 0 then
-      generator:startloop(count)
-      value:gen(generator)
-      generator:endloop(count)
-    end
-  end
-
   function Repeat:execute(env)
     if count > 0 then
       for i=1,count do

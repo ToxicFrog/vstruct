@@ -38,10 +38,6 @@ return function(name, args)
     print("io", name, width)
   end
   
-  function IO:gen(generator)
-    generator:io(name, io(name, "hasvalue"), width, argv.n > 0 and argv2str(argv))
-  end
-
   function IO:execute(env)
     local hasvalue = io(name, "hasvalue")
     local fn = env._bitpack and "bpio" or "io"

@@ -23,12 +23,6 @@ return function(size)
     assert(children.width == size*8, "bitpack contents are smaller than containing bitpack")
   end
   
-  function Bitpack:gen(generator)
-    generator:bitpack(size)
-    children:gen(generator)
-    generator:bitpack()
-  end
-
   function Bitpack:execute(env)
     env.readahead(size)
     env.bitpack(size)

@@ -10,12 +10,13 @@
 
 local struct = require "vstruct"
 local lexer  = require "vstruct.lexer"
+local api = require "vstruct.api"
 
 local ast = {}
 local cache = {}
 
 -- load the implementations of the various AST node types
-for _,node in ipairs { "IO", "List", "Name", "Table", "Repeat", "Generator", "Root", "Bitpack" } do
+for _,node in ipairs { "IO", "List", "Name", "Table", "Repeat", "Root", "Bitpack" } do
   ast[node] = require ((...).."."..node)
 end
 
@@ -39,13 +40,22 @@ function ast.parse(source)
     root:append(node)
   end
   
-  root = root:gen(ast.Generator())
+  local obj = {
+    ast = root;
+    source = source;
+    unpack = function(...)
+      return api.unpack(root, ...)
+    end;
+    pack = function(...)
+      return api.pack(root, ...)
+    end;
+  }
   
   if struct.cache == true then
-    cache[source] = root
+    cache[source] = obj
   end
   
-  return root
+  return obj
 end
 
 -- used by the rest of the parser to report syntax errors

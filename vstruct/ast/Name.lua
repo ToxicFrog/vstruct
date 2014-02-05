@@ -11,11 +11,6 @@ return function(key, value)
     value:show()
   end
   
-  function Name:gen(generator)
-    generator:name(key)
-    value:gen(generator)
-  end
-
   function Name:execute(env)
     env.name(key)
     value:execute(env)

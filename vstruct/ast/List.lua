@@ -47,17 +47,5 @@ return function()
     end
   end
   
-  function List:gen(generator)
-    if self.width then
-      generator:readahead(self.width)
-    end
-    for i,v in ipairs(self) do
-      v:gen(generator)
-    end
-    if self.width then
-      generator:readahead(nil)
-    end
-  end
-  
   return List
 end
