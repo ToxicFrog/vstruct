@@ -34,7 +34,7 @@ VStruct is a library for Lua 5.1 and 5.2 and LuaJIT 2. It provides functions for
   * fixed-size, length-prefixed, and null-terminated strings
   * booleans and bitmasks
   * bit-packed integers, booleans and bitmasks
-  
+
 In addition, the library supports seeking, alignment, and byte order controls, repetition, grouping of data into tables, and named fields.
 
 
@@ -78,33 +78,33 @@ If you install it elsewhere, you can accomplish this by modifying `package.path`
 
   * `$LIBDIR/?.lua`
   * `$LIBDIR/?/init.lua`
-    
+
 Note that installing it to `./` will *not* work unless you also add an entry for `./?/init.lua` to `package.path`; by default, lua will look for `./?.lua` but not `./?/init.lua`.
 
 
 ### 3.2 Testing ###
-    
+
 vstruct comes with a number of builtin tests. To run them, simply invoke vstruct/test.lua:
 
     lua vstruct/test.lua
-    
+
 If any of the tests fail, it will report them on standard output and then raise an error; if all of the tests pass, it will exit cleanly.
 
 If vstruct is properly installed, you can also load the tests as a library:
 
     lua -lvstruct.test
     require "vstruct.test"
-    
+
 With the same behaviour - it will load cleanly if the tests succeeded and raise an error if any of them failed.
 
 
 ### 3.3 Loading ###
-    
+
 vstruct makes itself available under the name `vstruct`. Note that, in accordance with current module conventions, it does *not* assign the module to a global; you must assign the return value of `require` yourself:
 
     local vstruct = require "vstruct"
     print(vstruct._VERSION)
-    
+
 vstruct does make one global modification when loaded: if the function `math.trunc` is not already defined, it will install its own definition.
 
 
@@ -136,7 +136,7 @@ These variables are used to control various settings of the library at runtime. 
 
     vstruct.cache = (true|false|nil)
 
-Enables or disables caching of compiled format strings. This can improve performance in the common case where you are re-using the same format strings many times; if, on the other hand, you are generating lots of different format strings, this will increase memory usage - perhaps significantly - for no performance benefit. 
+Enables or disables caching of compiled format strings. This can improve performance in the common case where you are re-using the same format strings many times; if, on the other hand, you are generating lots of different format strings, this will increase memory usage - perhaps significantly - for no performance benefit.
 
 If true, enables caching. If false, existing cache entries will be used, but new ones will not be created. If nil, the cache is entirely disabled.
 
@@ -246,7 +246,7 @@ A repeat marker consists of a decimal number *N*, followed by a *, followed by a
     "u4 u4 u4 u4"
     "{ u2 b1 } { u2 b1 }"
     "u2 u2 u4 u2 u2 u4 u2 u2 u4 m2"
-    
+
 Can be expressed more concisely as these:
 
     "4*u4"
@@ -255,7 +255,7 @@ Can be expressed more concisely as these:
 
 
 ### 5.2 Tables ###
-    
+
 A table consists of any number of format items enclosed in curlybraces. When unpacking, the items contained in the table will be packed into their own subtable in the output; when packing, items contained in the table will e searched for in a subtable. For example, this format string:
 
     "{ u4 u4 u4 } { { b1 b1 } s8 }"
@@ -269,14 +269,14 @@ Describes the following table (or something similarly structured):
         "test";
       };
     };
-    
+
 Note the outer table; unpack returns all unpacked values in a table by default, and pack expects the values it packs to be contained in one.
 
 Within a format string, tables may be nested arbitrarily.
 
 
 ### 5.3 Names ###
-    
+
 A name consists of a valid Lua identifier, or sequence of such identifiers separated with '.', followed by a ':'. It must be followed by a data item or a table. The following item will be stored in/retrieved from a field with the given name, rather than being (un)packed sequentially as is the default.
 
 For example, this table:
@@ -284,7 +284,7 @@ For example, this table:
     {
       coords = { x=1, y=2, z=3 };
     }
-    
+
 Could be expressed by either of these format strings:
 
     "coords:{ x:u4 y:u4 z:u4 }"
@@ -292,7 +292,7 @@ Could be expressed by either of these format strings:
 
 
 ### 5.4 Bitpacks ###
-    
+
 A bitpack consists of multiple data items packed into a single item (typically an int) with no regard for byte-alignment - for example, something that stores three five-bit ints and a one-bit boolean in a single 16-bit int.
 
 These are expressed in vstruct as `'[' size '|' items ']'`, where `size` is the size of the entire bitpack in *bytes* and `items` is a sequence of data items with their sizes in *bits*. The above example would be expressed thus:
@@ -325,7 +325,7 @@ By convention, in this section, upper-case single letters represent decimal numb
 
 
 ### 6.1 Controlling Endianness ###
-    
+
 At any given moment, when packing or unpacking, vstruct is in either *big-endian* or *little-endian* mode. These affect the order in which it expects bytes to appear for formats `f`, `u`, `i`, and `m`, for the initial string length in `c`, and for the bytes making up a bitpack. In big-endian mode it expects the most significant byte to occur first; in little-endian mode, the least sigificant byte. (There is at present no support for more esoteric modes like middle-endian.)
 
 Each operation starts in *host-endian* mode - the endianness is set to match that of the host system. It can subsequently be controlled with the following characters in the format string:
@@ -351,7 +351,7 @@ Resets the endianness to match that of the host system
 The means by which host-endianness is detected is, at present, implementation specific. Under luaJIT, it uses the ffi library (specifically, the ffi.abi function). Under standard lua, it uses string.dump on an empty function and checks the bytecode header. If neither of these is available, it emits a warning and assumes little-endian.
 
 If you have a lua implementation for which this approach fails (either crashing, or getting the wrong answer), please file a bug report.
-    
+
 
 ### 6.2 Seeking ###
 
@@ -383,7 +383,7 @@ Align to word size `S` (seek to the next address which is a multiple of `S`). If
 
 
 ### 6.3 Reading and Writing ###
-	
+
 The following items perform actual reading and writing of data.
 
 --------
@@ -392,7 +392,7 @@ The following items perform actual reading and writing of data.
 
 Read: as `uS`, but returns true if the result is non-zero and false otherwise.
 Write: as `uS` with input 1 if true and 0 otherwise.
-	
+
 Note that when writing, the output for true is integer 1, not all bits 1.
 
 --------
@@ -401,11 +401,11 @@ Note that when writing, the output for true is integer 1, not all bits 1.
 
 Read: `uS` to determine the length of the string `S'`, followed by `sS'`.
 Write: the length of the string as `uS`, followed by the string itself.
-	
+
 The counted string is a common idiom where a string is immediately prefixed with its length, as in:
 
     size_t len;
-		char[] str;
+    char[] str;
 
 The counted string format can be used to easily read and write these. The size provided is the size of the `len` field, which is treated as an unsigned int. Only the string itself is returned (when unpacking) or required (when packing). Internally, this is implemented as `u` followed by `s`; consequently, it is affected by endianness.
 
@@ -417,7 +417,7 @@ Read: a float, double, or quad.
 Write: a float, double, or quad.
 
 Valid sizes are 4 (float) 8 (double) and 16 (quad). Note that quads have more precision than the default lua number format (double), and thus may not unpack exactly unless you're using a custom lua build.
-	
+
 Affected by endianness.
 
 --------
@@ -437,7 +437,7 @@ Affected by endianness.
 
 Read: as `uS`, but explodes the result into a list of booleans, one per bit.
 Write: implodes the input value, then writes it as `uS`.
-	
+
 In effect, a `u` that automatically calls `vstruct.implode/explode`; unlike `u`, however, it can operate on fields of arbitrarily large size without loss of precision, regardless of what numeric type lua is using.
 
 Affected by endianness.
@@ -450,7 +450,7 @@ Affected by endianness.
 
 Read: a `S`-byte fixed point number with `F` bits of fractional precision.
 Write: a `S`-byte fixed point number long with `F` bits of fractional precision.
-	
+
 When writing, values which cannot be precisely expressed in the given precision will be truncated, not rounded.
 
 Affected by endianness.
@@ -470,7 +470,7 @@ Write: writes exactly `S` bytes; if the given string is too long, it will be tru
 
 Read: an unsigned integer with `S` bytes of precision.
 Write: an unsigned integer with `S` bytes of precision.
-	
+
 On write, non-integer values will be truncated. Negative values will be written in absolute form.
 
 Affected by endianness.
@@ -491,7 +491,7 @@ This format does not consume input data or produce output data. However, unlike 
     zS,C  -- Nul terminated/nul padded string.
 
 `S` and `C` are both optional. The `,` is mandatory if `C` is present.
-  
+
 `S`, if present, is the length of the string (in *bytes*, not characters).
 
 `C`, if present, is the size in *bytes* of individual characters in the string. The default is 1.  It is important when operating on wide-character strings to specify `C` correctly, so that sequences like "00 66 00 67" are not incorrectly interpreted as ending the string.
@@ -509,12 +509,12 @@ Will be one byte long (plus one byte termination) under `"z6,1"`, but four bytes
 
 
 ## 7. Adding new IO operations ##
-    
+
 If you want to add support for a new data type, or modify or replace an existing one, this is how you do it. To see how the current ones are implemented, look at the files in vstruct/io/; any new formats added will use the same API.
 
 
 ### 7.1 How IO operations are loaded ###
-    
+
 When vstruct first sees an operation - say `"p2,8"` - it first breaks it down into two parts - the `op` ("p") and the `args` (2,8). It then attempts to load a handler for this operation using:
 
     require("vstruct.io."..op)
@@ -570,9 +570,9 @@ This is called when the operation is performed inside a bitpack. Data should be 
 The converse of packbits. Each call to `bits()` returns the next bit, MSB first.
 
 
-    
+
 ## 8. Credits ##
-    
+
 While most of the library code was written by me (Ben Kelly), the existence of this library owes itself to many others.
 
   * The original inspiration came from Roberto Ierusalimschy's "struct" library and Luiz Henrique de Figueiredo's "lpack" library, as well as the "struct" available in Python.
