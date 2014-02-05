@@ -87,4 +87,20 @@ function vstruct.compile(fmt)
   return ast.parse(fmt)
 end
 
+-- Takes the same arguments as vstruct.unpack()
+-- returns an iterator over the input, repeatedly calling unpack until it runs
+-- out of data
+function vstruct.records(fmt, fd, unpacked)
+  local t = ast.parse(fmt)
+  if type(fd) == "string" then
+    fd = vstruct.cursor(fd)
+  end
+  
+  return function()
+    if fd:read(0) then
+      return t.unpack(fd, unpacked)
+    end
+  end
+end
+
 return vstruct

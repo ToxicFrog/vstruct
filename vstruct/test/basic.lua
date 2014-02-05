@@ -2,6 +2,7 @@
 -- does not test floating point operations - see test/fp-*endian.lua for those
 -- Copyright (c) 2011 Ben "ToxicFrog" Kelly; see COPYING
 
+local vstruct = require "vstruct"
 local test = require "vstruct.test.common"
 
 local x = test.x
@@ -68,4 +69,10 @@ T("UCS-2 z",  "> z,2",  x"0061 0062 0000 FFFF", "\0a\0b", x"0061 0062 0000")
 T("UCS-2 z8", "> z8,2", x"0061 0062 0000 FFFF", "\0a\0b", x"0061 0062 0000 0000")
 
 T("repeated repeat", "2*2*u1", x"01 01 01 01", { 1, 1, 1, 1 })
+
+local i = 1
+for val in vstruct.records("u1", x"01 02 03 04 05 06", true) do
+  test.record("stream #"..i, val == i, val)
+  i = i+1
+end
 

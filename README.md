@@ -208,6 +208,19 @@ Is equivalent to:
     d = vstruct.unpack(fmt, fd)
     vstruct.pack(fmt, fd, d)
 
+--------
+
+    vstruct.records(format, <fd or string>)
+
+Given a format string, and a data source to read records of that format from, `records` returns an iterator over all of those records. It terminates when there is no more data to be read (i.e. fd:read(0) returns nil rather than ""). If there is an incomplete record at the end of the data source, it will error.
+
+It is roughly analogous to:
+
+    for _,record in ipairs(vstruct.unpack(NUM_RECORDS .. "*" .. format, fd)) do
+      ...
+    end
+
+Except that it doesn't require you to know the number of records in advance, and doesn't read all of the records into memory at once.
 
 
 ## 5. Format string syntax ##
