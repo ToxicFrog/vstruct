@@ -70,16 +70,16 @@ function test.autotest(name, format, ibuf, ival, obuf, oval)
   local function tester()
     local f = vstruct.compile(format)
 
-    local U = f.unpack(ibuf)
+    local U = f:unpack(ibuf)
     record(name.." (U )", eq(U, oval), unpack(U))
 
-    local UP = f.pack(U)
+    local UP = f:pack(U)
     record(name.." (UP)", eq(UP, obuf), test.od(UP))
 
-    local P = f.pack(ival)
+    local P = f:pack(ival)
     record(name.." (P )", eq(P, obuf), test.od(P))
 
-    local PU = f.unpack(P)
+    local PU = f:unpack(P)
     record(name.." (PU)", eq(PU, oval), unpack(PU))
   end
 

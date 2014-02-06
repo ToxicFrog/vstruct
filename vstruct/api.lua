@@ -80,8 +80,9 @@ function api.compile(format)
 
   local obj = {
     source = format;
-    unpack = function(...) return api.unpack(root, ...) end;
-    pack = function(...) return api.pack(root, ...) end;
+    unpack = api.unpack;
+    pack = api.pack;
+    execute = root.execute;
   }
 
   if vstruct.cache == true then

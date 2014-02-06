@@ -73,8 +73,7 @@ end
 -- unpack data from the buffer or file according to the format string
 function vstruct.unpack(fmt, ...)
   api.check_arg("unpack", 1, fmt, "string")
-  local t = api.compile(fmt)
-  return t.unpack(...)
+  return api.compile(fmt):unpack(...)
 end
 
 -- Given a format string, an optional file-like, and a table of data,
@@ -82,8 +81,7 @@ end
 -- according to the format string
 function vstruct.pack(fmt, ...)
   api.check_arg("pack", 1, fmt, "string")
-  local t = api.compile(fmt)
-  return t.pack(...)
+  return api.compile(fmt):pack(...)
 end
 
 -- Given a format string, compile it and return a table containing the original
