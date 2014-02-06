@@ -14,11 +14,6 @@ return function()
     return Table.list:append(...)
   end
   
-  function Table:show()
-    print("table", Table.width, #Table.list)
-    self.list:show()
-  end
-  
   function Table:execute(env)
     env.push()
     self.list:execute(env)

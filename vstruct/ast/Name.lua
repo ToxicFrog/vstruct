@@ -6,11 +6,6 @@ return function(key, value)
     value = value;
   }
   
-  function Name:show()
-    io.write("name\t"..key.."\t")
-    value:show()
-  end
-  
   function Name:execute(env)
     env.name(key)
     value:execute(env)

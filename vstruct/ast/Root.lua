@@ -11,9 +11,5 @@ return function(child)
     return child:append(...)
   end
   
-  function Root:show()
-    return child:show()
-  end
-  
   return Root
 end

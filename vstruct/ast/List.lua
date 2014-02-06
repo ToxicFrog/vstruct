@@ -33,14 +33,6 @@ return function()
     end
   end
   
-  function List:show(data)
-    for i,node in ipairs(self) do
-      if node.show then
-        node:show()
-      end
-    end
-  end
-
   function List:execute(env)
     for i,child in ipairs(self) do
       child:execute(env)

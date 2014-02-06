@@ -34,10 +34,6 @@ return function(name, args)
     width = width;
   }
   
-  function IO:show()
-    print("io", name, width)
-  end
-  
   function IO:execute(env)
     local hasvalue = io(name, "hasvalue")
     local fn = env._bitpack and "bpio" or "io"

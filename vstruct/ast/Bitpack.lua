@@ -8,11 +8,6 @@ return function(size)
   
   local children = List();
   
-  function Bitpack:show()
-    print("bitpack", size)
-    children:show()
-  end
-  
   function Bitpack:append(node)
     children:append(node)
     assert(children.width, "bitpacks cannot contain variable-width fields")
