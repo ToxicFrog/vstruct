@@ -74,6 +74,11 @@ for format in plain_formats:gmatch(".") do
     E("bad-format-size-present-"..format, "is an endianness control, and does not have width", vstruct.compile, format.."1")
 end
 
+-- format string splicing
+vstruct.register("coord", "x:u1 y:u1 z:u1")
+E("splice-wrong-syntax", "parsing format string at character 10.*expected value.*got splice", vstruct.unpack, "position:&coord", "000")
+E("splice-wrong-name", "attempt to splice in format 'coords', which is not registered", vstruct.unpack, "&coords", "000")
+
 -- input table doesn't match format string
 E("bad-data-missing", "malformed table passed to pack: no value at index 1", vstruct.pack, "u4", {})
 E("bad-data-missing-name", "malformed table passed to pack: no value for name 't'", vstruct.pack, "t:{ x:u4 }", {})

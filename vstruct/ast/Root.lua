@@ -1,5 +1,5 @@
 return function(child)
-  local Root = {}
+  local Root = { child=child }
   
   function Root:execute(fd, data, env)
     env.initialize(fd, data, env)

@@ -223,6 +223,12 @@ If `unpack` is true, it will additionally call `unpack()` (`table.unpack()` in 5
 
 If `unpack` is false or unspecified, it behaves the same as `vstruct.unpack`.
 
+--------
+
+    vstruct.register(name, format)
+
+Parse and register `format` in vstruct's internal registry under the name `name`. This name can later be used as a shortcut to refer to the registered format via format string splicing (see below). It has the same return value as `vstruct.compile`.
+
 
 ## 5. Format string syntax ##
 
@@ -233,6 +239,7 @@ A format string consists of a series of *format items*. A format item is:
   * a table '{ ... }' enclosing any number of format items
   * a name 'foo:' followed by a data item or table
   * a bitpack '[S| ... ]' enclosing any number of *bitpack-capable* format items
+  * a splice '&name'
   * a comment, starting with '--' and ending at the next newline
 
 These are explained in detail in the rest of this section, apart from data items, seek controls, and endianness controls, which are a sufficiently lengthy topic that they have a section of their own (section 6).
@@ -317,6 +324,14 @@ It will be read in the following manners in big- and little-endian modes
 
 At present, only formats `b`, `u`, `i`, `x` and `m` are supported inside bitpacks.
 
+
+### 5.5 Splices ###
+
+Splices let you concisely refer to other format strings, provided that those others have been registered ahead of time using `vstruct.register`. A splice `&foo` is equivalent to including the contents of the format string registered as `foo` at the point where the splice appears; thus, the following two unpack calls are equivalent:
+
+    vstruct.register("coord", "x:u4 y:u4 z:u4")
+    vstruct.unpack("name:z128 position:{ x:u4 y:u4 z:u4 }")
+    vstruct.unpack("name:z128 position:{ &coord }")
 
 ## 6. Data Items ##
 

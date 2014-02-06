@@ -8,7 +8,7 @@
 
 -- Copyright (c) 2011 Ben "ToxicFrog" Kelly
 
-local struct = require "vstruct"
+local vstruct = require "vstruct"
 local lexer  = require "vstruct.lexer"
 
 local ast = {}
@@ -23,8 +23,8 @@ end
 -- returns a table containing pack and unpack functions and the original
 -- source - see README#vstruct.compile for a description.
 --
--- if (struct.cache) is non-nil, will return the cached version, if present
--- if (struct.cache) is true, will create a new cache entry, if needed
+-- if (vstruct.cache) is non-nil, will return the cached version, if present
+-- if (vstruct.cache) is true, will create a new cache entry, if needed
 function ast.parse(source)
   local lex = lexer(source)
   local root = ast.Root(ast.List())
@@ -58,9 +58,8 @@ function ast.key(lex)
   local name = lex.next().text
   local next = lex.peek()
   
-  next = ast.next(lex)
-  if next.tag == "io" or next.tag == "table" then
-    return ast.Name(name, next)
+  if next.type == "name" or next.type == "{" then
+    return ast.Name(name, ast.next(lex))
   else
     ast.error(lex, "value (field or table)")
   end
@@ -93,10 +92,24 @@ function ast.next(lex)
     
   elseif tok.type == "control" then
     return ast.control(lex)
+
+  elseif tok.type == "splice" then
+    return ast.splice(lex)
     
   else
     ast.error(lex, "'(', '{', '[', name, number, control, or io specifier")
   end
+end
+
+function ast.splice(lex)
+  local name = lex.next().text
+
+  local root = vstruct.registry[name]
+  if not root then
+    error("vstruct: attempt to splice in format '"..name.."', which is not registered")
+  end
+
+  return root.child
 end
 
 function ast.next_until(lex, type)

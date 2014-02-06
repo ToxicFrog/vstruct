@@ -3,7 +3,7 @@
 -- Copyright (C) 2011 Ben "ToxicFrog" Kelly; see COPYING
 
 local vstruct = {}
-package.loaded.vstruct = {}
+package.loaded.vstruct = vstruct
 
 vstruct._NAME = "vstruct"
 vstruct._VERSION = "1.1.4"
@@ -11,6 +11,7 @@ vstruct._M = vstruct
 
 vstruct.cursor = require "vstruct.cursor"
 local api = require "vstruct.api"
+local ast = require "vstruct.ast"
 
 local _unpack = unpack or table.unpack
 
@@ -19,6 +20,7 @@ local _unpack = unpack or table.unpack
 -- false: cache is read-only
 -- nil: cache is disabled
 vstruct.cache = true
+vstruct.registry = {}
 
 -- detect system endianness on startup
 require "vstruct.io" ("endianness", "probe")
@@ -86,6 +88,13 @@ end
 function vstruct.compile(fmt)
   api.check_arg("compile", 1, fmt, "string")
   return api.compile(fmt)
+end
+
+function vstruct.register(name, fmt)
+  api.check_arg("register", 1, fmt, "string")
+  api.check_arg("register", 2, fmt, "string")
+  local obj = ast.parse(fmt)
+  vstruct.registry[name] = obj
 end
 
 -- Takes the same arguments as vstruct.unpack()
