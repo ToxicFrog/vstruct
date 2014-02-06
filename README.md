@@ -153,16 +153,11 @@ To access the wrapped string, use cur.str; to determine where the read/write poi
 
 --------
 
-    vstruct.unpack(fmt, <fd or string>, [unpacked])
+    vstruct.unpack(fmt, <fd or string>, [data])
 
 `unpack` takes a format string and a buffer or file to unpack from, and returns a table of unpacked data items. The items will appear in the table with the same order and/or names that they had in the format string.
 
-If the `unpacked` argument is present and true, `unpack` will return the data items as individual return values rather than as a table, as in the following example:
-
-    vstruct.unpack("3*u1", buf)         -- { 1, 2, 3 }
-    vstruct.unpack("3*u1", buf, true)   -- 1, 2, 3
-
-If the `unpacked` argument is present and a table, `unpack` will pack the items into this table in-place and return the table. Existing entries in the table will not be cleared (but might be overwritten by named entries). Numbered entries will always be appended, not overwritten:
+The `data` argument is an optional table. If present, `unpack` will not create a new table, but will unpack the fields into this table in-place, and return the table. Existing entries in the table will not be cleared (but might be overwritten by named entries). Numbered entries will always be appended, not overwritten:
 
     t = { 0, 0, 0 }
     vstruct.unpack("3*u1 x:u1", buf, t)      -- t == { 0, 0, 0, 1, 2, 3; x = 4 }
@@ -173,9 +168,9 @@ If the `unpacked` argument is present and a table, `unpack` will pack the items 
 
 `pack` takes a format string and a table of data and packs the contents of the table. If the `fd` argument is present, it will write the data directly to it using standard file io methods; if `fd` is a string, it will wrap it with `vstruct.cursor` first.
 
-If `fd` is omitted entirely, it will pack the data into a string and return the resulting string.
+`pack` returns the packed data in string format, if `fd` was omitted or was a string to wrap; otherwise it returns `fd` as originally passed to the function.
 
-The structure of the table is expected to be the same as the structure that would be created by a call to unpack with the same format string; in effect, you should be able to take the result of unpack and pass it to pack unaltered (and get the same packed data back), and vice versa.
+The structure of the `data` table is expected to be the same as the structure that would be created by a call to unpack with the same format string; in effect, you should be able to take the result of unpack and pass it to pack unaltered (and get the same packed data back), and vice versa.
 
 --------
 

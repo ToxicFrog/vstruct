@@ -9,6 +9,15 @@ local E = test.errortest
 test.group "error conditions"
 
 
+-- utility functions gone horribly wrong
+E("missing-explode-1", "bad argument #1 to 'explode' %(number expected, got nil%)", vstruct.explode)
+E("invalid-explode-1", "bad argument #1 to 'explode' %(number expected, got boolean%)", vstruct.explode, true, nil)
+E("invalid-explode-2", "bad argument #2 to 'explode' %(number expected, got boolean%)", vstruct.explode, 0, true)
+
+E("missing-implode-1", "bad argument #1 to 'implode' %(table expected, got nil%)", vstruct.implode)
+E("invalid-implode-1", "bad argument #1 to 'implode' %(table expected, got boolean%)", vstruct.implode, true, nil)
+E("invalid-implode-2", "bad argument #2 to 'implode' %(number expected, got boolean%)", vstruct.implode, { 0 }, true)
+
 -- attempt to read/seek past bounds of file
 -- seeking past the end is totally allowed when writing
 -- when reading, you will get a different error when you try to do IO
@@ -17,18 +26,19 @@ E("invalid-seek-ub", "attempt to seek prior to start of file", vstruct.unpack, "
 E("invalid-seek-pb", "attempt to seek prior to start of file", vstruct.pack, "@0 -4", "1234", {})
 
 -- invalid argument type
-E("invalid-arg-u1", "bad argument to vstruct API.*format string expected, got nil", vstruct.unpack)
-E("invalid-arg-p1", "bad argument to vstruct API.*format string expected, got nil", vstruct.pack)
-E("invalid-arg-c1", "bad argument to vstruct API.*format string expected, got nil", vstruct.compile)
-E("invalid-arg-u1", "bad argument to vstruct API.*format string expected, got number", vstruct.unpack, 0, "1234")
-E("invalid-arg-p1", "bad argument to vstruct API.*format string expected, got number", vstruct.pack, 0, {})
-E("invalid-arg-c1", "bad argument to vstruct API.*format string expected, got number", vstruct.compile, 0)
+E("invalid-arg-u1", "bad argument #1 to 'unpack' %(string expected, got nil%)", vstruct.unpack)
+E("invalid-arg-p1", "bad argument #1 to 'pack' %(string expected, got nil%)", vstruct.pack)
+E("invalid-arg-c1", "bad argument #1 to 'compile' %(string expected, got nil%)", vstruct.compile)
+E("invalid-arg-u1", "bad argument #1 to 'unpack' %(string expected, got number%)", vstruct.unpack, 0, "1234")
+E("invalid-arg-p1", "bad argument #1 to 'pack' %(string expected, got number%)", vstruct.pack, 0, {})
+E("invalid-arg-c1", "bad argument #1 to 'compile' %(string expected, got number%)", vstruct.compile, 0)
 
-E("invalid-arg-u2", "invalid fd argument to vstruct.unpack", vstruct.unpack, "@0", 0)
-E("invalid-arg-p2", "invalid fd argument to vstruct.pack", vstruct.pack, "@0", 0, {})
+E("invalid-arg-u2", "bad argument #2 to 'unpack' %(file or string expected, got number%)", vstruct.unpack, "@0", 0)
+E("invalid-arg-p2", "bad argument #2 to 'pack' %(file or string expected, got number%)", vstruct.pack, "@0", 0, {})
 
-E("invalid-arg-u3", "invalid data argument to vstruct.unpack", vstruct.unpack, "@0", "", "")
-E("invalid-arg-p3", "invalid data argument to vstruct.pack", vstruct.pack, "@0", nil, "1234")
+E("invalid-arg-u3", "bad argument #3 to 'unpack' %(table expected, got string%)", vstruct.unpack, "@0", "", "1234")
+E("invalid-arg-p3", "bad argument #3 to 'pack' %(table expected, got string%)", vstruct.pack, "@0", nil, "1234")
+E("invalid-arg-p3", "bad argument #3 to 'pack' %(table expected, got string%)", vstruct.pack, "@0", "1234")
 
 -- format string is ill-formed
 -- note that the empty format string is well-formed, does nothing, and returns/accepts the empty table

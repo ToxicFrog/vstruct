@@ -71,8 +71,8 @@ T("UCS-2 z8", "> z8,2", x"0061 0062 0000 FFFF", "\0a\0b", x"0061 0062 0000 0000"
 T("repeated repeat", "2*2*u1", x"01 01 01 01", { 1, 1, 1, 1 })
 
 local i = 1
-for val in vstruct.records("u1", x"01 02 03 04 05 06", true) do
-  test.record("stream #"..i, val == i, val)
+for val in vstruct.records("u1", x"01 02 03 04 05 06") do
+  test.record("stream #"..i, val[1] == i, val[1])
   i = i+1
 end
 

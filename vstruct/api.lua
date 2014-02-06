@@ -1,6 +1,8 @@
+local vstruct = require "vstruct"
 local unpackenv = require "vstruct.unpack"
 local packenv = require "vstruct.pack"
 local cursor  = require "vstruct.cursor"
+local ast = require "vstruct.ast"
 
 local lua52 = tonumber(_VERSION:match"%d+%.%d+") >= 5.2
 local loadstring = lua52 and load or loadstring
@@ -8,60 +10,85 @@ local _unpack = table.unpack or unpack
 
 local api = {}
 
-local function checkmethod(obj, name)
-  local function check()
-    return obj[name]
+function api.check_arg(caller, index, value, typename, check)
+  if not check then
+    check = function(v) return type(v) == typename end
   end
-  local r,e = pcall(check)
-  return (r and e)
+
+  return check(value)
+      or error(string.format(
+            "bad argument #%d to '%s' (%s expected, got %s)",
+            index,
+            caller,
+            typename,
+            type(value)))
+end
+
+local function is_fd(fd)
+  local e,r = pcall(function()
+    return fd and (fd.read or fd.write)
+  end)
+  return e and r
+end
+
+local function wrap_fd(fd)
+  if type(fd) == "string" then
+    return cursor(fd)
+  end
+  return fd
+end
+
+local function unwrap_fd(fd)
+  if getmetatable(fd) == cursor then
+    return fd.str
+  end
+  return fd
 end
 
 function api.unpack(ast, fd, data)
-  -- autobox strings
-  if type(fd) == "string" then
-    fd = cursor(fd)
+  fd = wrap_fd(fd)
+
+  api.check_arg("unpack", 2, fd, "file or string", is_fd)
+  if data ~= nil then
+    api.check_arg("unpack", 3, data, "table")
   end
-  
-  -- fd must have file duck type
-  assert(checkmethod(fd, "read"), "invalid fd argument to vstruct.unpack: must be a string or file-like object")
-  
-  -- data must be true ('return unpacked results')
-  -- or false/absent ('create new table')
-  -- or a table to fill in
-  assert(data == nil or type(data) == "boolean" or type(data) == "table"
-    , "invalid data argument to vstruct.unpack: if present, must be table or boolean") 
-  
-  if data == true then
-    return _unpack(ast:execute(fd, {}, unpackenv({})))
-  else
-    return ast:execute(fd, data or {}, unpackenv({}))
-  end
+
+  return ast:execute(fd, data or {}, unpackenv({}))
 end
-    
+
 function api.pack(ast, fd, data)
   if fd and not data then
     data,fd = fd,nil
   end
-  
-  assert(type(data) == "table", "invalid data argument to vstruct.pack: must be a table")
-  
-  local realfd
-  
-  if not fd or type(fd) == "string" then
-    realfd = cursor(fd or "")
-  else
-    realfd = fd
+  fd = wrap_fd(fd or "")
+
+  api.check_arg("pack", 2, fd, "file or string", is_fd)
+  api.check_arg("pack", 3, data, "table")
+
+  local result = ast:execute(fd, data, packenv({}))
+  return unwrap_fd(fd)
+end
+
+local cache = {}
+
+function api.compile(format)
+  if vstruct.cache ~= nil and cache[format] then
+    return cache[format]
   end
-  
-  -- fd must have file duck type
-  assert(checkmethod(realfd, "write"), "invalid fd argument to vstruct.pack: must be a string or file-like object")
-  
-  local result = ast:execute(realfd, data, packenv({}))
-  if realfd == fd then
-    return result
-  else
-    return result.str
+
+  local root = ast.parse(format);
+
+  local obj = {
+    source = format;
+    unpack = function(...) return api.unpack(root, ...) end;
+    pack = function(...) return api.pack(root, ...) end;
+  }
+
+  if vstruct.cache == true then
+    cache[format] = obj
   end
+
+  return obj
 end
 
 return api

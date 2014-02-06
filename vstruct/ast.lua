@@ -10,7 +10,6 @@
 
 local struct = require "vstruct"
 local lexer  = require "vstruct.lexer"
-local api = require "vstruct.api"
 
 local ast = {}
 local cache = {}
@@ -27,12 +26,6 @@ end
 -- if (struct.cache) is non-nil, will return the cached version, if present
 -- if (struct.cache) is true, will create a new cache entry, if needed
 function ast.parse(source)
-  assert(type(source) == "string", "vstruct: bad argument to vstruct API (format string expected, got "..type(source)..")")
-
-  if struct.cache ~= nil and cache[source] then
-    return cache[source]
-  end
-
   local lex = lexer(source)
   local root = ast.Root(ast.List())
   
@@ -40,22 +33,7 @@ function ast.parse(source)
     root:append(node)
   end
   
-  local obj = {
-    ast = root;
-    source = source;
-    unpack = function(...)
-      return api.unpack(root, ...)
-    end;
-    pack = function(...)
-      return api.pack(root, ...)
-    end;
-  }
-  
-  if struct.cache == true then
-    cache[source] = obj
-  end
-  
-  return obj
+  return root
 end
 
 -- used by the rest of the parser to report syntax errors
