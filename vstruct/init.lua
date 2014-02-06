@@ -2,10 +2,6 @@
 
 -- Copyright (C) 2011 Ben "ToxicFrog" Kelly; see COPYING
 
-local table,math,type,require,assert,_unpack = table,math,type,require,assert,unpack
-local debug = debug
-local print = print
-
 local vstruct = {}
 package.loaded.vstruct = {}
 
@@ -14,8 +10,9 @@ vstruct._VERSION = "1.1.4"
 vstruct._M = vstruct
 
 vstruct.cursor = require "vstruct.cursor"
-
 local api = require "vstruct.api"
+
+local _unpack = unpack or table.unpack
 
 -- cache control for the parser
 -- true: cache is read/write (new formats will be cached, old ones retrieved)
@@ -102,7 +99,11 @@ function vstruct.records(fmt, fd, unpacked)
   
   return function()
     if fd:read(0) then
-      return t.unpack(fd, unpacked)
+      if unpacked then
+        return _unpack(t:unpack(fd))
+      else
+        return t:unpack(fd)
+      end
     end
   end
 end

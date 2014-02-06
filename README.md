@@ -205,7 +205,7 @@ Is equivalent to:
 
 --------
 
-    vstruct.records(format, <fd or string>)
+    vstruct.records(format, <fd or string>, [unpack])
 
 Given a format string, and a data source to read records of that format from, `records` returns an iterator over all of those records. It terminates when there is no more data to be read (i.e. fd:read(0) returns nil rather than ""). If there is an incomplete record at the end of the data source, it will error.
 
@@ -216,6 +216,12 @@ It is roughly analogous to:
     end
 
 Except that it doesn't require you to know the number of records in advance, and doesn't read all of the records into memory at once.
+
+If `unpack` is true, it will additionally call `unpack()` (`table.unpack()` in 5.2) on each record and return the results of the unpacking, so that you can (for example) easily read a list of coordinates with:
+
+    for x,y,z in vstruct.records("f8 f8 f8", fd, true) do ...
+
+If `unpack` is false or unspecified, it behaves the same as `vstruct.unpack`.
 
 
 ## 5. Format string syntax ##
