@@ -9,6 +9,7 @@ local loadstring = lua52 and load or loadstring
 local _unpack = table.unpack or unpack
 
 local api = {}
+vstruct.registry = {}
 
 function api.check_arg(caller, index, value, typename, check)
   if not check then
@@ -71,22 +72,29 @@ end
 
 local cache = {}
 
-function api.compile(format)
+function api.compile(name, format)
+  local obj,root
+
   if vstruct.cache ~= nil and cache[format] then
-    return cache[format]
+    obj = cache[format]
+    root = obj.ast
+  else
+    root = ast.parse(format)
+    obj = {
+      source = format;
+      ast = root;
+      unpack = api.unpack;
+      pack = api.pack;
+      execute = root.execute;
+    }
+
+    if vstruct.cache == true then
+      cache[format] = obj
+    end
   end
 
-  local root = ast.parse(format);
-
-  local obj = {
-    source = format;
-    unpack = api.unpack;
-    pack = api.pack;
-    execute = root.execute;
-  }
-
-  if vstruct.cache == true then
-    cache[format] = obj
+  if name then
+    vstruct.registry[name] = root
   end
 
   return obj

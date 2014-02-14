@@ -82,5 +82,5 @@ for val in vstruct.records("i:u1", x"01 02 03 04 05 06") do
   i = i+1
 end
 
-vstruct.register("coord", "x:u1 y:u1 z:u1")
+vstruct.compile("coord", "x:u1 y:u1 z:u1")
 T("splice", "> position:{ &coord }", x"01 02 03", { position = { x = 1, y = 2, z = 3 } })

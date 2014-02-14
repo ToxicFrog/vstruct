@@ -184,24 +184,26 @@ The structure of the `data` table is expected to be the same as the structure th
 
 --------
 
-    vstruct.compile(format)
+    vstruct.compile([name,] format)
 
-`compile` takes a format string and runs it through the compiler and code generator, but does not actually pack or unpack anything. Instead, it returns a table containing three values:
+`compile` takes a format string and runs it through the compiler and code generator, but does not actually pack or unpack anything. Instead, it returns a *format object* with the following fields:
 
-  * `pack(fd, data)` - equivalent to `struct.pack(format, fd, data)`
-  * `unpack(fd, [unpacked])` - equivalent to `struct.unpack(format, fd, [unpacked])`
-  * `source` - a string containing the source code generated from the format string. This is primarily of interest when debugging vstruct itself.
+  * `format.source` - the original format string
+  * `format:pack(fd, data)` - equivalent to `vstruct.pack(format.source, fd, data)`
+  * `format:unpack(fd, [data]) - equivalent to `vstruct.unpack(format.source, fd, data)`
 
 In effect, the following code:
 
-    t = vstruct.compile(fmt)
-    d = t.unpack(fd)
-    t.pack(fd, d)
+    obj = vstruct.compile(fmt)
+    d = obj:unpack(fd)
+    obj:pack(fd, d)
 
 Is equivalent to:
 
     d = vstruct.unpack(fmt, fd)
     vstruct.pack(fmt, fd, d)
+
+If `name` is specified, it additionally registers the format string it just compiled under `name`, allowing it to referenced in future format strings as `&name`; see section 5.5 "Splices" for details.
 
 --------
 
@@ -222,12 +224,6 @@ If `unpack` is true, it will additionally call `unpack()` (`table.unpack()` in 5
     for x,y,z in vstruct.records("f8 f8 f8", fd, true) do ...
 
 If `unpack` is false or unspecified, it behaves the same as `vstruct.unpack`.
-
---------
-
-    vstruct.register(name, format)
-
-Parse and register `format` in vstruct's internal registry under the name `name`. This name can later be used as a shortcut to refer to the registered format via format string splicing (see below). It has the same return value as `vstruct.compile`.
 
 
 ## 5. Format string syntax ##
@@ -332,6 +328,7 @@ Splices let you concisely refer to other format strings, provided that those oth
     vstruct.register("coord", "x:u4 y:u4 z:u4")
     vstruct.unpack("name:z128 position:{ x:u4 y:u4 z:u4 }")
     vstruct.unpack("name:z128 position:{ &coord }")
+
 
 ## 6. Data Items ##
 

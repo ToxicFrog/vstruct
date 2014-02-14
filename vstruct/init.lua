@@ -20,7 +20,6 @@ local _unpack = unpack or table.unpack
 -- false: cache is read-only
 -- nil: cache is disabled
 vstruct.cache = true
-vstruct.registry = {}
 
 -- detect system endianness on startup
 require "vstruct.io" ("endianness", "probe")
@@ -72,7 +71,7 @@ end
 -- unpack data from the buffer or file according to the format string
 function vstruct.unpack(fmt, ...)
   api.check_arg("unpack", 1, fmt, "string")
-  return api.compile(fmt):unpack(...)
+  return api.compile(nil, fmt):unpack(...)
 end
 
 -- Given a format string, an optional file-like, and a table of data,
@@ -80,28 +79,30 @@ end
 -- according to the format string
 function vstruct.pack(fmt, ...)
   api.check_arg("pack", 1, fmt, "string")
-  return api.compile(fmt):pack(...)
+  return api.compile(nil, fmt):pack(...)
 end
 
 -- Given a format string, compile it and return a table containing the original
 -- source and the pack/unpack functions derived from it.
-function vstruct.compile(fmt)
-  api.check_arg("compile", 1, fmt, "string")
-  return api.compile(fmt)
-end
-
-function vstruct.register(name, fmt)
-  api.check_arg("register", 1, fmt, "string")
-  api.check_arg("register", 2, fmt, "string")
-  local obj = ast.parse(fmt)
-  vstruct.registry[name] = obj
+function vstruct.compile(name, fmt)
+  api.check_arg("compile", 1, name, "string")
+  if fmt then
+    api.check_arg("compile", 2, fmt, "string")
+    return api.compile(name, fmt)
+  end
+  return api.compile(nil, name)
 end
 
 -- Takes the same arguments as vstruct.unpack()
 -- returns an iterator over the input, repeatedly calling unpack until it runs
 -- out of data
 function vstruct.records(fmt, fd, unpacked)
-  local t = api.compile(fmt)
+  api.check_arg("records", 1, fmt, "string")
+  if unpacked ~= nil then
+    api.check_arg("records", 3, unpacked, "boolean")
+  end
+
+  local t = api.compile(nil, fmt)
   if type(fd) == "string" then
     fd = vstruct.cursor(fd)
   end

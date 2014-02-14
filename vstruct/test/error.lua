@@ -75,7 +75,7 @@ for format in plain_formats:gmatch(".") do
 end
 
 -- format string splicing
-vstruct.register("coord", "x:u1 y:u1 z:u1")
+vstruct.compile("coord", "x:u1 y:u1 z:u1")
 E("splice-wrong-syntax", "parsing format string at character 10.*expected value.*got splice", vstruct.unpack, "position:&coord", "000")
 E("splice-wrong-name", "attempt to splice in format 'coords', which is not registered", vstruct.unpack, "&coords", "000")
 
