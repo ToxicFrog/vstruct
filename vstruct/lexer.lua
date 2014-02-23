@@ -15,8 +15,8 @@ end
 lexeme (false)    "%s+"         -- whitespace
 lexeme (false)    "%-%-[^\n]*"  -- comments
 lexeme "key"      "([%a_][%w_.]*):"
-lexeme "name"     "([-+@<>=])"
-lexeme "name"     "([%a_]+)"
+lexeme "io"       "([-+@<>=])"
+lexeme "io"       "([%a_]+)"
 lexeme "number"   "([%d.,]+)"
 lexeme "splice"   "&(%S+)"
 lexeme "{"        "%{"

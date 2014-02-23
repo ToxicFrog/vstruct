@@ -43,7 +43,7 @@ end
 
 -- Everything below this line is internal to the recursive descent parser
 
-function ast.name(lex)
+function ast.io(lex)
   local name = lex.next().text
   local next = lex.peek()
   
@@ -58,10 +58,10 @@ function ast.key(lex)
   local name = lex.next().text
   local next = lex.peek()
   
-  if next.type == "name" or next.type == "{" then
+  if next.type == "io" or next.type == "{" then
     return ast.Name(name, ast.next(lex))
   else
-    ast.error(lex, "value (field or table)")
+    ast.error(lex, "value (io specifier or table)")
   end
 end
 
@@ -81,8 +81,8 @@ function ast.next(lex)
   elseif tok.type == '[' then
     return ast.bitpack(lex)
     
-  elseif tok.type == "name" then
-    return ast.name(lex)
+  elseif tok.type == "io" then
+    return ast.io(lex)
   
   elseif tok.type == "key" then
     return ast.key(lex)
@@ -101,6 +101,22 @@ function ast.next(lex)
   end
 end
 
+function ast.next_until(lex, type)
+  return function()
+    local tok = lex.peek()
+
+    if tok.type == 'EOF' then
+      ast.error(lex, type)
+    end
+    
+    if tok.type == type then
+      return nil
+    end
+    
+    return ast.next(lex)
+  end
+end
+
 function ast.splice(lex)
   local name = lex.next().text
 
@@ -110,18 +126,6 @@ function ast.splice(lex)
   end
 
   return root.child
-end
-
-function ast.next_until(lex, type)
-  return function()
-    local tok = lex.peek()
-    
-    if tok.type == type or tok.type == 'EOF' then
-      return nil
-    end
-    
-    return ast.next(lex)
-  end
 end
 
 function ast.repetition(lex)
@@ -190,7 +194,7 @@ return ast
 
 format -> commands
 
-command -> repeat | bitpack | group | named | value | control 
+command -> repeat | bitpack | group | named | value | control | splice
 
 repeat -> NUMBER '*' command | command '*' NUMBER
 bitpack -> '[' NUMBER '|' commands ']'
@@ -199,6 +203,8 @@ group -> '(' commands ')'
 named -> NAME ':' value
 value -> table | primitive
 table -> '{' commands '}'
+
+splice -> '&' NAME
 
 primitive -> ATOM NUMBERS
 
