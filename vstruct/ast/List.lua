@@ -16,6 +16,8 @@ return function()
           pack = self.pack;
           gen = self.gen;
           execute = self.execute;
+          read = self.read;
+          readbits = self.readbits;
         }
         self[#self+1] = child
       end
@@ -38,6 +40,18 @@ return function()
       child:execute(env)
     end
   end
-  
+
+  function List:read(fd, data)
+    for i,child in ipairs(self) do
+      child:read(fd, data)
+    end
+  end
+
+  function List:readbits(bits, data)
+    for i,child in ipairs(self) do
+      child:readbits(bits, data)
+    end
+  end
+
   return List
 end

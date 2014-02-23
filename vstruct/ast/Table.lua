@@ -19,6 +19,18 @@ return function()
     self.list:execute(env)
     env.pop()
   end
+
+  function Table:read(fd, data)
+    local t = {}
+    self.list:read(fd, t)
+    return t
+  end
+
+  function Table:readbits(bits, data)
+    local t = {}
+    self.list:readbits(bits, t)
+    return t
+  end 
   
   return Table
 end

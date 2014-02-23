@@ -45,5 +45,20 @@ return function(name, args)
     env[fn](name, hasvalue, width, unpack(argv, 1, argv.n))
   end
 
+  function IO:read(fd, data)
+    local buf
+
+    if self.width and self.width > 0 then
+      buf = fd:read(self.width)
+      assert(buf and #buf == self.width, "attempt to read past end of buffer")
+    end
+
+    return io(name, "unpack", fd, buf, unpack(argv, 1, argv.n))
+  end
+
+  function IO:readbits(bits, data)
+    return io(name, "unpackbits", bits, unpack(argv, 1, argv.n))
+  end
+
   return IO
 end

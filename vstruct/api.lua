@@ -1,5 +1,4 @@
 local vstruct = require "vstruct"
-local unpackenv = require "vstruct.unpack"
 local packenv = require "vstruct.pack"
 local cursor  = require "vstruct.cursor"
 local ast = require "vstruct.ast"
@@ -54,7 +53,7 @@ function api.unpack(ast, fd, data)
     api.check_arg("unpack", 3, data, "table")
   end
 
-  return ast:execute(fd, data or {}, unpackenv({}))
+  return ast.ast:read(fd, data or {})
 end
 
 function api.pack(ast, fd, data)
