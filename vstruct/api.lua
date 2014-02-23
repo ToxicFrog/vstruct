@@ -65,7 +65,7 @@ function api.pack(ast, fd, data)
   api.check_arg("pack", 2, fd, "file or string", is_fd)
   api.check_arg("pack", 3, data, "table")
 
-  local result = ast:execute(fd, data, packenv({}))
+  local result = ast.ast:execute(fd, data, packenv({}))
   return unwrap_fd(fd)
 end
 
@@ -84,7 +84,6 @@ function api.compile(name, format)
       ast = root;
       unpack = api.unpack;
       pack = api.pack;
-      execute = root.execute;
     }
 
     if vstruct.cache == true then

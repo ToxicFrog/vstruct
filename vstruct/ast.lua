@@ -27,13 +27,13 @@ end
 -- if (vstruct.cache) is true, will create a new cache entry, if needed
 function ast.parse(source)
   local lex = lexer(source)
-  local root = ast.Root(ast.List())
+  local root = ast.List()
   
   for node in (function() return ast.next(lex) end) do
     root:append(node)
   end
   
-  return root
+  return ast.Root(root)
 end
 
 -- used by the rest of the parser to report syntax errors
@@ -131,7 +131,7 @@ function ast.splice(lex)
     error("vstruct: attempt to splice in format '"..name.."', which is not registered")
   end
 
-  return root.child
+  return root[1]
 end
 
 function ast.repetition(lex)
