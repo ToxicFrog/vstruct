@@ -74,6 +74,10 @@ function vstruct.unpack(fmt, ...)
   return api.compile(nil, fmt):unpack(...)
 end
 
+function vstruct.unpackvals(...)
+  return _unpack(vstruct.unpack(...))
+end
+
 -- Given a format string, an optional file-like, and a table of data,
 -- pack data into the file-like (or create and return a string of packed data)
 -- according to the format string

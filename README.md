@@ -164,6 +164,20 @@ The `data` argument is an optional table. If present, `unpack` will not create a
 
 --------
 
+    vstruct.unpackvals(fmt, <fd or string>, [data])
+
+Equivalent to `vstruct.unpack` in every way, except it calls `unpack` (or `table.unpack` in 5.2) before returning. This is a convenience function allowing you to write this:
+
+    count = vstruct.unpackvals(fmt, fd)
+    x,y,z = vstruct.unpackvals(fmt, fd)
+
+Instead of this:
+
+    count = vstruct.unpack(fmt, fd)[1]
+    x,y,z = table.unpack(vstruct.unpack(fmt, fd))
+
+--------
+
     vstruct.pack(fmt, [fd], data)
 
 `pack` takes a format string and a table of data and packs the contents of the table. If the `fd` argument is present, it will write the data directly to it using standard file io methods; if `fd` is a string, it will wrap it with `vstruct.cursor` first.
