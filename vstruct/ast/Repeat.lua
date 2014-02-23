@@ -1,34 +1,29 @@
-return function(count, value)
-  local Repeat = {
-    tag = "repeat";
-    width = (value.width and count * value.width) or nil;
-    count = count;
-    value = value;
-  }
-  
-  function Repeat:execute(env)
-    if count > 0 then
-      for i=1,count do
-        value:execute(env)
-      end
-    end
-  end
+local Node = require "vstruct.ast.Node"
 
-  function Repeat:read(fd, data)
-    if count > 0 then
-      for i=1,count do
-        value:read(fd, data)
-      end
-    end
-  end
+local Repeat = Node:copy()
 
-  function Repeat:readbits(bits, data)
-    if count > 0 then
-      for i=1,count do
-        value:readbits(bits, data)
-      end
-    end
-  end
-
-  return Repeat
+function Repeat:__init(count, child)
+  self.child = child
+  self.count = count
+  self.size = (child.size and count * child.size) or nil
 end
+
+function Repeat:execute(env)
+  for i=1,self.count do
+    self.child:execute(env)
+  end
+end
+
+function Repeat:read(fd, data)
+  for i=1,self.count do
+    self.child:read(fd, data)
+  end
+end
+
+function Repeat:readbits(bits, data)
+  for i=1,self.count do
+    self.child:readbits(bits, data)
+  end
+end
+
+return Repeat

@@ -55,8 +55,8 @@ E("invalid-format-no-width", "format requires a size", vstruct.compile, "u u4")
 -- format string is well-formed but nonsensical
 -- note that empty groups and tables and zero-length repeats make it easier to dynamically construct format strings, and are thus allowed
 E("bad-format-no-support", "no support for format 'q'", vstruct.compile, "q1")
-E("bad-format-small-bitpack", "bitpack contents are smaller than containing bitpack", vstruct.compile, "[1|u4]")
-E("bad-format-large-bitpack", "bitpack contents are larger than containing bitpack", vstruct.compile, "[1|u16]")
+E("bad-format-small-bitpack", "bitpack contents do not match bitpack size", vstruct.compile, "[1|u4]")
+E("bad-format-large-bitpack", "bitpack contents do not match bitpack size", vstruct.compile, "[1|u16]")
 
 -- io format width checking occurs on a format-by-format basis
 E("bad-format-size-missing-f", "only supports widths 4", vstruct.compile, 'f')

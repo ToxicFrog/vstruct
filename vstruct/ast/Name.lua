@@ -1,4 +1,7 @@
-local function store(data, key, val)
+local Node = require "vstruct.ast.Node"
+local Name = Node:copy()
+
+local function put(data, key, val)
   if not key then
     data[#data+1] = val
   else
@@ -13,26 +16,23 @@ local function store(data, key, val)
   end
 end
 
-return function(key, value)
-  local Name = {
-    tag = "name";
-    width = value.width;
-    key = key;
-    value = value;
-  }
-  
-  function Name:execute(env)
-    env.name(key)
-    value:execute(env)
-  end
-
-  function Name:read(fd, data)
-    return store(data, key, value:read(fd, data))
-  end
-
-  function Name:readbits(bits, data)
-    return store(data, key, value:readbits(bits, data))
-  end
-  
-  return Name
+function Name:__init(key, child)
+  self.child = child
+  self.size = child.size
+  self.key = key
 end
+  
+function Name:execute(env)
+  env.name(self.key)
+  self.child:execute(env)
+end
+
+function Name:read(fd, data)
+  return put(data, self.key, self.child:read(fd, data))
+end
+
+function Name:readbits(bits, data)
+  return put(data, self.key, self.child:readbits(bits, data))
+end
+
+return Name
