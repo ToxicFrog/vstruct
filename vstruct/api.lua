@@ -1,5 +1,4 @@
 local vstruct = require "vstruct"
-local packenv = require "vstruct.pack"
 local cursor  = require "vstruct.cursor"
 local ast = require "vstruct.ast"
 
@@ -45,27 +44,27 @@ local function unwrap_fd(fd)
   return fd
 end
 
-function api.unpack(ast, fd, data)
+function api.read(ast, fd, data)
   fd = wrap_fd(fd)
 
-  api.check_arg("unpack", 2, fd, "file or string", is_fd)
+  api.check_arg("vstruct.read", 2, fd, "file or string", is_fd)
   if data ~= nil then
-    api.check_arg("unpack", 3, data, "table")
+    api.check_arg("vstruct.read", 3, data, "table")
   end
 
   return ast.ast:read(fd, data or {})
 end
 
-function api.pack(ast, fd, data)
+function api.write(ast, fd, data)
   if fd and not data then
     data,fd = fd,nil
   end
   fd = wrap_fd(fd or "")
 
-  api.check_arg("pack", 2, fd, "file or string", is_fd)
-  api.check_arg("pack", 3, data, "table")
+  api.check_arg("vstruct.write", 2, fd, "file or string", is_fd)
+  api.check_arg("vstruct.write", 3, data, "table")
 
-  local result = ast.ast:execute(fd, data, packenv({}))
+  local result = ast.ast:write(fd, data)
   return unwrap_fd(fd)
 end
 
@@ -82,8 +81,8 @@ function api.compile(name, format)
     obj = {
       source = format;
       ast = root;
-      unpack = api.unpack;
-      pack = api.pack;
+      read = api.read;
+      write = api.write;
     }
 
     if vstruct.cache == true then

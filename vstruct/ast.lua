@@ -44,7 +44,12 @@ end
 -- Everything below this line is internal to the recursive descent parser
 
 function ast.io(lex)
-  return ast.Name(nil, ast.raw_io(lex))
+  local io = ast.raw_io(lex)
+  if io.hasvalue then
+    return ast.Name(nil, io)
+  else
+    return io
+  end
 end
 
 function ast.raw_io(lex)
@@ -63,7 +68,11 @@ function ast.key(lex)
   local next = lex.peek()
   
   if next.type == "io" then
-    return ast.Name(name, ast.raw_io(lex))
+    local io = ast.raw_io(lex)
+    if not io.hasvalue then
+      ast.error(lex, "value (io specifier or table) - format '"..name.."' has no value")
+    end
+    return ast.Name(name, io)
   elseif next.type == "{" then
     return ast.Name(name, ast.raw_table(lex))
   else

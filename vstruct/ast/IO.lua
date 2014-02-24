@@ -23,23 +23,10 @@ function IO:__init(name, args)
   self.name = name
   self.argv = str2args(args)
 
-  if args then
-  end
-
   self.size = io(name, "size", unpack(self.argv, 1, self.argv.n))
+  self.hasvalue = io(name, "hasvalue", unpack(self.argv, 1, self.argv.n))
 end
   
-function IO:execute(env)
-  local hasvalue = io(self.name, "hasvalue")
-  local fn = env._bitpack and "bpio" or "io"
-
-  if self.size and not env._bitpack then
-    env.readahead(size)
-  end
-
-  env[fn](self.name, hasvalue, size, unpack(self.argv, 1, self.argv.n))
-end
-
 function IO:read(fd, data)
   local buf
 
@@ -53,6 +40,20 @@ end
 
 function IO:readbits(bits, data)
   return io(self.name, "unpackbits", bits, unpack(self.argv, 1, self.argv.n))
+end
+
+function IO:write(fd, ctx)
+  local buf = io(self.name, "pack", fd, ctx.data, unpack(self.argv, 1, self.argv.n))
+  if buf then
+    fd:write(buf)
+  end
+end
+
+function IO:writebits(bits, ctx)
+  local buf = io(self.name, "packbits", bits, ctx.data, unpack(self.argv, 1, self.argv.n))
+  if buf then
+    fd:write(buf)
+  end
 end
 
 return IO

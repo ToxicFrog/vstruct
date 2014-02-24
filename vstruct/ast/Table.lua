@@ -20,4 +20,7 @@ function Table:readbits(bits, data)
   return t
 end 
 
+-- We inherit write() and writebits() from Node unmodified -
+-- our parent takes care of passing the right context in.
+
 return Table

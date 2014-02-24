@@ -80,9 +80,9 @@ E("splice-wrong-syntax", "parsing format string at character 10.*expected value.
 E("splice-wrong-name", "attempt to splice in format 'coords', which is not registered", vstruct.unpack, "&coords", "000")
 
 -- input table doesn't match format string
-E("bad-data-missing", "malformed table passed to pack: no value at index 1", vstruct.pack, "u4", {})
-E("bad-data-missing-name", "malformed table passed to pack: no value for name 't'", vstruct.pack, "t:{ x:u4 }", {})
-E("bad-data-missing-nested", "malformed table passed to pack: no value for name 't.x'", vstruct.pack, "t.x:u4", {})
+E("bad-data-missing", "bad input while writing: no value for key 1", vstruct.pack, "u4", {})
+E("bad-data-missing-name", "bad input while writing: no value for key t", vstruct.pack, "t:{ x:u4 }", {})
+E("bad-data-missing-nested", "bad input while writing: no value for key t.x", vstruct.pack, "t.x:u4", {})
 -- these require a bunch of type-specific checks. I don't have a good way to do this yet and it's an open question whether I want to do it at all.
 --E("bad-data-u-string", "placeholder", vstruct.pack, "u4", { "string" })
 --E("bad-data-u-numeric-string", "placeholder", vstruct.pack, "u4", { "0" })

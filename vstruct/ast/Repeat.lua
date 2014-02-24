@@ -8,12 +8,6 @@ function Repeat:__init(count, child)
   self.size = (child.size and count * child.size) or nil
 end
 
-function Repeat:execute(env)
-  for i=1,self.count do
-    self.child:execute(env)
-  end
-end
-
 function Repeat:read(fd, data)
   for i=1,self.count do
     self.child:read(fd, data)
@@ -23,6 +17,18 @@ end
 function Repeat:readbits(bits, data)
   for i=1,self.count do
     self.child:readbits(bits, data)
+  end
+end
+
+function Repeat:write(fd, data)
+  for i=1,self.count do
+    self.child:write(fd, data)
+  end
+end
+
+function Repeat:writebits(bits, data)
+  for i=1,self.count do
+    self.child:writebits(bits, data)
   end
 end
 
