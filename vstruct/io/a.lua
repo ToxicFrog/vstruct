@@ -7,12 +7,12 @@ function a.hasvalue()
   return false
 end
 
-function a.width(w)
+function a.size(w)
   assert(tonumber(w), "format requires a size")
   return nil
 end
 
-function a.unpack(fd, _, align)
+function a.read(fd, _, align)
   local cur = fd:seek()
   
   if cur % align ~= 0 then
@@ -20,6 +20,6 @@ function a.unpack(fd, _, align)
   end
 end
 
-a.pack = a.unpack
+a.write = a.read
 
 return a

@@ -20,11 +20,6 @@ local function iorequire(format)
 
   setmetatable(v, mt)
   
-  v.size = v.width or v.size
-  v.read = v.unpack or v.read
-  v.readbits = v.unpackbits or v.readbits
-  v.write = v.pack or v.write
-  v.writebits = v.packbits or v.writebits
   return v           
 end
 

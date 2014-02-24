@@ -7,15 +7,15 @@ function he.hasvalue()
   return false
 end
 
-function he.width(n)
-  assert(n == nil, "'=' is an endianness control, and does not have width")
+function he.size(n)
+  assert(n == nil, "'=' is an endianness control, and does not have size")
   return 0
 end
 
-function he.unpack()
+function he.read()
   io("endianness", "host")
 end
 
-he.pack = he.unpack
+he.write = he.read
 
 return he

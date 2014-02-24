@@ -10,7 +10,7 @@ local T = test.autotest
 test.group "regression tests"
 
 -- B#21
--- this was found as an error in packing fixed point values, but is actually an underlying issue
+-- this was found as an error in writing fixed point values, but is actually an underlying issue
 -- with how u and i handle non-integer inputs
 -- in short: don't assume string.char() truncates, because it doesn't.
 T("i rounds instead of truncating",

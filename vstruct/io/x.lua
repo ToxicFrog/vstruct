@@ -10,27 +10,27 @@ function x.hasvalue()
   return false
 end
 
-function x.unpack(fd, buf, width)
-  io("s", "unpack", fd, buf, width)
+function x.read(fd, buf, size)
+  io("s", "read", fd, buf, size)
   return nil
 end
 
-function x.unpackbits(bit, width)
-  for i=1,width do
+function x.readbits(bit, size)
+  for i=1,size do
     bit()
   end
 end
 
-function x.packbits(bit, _, width, val)
+function x.writebits(bit, _, size, val)
   val = val or 0
   assert(val == 0 or val == 1, "invalid value to `x` format in bitpack: 0 or 1 required, got "..val)
-  for i=1,width do
+  for i=1,size do
     bit(val or 0)
   end
 end
 
-function x.pack(fd, data, width, val)
-  return string.rep(string.char(val or 0), width)
+function x.write(fd, data, size, val)
+  return string.rep(string.char(val or 0), size)
 end
 
 return x

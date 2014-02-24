@@ -2,7 +2,7 @@
 local CONF = {
   VERBOSE = false,   -- Spew verbosely while testing?
 
-  WIDTH = 32,      -- Total width of numbers in bits.
+  WIDTH = 32,      -- Total size of numbers in bits.
   PRECISION = 17,    -- Fractional precision in bits.
 
   MAX_DEPTH = 5,     -- Limit on nesting depth of test formats.
@@ -30,12 +30,12 @@ local TEST_KIND = nil   --"read"|"write"
 
 -- Should every format string explicitly set the endianness at the start?
 -- Setting this to true mask(s|ed?) a bug where the endianness controls leak
--- between calls to struct.pack().
+-- between calls to struct.write().
 local PREFIX_ENDIAN = false
 local PREFIX_ENDIAN_SEP = " " --"" gives format string parse errors
 
 local TOKEN_SEP = ""    -- Separator between tokens.
-local MAX_BITS = 52   -- Maximum bit width we care about.
+local MAX_BITS = 52   -- Maximum bit size we care about.
 local MACHINE_ENDIAN = "<"  -- Native endianness.
 
 local COMPOUND_SEP = " "
@@ -325,7 +325,7 @@ local function string_rand(rand, minlen, maxlen)
   end
 end
 
--- Return an array of width representing value in two's
+-- Return an array of size representing value in two's
 -- complement in little-endian format.
 local function int_to_bytes_le(value, nbytes)
   local t = {}
@@ -354,7 +354,7 @@ local Test = {
       return bless(self or {}, class)
     end,
 
-  get_naked = nil, --pack/unpack format string w/o endian control
+  get_naked = nil, --write/read format string w/o endian control
   get_data = nil,      --data byte string
   get_values = nil,      --value list
   get_length = nil,      --# top level entities in the format
@@ -399,7 +399,7 @@ local function perform_write_test(test, endian)
 
   local errmsg = nil
 
-  local success, got_data = pcall(struct.pack, format, values)
+  local success, got_data = pcall(struct.write, format, values)
   if not success then
   errmsg = got_data
     got_data = nil
@@ -435,7 +435,7 @@ local function perform_read_test(test, endian)
 
   local errmsg = nil
 
-  local success, got_values = pcall(struct.unpack, format, from_data)
+  local success, got_values = pcall(struct.read, format, from_data)
   if not success then
     errmsg = got_values
     got_values = nil
@@ -689,7 +689,7 @@ local State = {
       local self = {
         rand = make_rand(seed), --data source
         endian = nil,   --nil|">"|"<"
-        width = 56,
+        size = 56,
         precision = 16,
         depth = 0,      --recursion depth
         uniq = 0      --unique name seq
@@ -713,7 +713,7 @@ local State = {
       return table.concat(chars)
     end,
 
-  raw_of_int =        --int, width, endian -> byte string
+  raw_of_int =        --int, size, endian -> byte string
     function (self, val, W, reverse)
       return self:raw_of_list(int_to_bytes_le(val, W), reverse)
     end
@@ -1051,7 +1051,7 @@ local gen_random_leaf
 local function gen_random_leaf_for_write(state, w, f)
   local i = 1 + state.rand() % #LeafGen
   local gen = LeafGen[i]
-  return gen(state, w or state.width, f or state.precision)
+  return gen(state, w or state.size, f or state.precision)
 end
 
 local function gen_random_leaf_for_read(state, w, f)
@@ -1140,7 +1140,7 @@ end
 local function main_write()
   test.group "randomly generated write tests"
   local state = State:new(CONF.SEED or os.time())
-  state.width = CONF.WIDTH
+  state.size = CONF.WIDTH
   state.precision = CONF.PRECISION
 
   gen_random_leaf = gen_random_leaf_for_write
@@ -1148,7 +1148,7 @@ local function main_write()
   for k,gen in pairs(EmptyGen) do
     for _,e in ipairs{"<",">"} do
       state.endian = e
-      local t = gen(state, state.width, state.precision)
+      local t = gen(state, state.size, state.precision)
       perform_write_test(t, "=")
     end
   end
@@ -1156,7 +1156,7 @@ local function main_write()
   for k,gen in pairs(ScalarGen) do
     for _,e in ipairs{"<",">"} do
       state.endian = e
-      local t = gen(state, state.width, state.precision)
+      local t = gen(state, state.size, state.precision)
       perform_write_test(t, "=")
     end
   end
@@ -1164,7 +1164,7 @@ local function main_write()
   for i=1,CONF.NROF_TESTS do
     for _,e in ipairs{"<",">"} do
       state.endian = e
-      local t = gen_random_test(state, state.width, state.precision)
+      local t = gen_random_test(state, state.size, state.precision)
       perform_write_test(t)
     end
   end
@@ -1173,7 +1173,7 @@ end
 local function main_read()
   test.group "randomly generated read tests"
   local state = State:new(CONF.SEED or os.time())
-  state.width = CONF.WIDTH
+  state.size = CONF.WIDTH
   state.precision = CONF.PRECISION
 
   gen_random_leaf = gen_random_leaf_for_read
@@ -1181,7 +1181,7 @@ local function main_read()
   for k,gen in pairs(EmptyGen) do
     for _,e in ipairs{"<",">"} do
       state.endian = e
-      local w,r = gen(state, state.width, state.precision)
+      local w,r = gen(state, state.size, state.precision)
       local t = r or w
       perform_read_test(t, "=")
     end
@@ -1190,7 +1190,7 @@ local function main_read()
   for k,gen in pairs(ScalarGen) do
     for _,e in ipairs{"<",">"} do
       state.endian = e
-      local w,r = gen(state, state.width, state.precision)
+      local w,r = gen(state, state.size, state.precision)
       local t = r or w
       perform_read_test(t, "=")
     end
@@ -1199,7 +1199,7 @@ local function main_read()
   for i=1,CONF.NROF_TESTS do
     for _,e in ipairs{"<",">"} do
       state.endian = e
-      local t = gen_random_test(state, state.width, state.precision)
+      local t = gen_random_test(state, state.size, state.precision)
       perform_read_test(t)
     end
   end

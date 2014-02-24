@@ -3,7 +3,7 @@
 local io   = require "vstruct.io"
 local u = {}
 
-function u.unpack(_, buf)
+function u.read(_, buf)
   local n = 0
   local e = io("endianness", "get")
   
@@ -21,20 +21,20 @@ function u.unpack(_, buf)
   return n
 end
 
-function u.unpackbits(bit, width)
+function u.readbits(bit, size)
   local n = 0
-  for i=1,width do
+  for i=1,size do
     n = n * 2 + bit()
   end
   return n
 end
 
-function u.pack(_, data, width)
+function u.write(_, data, size)
   local s = ""
   local e = io("endianness", "get")
   data = math.trunc(data)
   
-  for i=1,width do
+  for i=1,size do
     if e == "big" then
       s = string.char(data % 256) .. s
     else
@@ -46,8 +46,8 @@ function u.pack(_, data, width)
   return s
 end
 
-function u.packbits(bit, data, width)
-  for i=width-1,0,-1 do
+function u.writebits(bit, data, size)
+  for i=size-1,0,-1 do
     bit(math.floor(data/2^i) % 2)
   end
 end

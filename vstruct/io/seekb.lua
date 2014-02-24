@@ -6,14 +6,14 @@ function seek.hasvalue()
   return false
 end
 
-function seek.width(w)
+function seek.size(w)
   assert(tonumber(w), "format requires a size")
   return nil
 end
 
-function seek.unpack(fd, _, offset)
+function seek.read(fd, _, offset)
   assert(fd:seek("cur", -offset))
 end
-seek.pack = seek.unpack
+seek.write = seek.read
 
 return seek

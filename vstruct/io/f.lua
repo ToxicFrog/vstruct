@@ -15,7 +15,7 @@ local function reader(data, size_exp, size_fraction)
   local endian = io("endianness", "get") == "big" and ">" or "<"
   
   -- Split the unsigned integer into the 3 IEEE fields
-  local bits = struct.unpack(endian.." m"..#data, data)[1]
+  local bits = struct.read(endian.." m"..#data, data)[1]
   local fraction = struct.implode({unpack(bits, 1, size_fraction)}, size_fraction)
   local exponent = struct.implode({unpack(bits, size_fraction+1, size_fraction+size_exp)}, size_exp)
   local sign = bits[#bits] and -1 or 1
@@ -50,7 +50,7 @@ end
 
 local function writer(value, size_exp, size_fraction)
   local fraction, exponent, sign
-  local width = (size_exp + size_fraction + 1)/8
+  local size = (size_exp + size_fraction + 1)/8
   local endian = io("endianness", "get") == "big" and ">" or "<"
   local bias = 2^(size_exp-1)-1
   
@@ -106,25 +106,25 @@ local function writer(value, size_exp, size_fraction)
   end
   bits[size_fraction+size_exp+1] = sign
   
-  return struct.pack(endian.."m"..width, {bits})
+  return struct.write(endian.."m"..size, {bits})
 end
 
 local f = {}
 
-function f.width(n)
+function f.size(n)
   n = tonumber(n)
   assert(n == 4 or n == 8 or n == 16
-    , "format 'f' only supports widths 4 (float), 8 (double) and 16 (quad)")
+    , "format 'f' only supports sizes 4 (float), 8 (double) and 16 (quad)")
   
   return n
 end
 
-function f.unpack(_, buf, width)
-  return reader(buf, unpack(sizes[width], 2))
+function f.read(_, buf, size)
+  return reader(buf, unpack(sizes[size], 2))
 end
 
-function f.pack(_, data, width)
-  return writer(data, unpack(sizes[width], 2))
+function f.write(_, data, size)
+  return writer(data, unpack(sizes[size], 2))
 end
 
 return f

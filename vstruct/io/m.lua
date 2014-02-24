@@ -5,7 +5,7 @@ local io   = require "vstruct.io"
 local unpack = table.unpack or unpack
 local m = {}
 
-function m.unpack(_, buf, width)
+function m.read(_, buf, size)
   local mask = {}
   local e = io("endianness", "get")
   
@@ -27,9 +27,9 @@ function m.unpack(_, buf, width)
   return mask
 end
 
-function m.unpackbits(bit, width)
+function m.readbits(bit, size)
   local mask = {}
-  for i=1,width do
+  for i=1,size do
     mask[i] = bit() == 1 and true or false
   end
   return mask
@@ -38,11 +38,11 @@ end
 -- bitmask
 -- we use a string here because using an unsigned will lose data on bitmasks
 -- wider than lua's native number format
-function m.pack(fd, data, width)
+function m.write(fd, data, size)
   local buf = ""
   local e = io("endianness", "get")
   
-  for i=1,width*8,8 do
+  for i=1,size*8,8 do
     local bits = { unpack(data, i, i+7) }
     local byte = string.char(struct.implode(bits, 8))
     if e == "big" then
@@ -51,11 +51,11 @@ function m.pack(fd, data, width)
       buf = buf..byte
     end
   end
-  return io("s", "pack", fd, buf, width)
+  return io("s", "write", fd, buf, size)
 end
 
-function m.packbits(bit, data, width)
-  for i=1,width do
+function m.writebits(bit, data, size)
+  for i=1,size do
     bit(data[i] and 1 or 0)
   end
 end

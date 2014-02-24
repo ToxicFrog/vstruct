@@ -3,42 +3,42 @@
 local io = require "vstruct.io"
 local i = {}
 
-function i.unpack(fd, buf, width)
-  local n = io("u", "unpack", fd, buf, width)
+function i.read(fd, buf, size)
+  local n = io("u", "read", fd, buf, size)
 
-  if n >= 2^(width*8-1) then
-    return n - 2^(width*8)
+  if n >= 2^(size*8-1) then
+    return n - 2^(size*8)
   end
   
   return n
 end
 
-function i.unpackbits(bit, width)
-  local n = io("u", "unpackbits", bit, width)
+function i.readbits(bit, size)
+  local n = io("u", "readbits", bit, size)
   
-  if n >= 2^(width-1) then
-    return n - 2^width
+  if n >= 2^(size-1) then
+    return n - 2^size
   end
   
   return n
 end
 
-function i.pack(_, data, width)
+function i.write(_, data, size)
   data = math.trunc(data)
   
   if data < 0 then
-    data = data + 2^(width*8)
+    data = data + 2^(size*8)
   end
   
-  return io("u", "pack", _, data, width)
+  return io("u", "write", _, data, size)
 end
 
-function i.packbits(bit, data, width)
+function i.writebits(bit, data, size)
   if data < 0 then
-    data = data + 2^width
+    data = data + 2^size
   end
   
-  return io("u", "packbits", bit, data, width)
+  return io("u", "writebits", bit, data, size)
 end
 
 return i

@@ -47,13 +47,13 @@ function test.record(name, result, data, message)
   table.insert(test.current_group, { name=name, result=result, message=message, data=data })
 end
 
--- automatically test packing and unpacking. obuf and oval are optional,
+-- automatically test writing and reading. obuf and oval are optional,
 -- and default to the same values as ibuf and ival.
 -- This tests the following operations:
--- unpack(ibuf) == oval
--- pack(unpack(ibuf)) == obuf
--- pack(ival) == obuf
--- unpack(pack(ival)) == oval
+-- read(ibuf) == oval
+-- write(read(ibuf)) == obuf
+-- write(ival) == obuf
+-- read(write(ival)) == oval
 function test.autotest(name, format, ibuf, ival, obuf, oval)
   local eq = test.eq
   local record = test.record
@@ -70,16 +70,16 @@ function test.autotest(name, format, ibuf, ival, obuf, oval)
   local function tester()
     local f = vstruct.compile(format)
 
-    local U = f:unpack(ibuf)
+    local U = f:read(ibuf)
     record(name.." (U )", eq(U, oval), unpack(U))
 
-    local UP = f:pack(U)
+    local UP = f:write(U)
     record(name.." (UP)", eq(UP, obuf), test.od(UP))
 
-    local P = f:pack(ival)
+    local P = f:write(ival)
     record(name.." (P )", eq(P, obuf), test.od(P))
 
-    local PU = f:unpack(P)
+    local PU = f:read(P)
     record(name.." (PU)", eq(PU, oval), unpack(PU))
   end
 

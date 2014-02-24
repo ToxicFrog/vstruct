@@ -7,15 +7,15 @@ function be.hasvalue()
   return false
 end
 
-function be.width(n)
-  assert(n == nil, "'>' is an endianness control, and does not have width")
+function be.size(n)
+  assert(n == nil, "'>' is an endianness control, and does not have size")
   return 0
 end
 
-function be.unpack()
+function be.read()
   io("endianness", "big")
 end
 
-be.pack = be.unpack
+be.write = be.read
 
 return be

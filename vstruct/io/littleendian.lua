@@ -7,15 +7,15 @@ function le.hasvalue()
   return false
 end
 
-function le.width(n)
-  assert(n == nil, "'<' is an endianness control, and does not have width")
+function le.size(n)
+  assert(n == nil, "'<' is an endianness control, and does not have size")
   return 0
 end
 
-function le.unpack()
+function le.read()
   io("endianness", "little")
 end
 
-le.pack = le.unpack
+le.write = le.read
 
 return le

@@ -35,22 +35,22 @@ function IO:read(fd, data)
     assert(buf and #buf == self.size, "attempt to read past end of buffer")
   end
 
-  return io(self.name, "unpack", fd, buf, unpack(self.argv, 1, self.argv.n))
+  return io(self.name, "read", fd, buf, unpack(self.argv, 1, self.argv.n))
 end
 
 function IO:readbits(bits, data)
-  return io(self.name, "unpackbits", bits, unpack(self.argv, 1, self.argv.n))
+  return io(self.name, "readbits", bits, unpack(self.argv, 1, self.argv.n))
 end
 
 function IO:write(fd, ctx)
-  local buf = io(self.name, "pack", fd, ctx.data, unpack(self.argv, 1, self.argv.n))
+  local buf = io(self.name, "write", fd, ctx.data, unpack(self.argv, 1, self.argv.n))
   if buf then
     fd:write(buf)
   end
 end
 
 function IO:writebits(bits, ctx)
-  local buf = io(self.name, "packbits", bits, ctx.data, unpack(self.argv, 1, self.argv.n))
+  local buf = io(self.name, "writebits", bits, ctx.data, unpack(self.argv, 1, self.argv.n))
   if buf then
     fd:write(buf)
   end
