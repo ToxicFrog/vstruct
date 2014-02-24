@@ -1,13 +1,18 @@
-2.0 (planned)
+2.1 (planned)
 -------------
 Format combinators.
 Support for other struct libraries (lpack/lstruct) as backends.
 
-1.3 (planned)
+2.0 (planned)
 -------------
 Automatically use FFI and bit32, if available, to speed up common operations.
 Better error handling, and more error handling options for the user.
 Backreferences.
+
+2.0 (wip)
+---------
+Many internal structural improvements.
+unpack/pack replaced with read/write in API.
 
 1.2
 ---

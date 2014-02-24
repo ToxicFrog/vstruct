@@ -1,7 +1,7 @@
 -- The loader for individual IO formats for vstruct.
 -- Returns the "io function", which is called with:
 -- * an IO type, such as 'x' or 'c'
--- * an IO operation, such as 'pack' or 'width'
+-- * an IO operation, such as 'write' or 'size'
 -- * some (type x operation) specific other arguments
 -- upon which it will attempt to load the handler for that operation from the
 -- module vstruct.io.<type> and call it.

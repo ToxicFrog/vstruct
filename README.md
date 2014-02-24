@@ -27,7 +27,7 @@
 
 ## 1. Overview ##
 
-VStruct is a library for Lua 5.1 and 5.2 and LuaJIT 2. It provides functions for manipulating binary data, in particular for unpacking binary files or byte buffers into Lua values and for packing Lua values back into files or buffers. Supported data types include:
+VStruct is a library for Lua 5.1 and 5.2 and LuaJIT 2. It provides functions for manipulating binary data, in particular for reading binary files or byte buffers into Lua values and for writing Lua values back into files or buffers. Supported data types include:
 
   * signed and unsigned integers of arbitrary size
   * fixed and floating point numbers
@@ -52,9 +52,9 @@ Formats not listed above are not subject to this limitation, as they either do n
 
 Versions of Lua prior to 5.1 are not supported, as vstruct makes extensive use of features introduced in 5.1.
 
-LuaJIT 2.0b7 has a bug in the code generator that affects vstruct. This is fixed in 2.0b9. If you need to run vstruct in 2.0b7, you will need to disable JIT compilation for the `m.unpack` function:
+LuaJIT 2.0b7 has a bug in the code generator that affects vstruct. This is fixed in 2.0b9. If you need to run vstruct in 2.0b7, you will need to disable JIT compilation for the `m.read` function:
 
-    jit.off(require("vstruct.io.m").unpack, true)
+    jit.off(require("vstruct.io.m").read, true)
 
 The `strict` module raises an error when using vstruct outside of LuaJIT, as it checks for the presence of LuaJIT by checking if the global variable `jit` is defined (resulting in a "variable not declared" error). This can be worked around by setting `jit = false` before loading vstruct.
 
@@ -113,7 +113,7 @@ vstruct does make one global modification when loaded: if the function `math.tru
 
 vstruct, once loaded, exports a number of variables and functions, all of them available in the table returned by `require "vstruct"`.
 
-In this section, a *format string* means the string used to describe a binary format, controlling how data is packed or unpacked. The syntax for format strings is described in section 5; the semantics in section 6. They are not be confused with the format strings used by `string.format`.
+In this section, a *format string* means the string used to describe a binary format, controlling how data is read or written. The syntax for format strings is described in section 5; the semantics in section 6. They are not be confused with the format strings used by `string.format`.
 
 
 ### 4.1 Error Handling ###
@@ -153,38 +153,38 @@ To access the wrapped string, use cur.str; to determine where the read/write poi
 
 --------
 
-    vstruct.unpack(fmt, <fd or string>, [data])
+    vstruct.read(fmt, <fd or string>, [data])
 
-`unpack` takes a format string and a buffer or file to unpack from, and returns a table of unpacked data items. The items will appear in the table with the same order and/or names that they had in the format string.
+`read` takes a format string and a buffer or file to read from, and returns a table of unpacked data items. The items will appear in the table with the same order and/or names that they had in the format string.
 
-The `data` argument is an optional table. If present, `unpack` will not create a new table, but will unpack the fields into this table in-place, and return the table. Existing entries in the table will not be cleared (but might be overwritten by named entries). Numbered entries will always be appended, not overwritten:
+The `data` argument is an optional table. If present, `read` will not create a new table, but will store any values read into this table in-place, and return the table. Existing entries in the table will not be cleared (but might be overwritten by named entries). Numbered entries will always be appended, not overwritten:
 
     t = { 0, 0, 0 }
-    vstruct.unpack("3*u1 x:u1", buf, t)      -- t == { 0, 0, 0, 1, 2, 3; x = 4 }
+    vstruct.read("3*u1 x:u1", buf, t)      -- t == { 0, 0, 0, 1, 2, 3; x = 4 }
 
 --------
 
-    vstruct.unpackvals(fmt, <fd or string>, [data])
+    vstruct.readvals(fmt, <fd or string>, [data])
 
-Equivalent to `vstruct.unpack` in every way, except it calls `unpack` (or `table.unpack` in 5.2) before returning. This is a convenience function allowing you to write this:
+Equivalent to `vstruct.read` in every way, except it calls `unpack` (or `table.unpack` in 5.2) before returning. This is a convenience function allowing you to write this:
 
-    count = vstruct.unpackvals(fmt, fd)
-    x,y,z = vstruct.unpackvals(fmt, fd)
+    count = vstruct.readvals(fmt, fd)
+    x,y,z = vstruct.readvals(fmt, fd)
 
 Instead of this:
 
-    count = vstruct.unpack(fmt, fd)[1]
-    x,y,z = table.unpack(vstruct.unpack(fmt, fd))
+    count = vstruct.read(fmt, fd)[1]
+    x,y,z = table.unpack(vstruct.read(fmt, fd))
 
 --------
 
-    vstruct.pack(fmt, [fd], data)
+    vstruct.write(fmt, [fd], data)
 
-`pack` takes a format string and a table of data and packs the contents of the table. If the `fd` argument is present, it will write the data directly to it using standard file io methods; if `fd` is a string, it will wrap it with `vstruct.cursor` first.
+`write` takes a format string and a table of data and writes the contents of the table. If the `fd` argument is present, it will write the data directly to it using standard file io methods; if `fd` is a string, it will wrap it with `vstruct.cursor` first.
 
-`pack` returns the packed data in string format, if `fd` was omitted or was a string to wrap; otherwise it returns `fd` as originally passed to the function.
+`write` returns the written data in string format, if `fd` was omitted or was a string to wrap; otherwise it returns `fd` as originally passed to the function.
 
-The structure of the `data` table is expected to be the same as the structure that would be created by a call to unpack with the same format string; in effect, you should be able to take the result of unpack and pass it to pack unaltered (and get the same packed data back), and vice versa.
+The structure of the `data` table is expected to be the same as the structure that would be created by a call to `read` with the same format string; in effect, you should be able to take the result of `read` and pass it to `write` unaltered (and get the same data back), and vice versa.
 
 --------
 
@@ -203,19 +203,19 @@ The structure of the `data` table is expected to be the same as the structure th
 `compile` takes a format string and runs it through the compiler and code generator, but does not actually pack or unpack anything. Instead, it returns a *format object* with the following fields:
 
   * `format.source` - the original format string
-  * `format:pack(fd, data)` - equivalent to `vstruct.pack(format.source, fd, data)`
-  * `format:unpack(fd, [data]) - equivalent to `vstruct.unpack(format.source, fd, data)`
+  * `format:read(fd, [data]) - equivalent to `vstruct.read(format.source, fd, data)`
+  * `format:write(fd, data)` - equivalent to `vstruct.write(format.source, fd, data)`
 
 In effect, the following code:
 
     obj = vstruct.compile(fmt)
-    d = obj:unpack(fd)
-    obj:pack(fd, d)
+    d = obj:read(fd)
+    obj:write(fd, d)
 
 Is equivalent to:
 
-    d = vstruct.unpack(fmt, fd)
-    vstruct.pack(fmt, fd, d)
+    d = vstruct.read(fmt, fd)
+    vstruct.write(fmt, fd, d)
 
 If `name` is specified, it additionally registers the format string it just compiled under `name`, allowing it to referenced in future format strings as `&name`; see section 5.5 "Splices" for details.
 
@@ -227,7 +227,7 @@ Given a format string, and a data source to read records of that format from, `r
 
 It is roughly analogous to:
 
-    for _,record in ipairs(vstruct.unpack(NUM_RECORDS .. "*" .. format, fd)) do
+    for _,record in ipairs(vstruct.read(NUM_RECORDS .. "*" .. format, fd)) do
       ...
     end
 
@@ -237,7 +237,7 @@ If `unpack` is true, it will additionally call `unpack()` (`table.unpack()` in 5
 
     for x,y,z in vstruct.records("f8 f8 f8", fd, true) do ...
 
-If `unpack` is false or unspecified, it behaves the same as `vstruct.unpack`.
+If `unpack` is false or unspecified, it behaves the same as `vstruct.read`.
 
 
 ## 5. Format string syntax ##
@@ -274,7 +274,7 @@ Can be expressed more concisely as these:
 
 ### 5.2 Tables ###
 
-A table consists of any number of format items enclosed in curlybraces. When unpacking, the items contained in the table will be packed into their own subtable in the output; when packing, items contained in the table will e searched for in a subtable. For example, this format string:
+A table consists of any number of format items enclosed in curlybraces. When reading, the items contained in the table will be packed into their own subtable in the output; when writing, items contained in the table will be searched for in a subtable. For example, this format string:
 
     "{ u4 u4 u4 } { { b1 b1 } s8 }"
 
@@ -288,14 +288,14 @@ Describes the following table (or something similarly structured):
       };
     };
 
-Note the outer table; unpack returns all unpacked values in a table by default, and pack expects the values it packs to be contained in one.
+Note the outer table; `read` returns all read values in a table by default, and `write` expects the values it writes to be contained in one.
 
 Within a format string, tables may be nested arbitrarily.
 
 
 ### 5.3 Names ###
 
-A name consists of a valid Lua identifier, or sequence of such identifiers separated with '.', followed by a ':'. It must be followed by a data item or a table. The following item will be stored in/retrieved from a field with the given name, rather than being (un)packed sequentially as is the default.
+A name consists of a valid Lua identifier, or sequence of such identifiers separated with '.', followed by a ':'. It must be followed by a data item or a table. The following item will be stored in/retrieved from a field with the given name, rather than being read/written sequentially as is the default.
 
 For example, this table:
 
@@ -321,9 +321,9 @@ Bitpacks read their contents MSB to LSB; in the above example, the boolean is th
 
 The declared total size of the bitpack, and the sizes of the individual items inside it, *must* match; if they do not, the format string will not compile. If there are bits inside the pack you are not interested in, use the `x` (skip/pad) format to ignore them.
 
-Despite being conceptually packed into ints, bitpacks are not subject to numeric precision limitations (although the data items inside them might be, if they are large enough); a 100-byte bitpack will unpack just a accurately as a 1-byte one.
+Despite being conceptually packed into ints, bitpacks are not subject to numeric precision limitations (although the data items inside them might be, if they are large enough); a 100-byte bitpack will be handled just as accurately as a 1-byte one.
 
-Packing and unpacking of bitpacks respects *byte* endianness; in little-endian mode, the least significant *byte* is expected to come first. Bits are always MSB first, LSB last. That is to say, given the following bytes on disk:
+Reading and writing of bitpacks respects *byte* endianness; in little-endian mode, the least significant *byte* is expected to come first. Bits are always MSB first, LSB last. That is to say, given the following bytes on disk:
 
     01 02
 
@@ -337,11 +337,11 @@ At present, only formats `b`, `u`, `i`, `x` and `m` are supported inside bitpack
 
 ### 5.5 Splices ###
 
-Splices let you concisely refer to other format strings, provided that those others have been registered ahead of time using `vstruct.register`. A splice `&foo` is equivalent to including the contents of the format string registered as `foo` at the point where the splice appears; thus, the following two unpack calls are equivalent:
+Splices let you concisely refer to other format strings, provided that those others have been registered ahead of time using `vstruct.register`. A splice `&foo` is equivalent to including the contents of the format string registered as `foo` at the point where the splice appears; thus, the following two calls are equivalent:
 
     vstruct.register("coord", "x:u4 y:u4 z:u4")
-    vstruct.unpack("name:z128 position:{ x:u4 y:u4 z:u4 }")
-    vstruct.unpack("name:z128 position:{ &coord }")
+    vstruct.read("name:z128 position:{ x:u4 y:u4 z:u4 }")
+    vstruct.read("name:z128 position:{ &coord }")
 
 
 ## 6. Data Items ##
@@ -353,7 +353,7 @@ By convention, in this section, upper-case single letters represent decimal numb
 
 ### 6.1 Controlling Endianness ###
 
-At any given moment, when packing or unpacking, vstruct is in either *big-endian* or *little-endian* mode. These affect the order in which it expects bytes to appear for formats `f`, `u`, `i`, and `m`, for the initial string length in `c`, and for the bytes making up a bitpack. In big-endian mode it expects the most significant byte to occur first; in little-endian mode, the least sigificant byte. (There is at present no support for more esoteric modes like middle-endian.)
+At any given moment, when reading or writing, vstruct is in either *big-endian* or *little-endian* mode. These affect the order in which it expects bytes to appear for formats `f`, `u`, `i`, and `m`, for the initial string length in `c`, and for the bytes making up a bitpack. In big-endian mode it expects the most significant byte to occur first; in little-endian mode, the least sigificant byte. (There is at present no support for more esoteric modes like middle-endian.)
 
 Each operation starts in *host-endian* mode - the endianness is set to match that of the host system. It can subsequently be controlled with the following characters in the format string:
 
@@ -382,7 +382,7 @@ If you have a lua implementation for which this approach fails (either crashing,
 
 ### 6.2 Seeking ###
 
-vstruct supports seeking in the underlying buffer or file; these operations will translate into a call to the :seek() method. Note that attempting to use these when unpacking from or packing to a non-seekable stream (such as stdout) will generate a runtime error. In that case, use `x` (the skip/pad format) instead.
+vstruct supports seeking in the underlying buffer or file; these operations will translate into a call to the :seek() method. Note that attempting to use these when reading from or writing to a non-seekable stream (such as stdout) will generate a runtime error. In that case, use `x` (the skip/pad format) instead.
 
 --------
 
@@ -434,7 +434,7 @@ The counted string is a common idiom where a string is immediately prefixed with
     size_t len;
     char[] str;
 
-The counted string format can be used to easily read and write these. The size provided is the size of the `len` field, which is treated as an unsigned int. Only the string itself is returned (when unpacking) or required (when packing). Internally, this is implemented as `u` followed by `s`; consequently, it is affected by endianness.
+The counted string format can be used to easily read and write these. The size provided is the size of the `len` field, which is treated as an unsigned int. Only the string itself is returned (when reading) or required (when writing). Internally, this is implemented as `u` followed by `s`; consequently, it is affected by endianness.
 
 --------
 
@@ -443,7 +443,7 @@ The counted string format can be used to easily read and write these. The size p
 Read: a float, double, or quad.
 Write: a float, double, or quad.
 
-Valid sizes are 4 (float) 8 (double) and 16 (quad). Note that quads have more precision than the default lua number format (double), and thus may not unpack exactly unless you're using a custom lua build.
+Valid sizes are 4 (float) 8 (double) and 16 (quad). Note that quads have more precision than the default lua number format (double), and thus may not read exactly unless you're using a custom lua build.
 
 Affected by endianness.
 
@@ -511,7 +511,7 @@ Affected by endianness.
 Read: read and discard the next `S` bytes.
 Write: write `S` bytes with value `V`. Within a bitpack, the only valid values for `V` are 0 or 1.
 
-This format does not consume input data or produce output data. However, unlike the seek controls (`@+-a`), it can be used even when the input or output does not support seeking (e.g. when reading from a pipe or socket).
+This format does not consume input data (when writing) or produce output values (when reading). However, unlike the seek controls (`@+-a`), it can be used even when the input or output does not support seeking (e.g. when reading from a pipe or socket).
 
 --------
 
@@ -559,20 +559,21 @@ When loaded, the handler for an IO operation returns a table containing some or 
 
     hasdata()
 
-Returns true if, when packing, this format consumes a value from the table of input. Formats that actually read and write data will typically return true; formats that merely adjust the output stream or internal vstruct state (eg, seek and endianness controls) or those that generate the data on the fly (skip/pad) will return false.
+Returns true if, when writing, this format consumes a value from the table of input. Formats that actually read and write data will typically return true; formats that merely adjust the output stream or internal vstruct state (eg, seek and endianness controls) or those that generate the data on the fly (skip/pad) will return false.
 
 --------
 
     size(...)
-    width(...)
 
-Returns the exact amount of data, in bytes, that this format will consume from the input if unpack is called, or the exact amount it will append to the output if pack is called. If this cannot yet be determined (for example, 'z' with no arguments or any usage of 'c'), it should return nil.
+Returns the exact amount of data, in bytes, that this format will consume from the input if `read` is called, or the exact amount it will append to the output if `write` is called. If this cannot yet be determined (for example, 'z' with no arguments or any usage of 'c'), if it changes the position of the read/write pointer (for example, seek commands), or if does anything else that might interfere with vstruct's own use of the file handle, such as seeking, it should return nil.
 
-Historically, this function was called `width`. It is now officially called `size`; however, vstruct will also recognize the older `width` function. Its use is deprecated and it will eventually be completely unsupported.
+Formats that neither interfere with the file handle nor read or write data should return 0; this is the case, for example, for the endianness controls.
+
+The default implementation asserts that a size was specified and returns nil.
 
 --------
 
-    pack(fd, data, ...)
+    write(fd, data, ...)
 
 If `size()` returned a value earlier, this *must* ignore `fd`, pack `data` into a string, and return the string - the caller will handle writing the string to the fd in an efficient manner. If it did not, this function may freely choose either to return a packed string, or to manipulate `fd` directly (in which case it should return nil).
 
@@ -580,21 +581,21 @@ Some operators, of course, must manipulate `fd` directly by their very nature (s
 
 --------
 
-    unpack(fd, buffer, ...)
+    read(fd, buffer, ...)
 
-If `size()` returned a value earlier, `buffer` will be a string of exactly that many bytes; `unpack` *must* ignore `fd` and return the value represented by the buffer. If `size()` returned nil, unpack must manipulate `fd` directly to get the data it needs.
-
---------
-
-    packbits(bit, data, ...)
-
-This is called when the operation is performed inside a bitpack. Data should be packed bit-by-bit; to pack a bit `B` (which must be 0 or 1), call `bit(B)`, MSB first. `bit()` does not presently accept multiple arguments to pack multiple bits at once.
+If `size()` returned a value earlier, `buffer` will be a string of exactly that many bytes; `read` *must* ignore `fd` and return the value represented by the buffer. If `size()` returned nil, `read` must manipulate `fd` directly to get the data it needs.
 
 --------
 
-    unpackbits(bits, ...)
+    writebits(bit, data, ...)
 
-The converse of packbits. Each call to `bits()` returns the next bit, MSB first.
+This is called when the operation is performed inside a bitpack. Data should be written bit-by-bit, MSB first; to write a bit `B` (which must be 0 or 1), call `bit(B)`. `bit()` does not presently accept multiple arguments to write multiple bits at once.
+
+--------
+
+    readbits(bit, ...)
+
+The converse of `writebits`. Each call to `bit()` returns the next bit, MSB first.
 
 
 
@@ -604,8 +605,6 @@ While most of the library code was written by me (Ben Kelly), the existence of t
 
   * The original inspiration came from Roberto Ierusalimschy's "struct" library and Luiz Henrique de Figueiredo's "lpack" library, as well as the "struct" available in Python.
   * The floating point code was contributed by Peter Cawley ("corsix") on lua-l, as was support for Lua 5.2.
-  * sanooj, from #lua on freenode, has done so much testing and bug reporting that at this point he's practically a co-author; the 'struct-test-gen' module in test/ is his work.
+  * sanooj, from #lua on freenode, has done so much testing and bug reporting that at this point he's practically a co-author; the 'struct-test-gen' module in test/ is his work, and has aided in detected many bugs.
   * The overall library design and interface are the result of much discussion with rici, sanooj, Keffo, snogglethorpe, Spark, kozure, Vornicus, McMartin, and probably several others I've forgotten about on IRC (#lua on freenode and #code on nightstar).
   * Finally, without Looking Glass Studios to make System Shock, and Team TSSHP (in particular Jim "hairyjim" Cameron) to reverse engineer it, I wouldn't have had a reason to write this library in the first place.
-
-:wrap=soft:
