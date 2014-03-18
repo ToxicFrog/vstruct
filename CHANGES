@@ -11,14 +11,11 @@ Backreferences.
 
 2.0 (wip)
 ---------
+*** THIS VERSION BREAKS BACKWARDS COMPATIBILITY ***
 Many internal structural improvements.
 unpack/pack replaced with read/write in API.
-
-1.2
----
-*** THIS VERSION BREAKS BACKWARDS COMPATIBILITY ***
-Changed the behaviour of the third argument to unpack().
-Changed unpack() and pack() on compiled format strings from functions to methods.
+Changed the behaviour of the third argument to read().
+Changed read() and write() on compiled format strings from functions to methods.
 Added vstruct.records() iterator.
 Added vstruct.register() and format string splicing.
 Completely removed the code generator and replaced it with an AST walker. This is very slightly slower, but much simpler and easier to modify.
