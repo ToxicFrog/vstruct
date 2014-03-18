@@ -29,6 +29,7 @@ else
 end
 
 require "vstruct.test.basic"
+require "vstruct.test.compat1x"
 require "vstruct.test.fp-bigendian"
 require "vstruct.test.fp-littleendian"
 require "vstruct.test.error"

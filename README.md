@@ -8,6 +8,7 @@
     1. Installation
     2. Testing
     3. Loading
+    4. Backwards Compatibility
 4.  API
     1. Variables
     2. Functions
@@ -107,6 +108,12 @@ vstruct makes itself available under the name `vstruct`. Note that, in accordanc
 
 vstruct does make one global modification when loaded: if the function `math.trunc` is not already defined, it will install its own definition.
 
+
+### 3.4 Backwards Compatibility ###
+
+vstruct 2.x is not backwards compatible with 1.x versions, and code using 1.x APIs will not work with it. Converting 1.x code to use 2.x is very easy - just replace calls to `unpack`, `unpackvals`, and `pack` with `read`, `readvals`, and `write`, and if you are using custom formats, rename their `width`, `pack*`, and `unpack*` functions to `size`, `write`, and `read`.
+
+If you do need to run legacy code and can't, for whatever reason, update it to use the 2.x API or install an older version of vstruct, there is a compatibility module available. `require "vstruct.compat1x"` and it will be loaded, making the 1.x API available through a translation layer. By default, it will emit a warning on stderr every time a legacy function is called; to disable this, set `vstruct.WARN = false` after loading it.
 
 
 ## 4. API ##
