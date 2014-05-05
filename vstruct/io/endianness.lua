@@ -36,7 +36,7 @@ function e.probe()
   -- or not. HACK HACK HACK - this is unlikely to work in anything but the
   -- reference implementation.
   elseif string.dump then
-    bigendian = string.byte(string.dump(function() end)) == 0x00
+    bigendian = string.byte(string.dump(function() end), 7) == 0x00
     
   -- if neither jit nor string.dump is available, we guess wildly that it's
   -- a little-endian system (and emit a warning)
