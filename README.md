@@ -344,9 +344,9 @@ At present, only formats `b`, `u`, `i`, `x` and `m` are supported inside bitpack
 
 ### 5.5 Splices ###
 
-Splices let you concisely refer to other format strings, provided that those others have been registered ahead of time using `vstruct.register`. A splice `&foo` is equivalent to including the contents of the format string registered as `foo` at the point where the splice appears; thus, the following two calls are equivalent:
+Splices let you concisely refer to other format strings, provided that those others have been registered ahead of time using the optional `name` argument to `vstruct.compile`. A splice `&foo` is equivalent to including the contents of the format string registered as `foo` at the point where the splice appears; thus, the following two calls are equivalent:
 
-    vstruct.register("coord", "x:u4 y:u4 z:u4")
+    vstruct.compile("coord", "x:u4 y:u4 z:u4")
     vstruct.read("name:z128 position:{ x:u4 y:u4 z:u4 }")
     vstruct.read("name:z128 position:{ &coord }")
 
