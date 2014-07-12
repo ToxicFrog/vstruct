@@ -59,7 +59,7 @@ function vstruct.implode(mask, size)
   api.check_arg("vstruct.implode", 1, mask, "table")
   size = size or #mask
   api.check_arg("vstruct.implode", 2, size, "number")
-  
+
   local int = 0
   for i=size,1,-1 do
     int = int*2 + ((mask[i] and 1) or 0)
@@ -110,7 +110,7 @@ function vstruct.records(fmt, fd, unpacked)
   if type(fd) == "string" then
     fd = vstruct.cursor(fd)
   end
-  
+
   return function()
     if fd:read(0) then
       if unpacked then
@@ -120,6 +120,18 @@ function vstruct.records(fmt, fd, unpacked)
       end
     end
   end
+end
+
+-- Returns an array containing the results of vstruct.records, with an optional
+-- starting index.
+function vstruct.array(fmt, fd, n)
+  n = n or 1
+  local array = {}
+  for record in vstruct.records(fmt, fd) do
+    array[n] = record
+    n = n+1
+  end
+  return array
 end
 
 return vstruct
