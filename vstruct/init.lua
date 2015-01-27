@@ -6,7 +6,7 @@ local vstruct = {}
 package.loaded.vstruct = vstruct
 
 vstruct._NAME = "vstruct"
-vstruct._VERSION = "1.1.4"
+vstruct._VERSION = "2.0.0"
 vstruct._M = vstruct
 
 vstruct.cursor = require "vstruct.cursor"

@@ -1,16 +1,13 @@
 2.1 (planned)
 -------------
 Format combinators.
-Support for other struct libraries (lpack/lstruct) as backends.
-
-2.0 (planned)
--------------
-Automatically use FFI and bit32, if available, to speed up common operations.
 Better error handling, and more error handling options for the user.
 Backreferences.
+Support for 5.3, and optional use of 5.3-specific features (new numeric types, bitwise operators, pack/unpack functions) for improved performance.
+Pre-5.3, optional use of FFI, bit32, and other struct libraries (lpack/struct) for improved performance.
 
-2.0 (wip)
----------
+2.0
+---
 *** THIS VERSION BREAKS BACKWARDS COMPATIBILITY ***
 Many internal structural improvements.
 unpack/pack replaced with read/write in API.
@@ -18,7 +15,7 @@ Changed the behaviour of the third argument to read().
 Changed read() and write() on compiled format strings from functions to methods.
 Added vstruct.records() iterator.
 Added vstruct.register() and format string splicing.
-Completely removed the code generator and replaced it with an AST walker. This is very slightly slower, but much simpler and easier to modify.
+Completely removed the code generator and replaced it with an AST walker.
 Improved test coverage.
 Improved error reporting for invalid arguments to API functions.
 

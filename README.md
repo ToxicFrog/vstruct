@@ -51,7 +51,9 @@ Formats not listed above are not subject to this limitation, as they either do n
 
 ### 2.2 Known Incompatibilities ###
 
-Versions of Lua prior to 5.1 are not supported, as vstruct makes extensive use of features introduced in 5.1.
+Lua 5.0 is not supported, as vstruct makes heavy use of features introduced in 5.1.
+
+Lua 5.3 has not been tested but is expected to break at least some features due to changes in number handling and in the math library.
 
 LuaJIT 2.0b7 has a bug in the code generator that affects vstruct. This is fixed in 2.0b9. If you need to run vstruct in 2.0b7, you will need to disable JIT compilation for the `m.read` function:
 
