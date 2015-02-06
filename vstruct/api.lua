@@ -39,6 +39,7 @@ end
 
 local function unwrap_fd(fd)
   if getmetatable(fd) == cursor then
+    fd:flush()
     return fd.str
   end
   return fd
