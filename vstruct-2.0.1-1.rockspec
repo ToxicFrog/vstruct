@@ -1,8 +1,8 @@
 package = "vstruct"
-version = "2.0.0-1"
+version = "2.0.1-1"
 source = {
    url = "git+https://github.com/ToxicFrog/vstruct.git",
-   tag = "v2.0.0"
+   tag = "v2.0.1"
 }
 description = {
    summary = "Lua library to manipulate binary data",
