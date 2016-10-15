@@ -66,6 +66,16 @@ The `strict` module raises an error when using vstruct outside of LuaJIT, as it 
 
 ### 3.1 Installation ###
 
+#### From LuaRocks ####
+
+vstruct can be installed from the [LuaRocks](https://luarocks.org/) package management system as follows.
+
+```
+luarocks install vstruct
+```
+
+#### From Source ####
+
 vstruct is a pure-lua module, and as such requires no seperate build step; it can be installed as-is. It supports Lua 5.1 and 5.2 and luaJIT, automatically detecting which one you are using as needed; the only difference in installation procedures between these is where you install it to.
 
 The initializer is `vstruct/init.lua`, so it should be installed in a way that means `require "vstruct"` will load that file, and that `require "vstruct.foo"` will load `vstruct/foo.lua`. In a default install of Lua 5.1 on Linux, you can do this simply by copying the `vstruct/` directory from the vstruct distribution into any of these directories:
