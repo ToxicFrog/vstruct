@@ -1,5 +1,5 @@
 package = "vstruct"
-version = "2.0.1-1"
+version = "2.0.2-1"
 source = {
    url = "git+https://github.com/ToxicFrog/vstruct.git",
    tag = "v2.0.1"
@@ -9,7 +9,7 @@ description = {
    homepage = "https://github.com/ToxicFrog/vstruct",
 }
 dependencies = {
-  "lua >= 5.1"
+  "lua >= 5.1, < 5.3"
 }
 build = {
    type = "builtin",
