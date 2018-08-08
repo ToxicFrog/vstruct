@@ -1,6 +1,7 @@
 local io = require "vstruct.io"
 local Node = require "vstruct.ast.Node"
 local Bitpack = Node:copy()
+local unpack = table.unpack or unpack
 
 -- return an iterator over the individual bits in buf
 local function biterator(buf)

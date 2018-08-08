@@ -4,6 +4,12 @@ local struct = require "vstruct"
 local io   = require "vstruct.io"
 local unpack = table.unpack or unpack
 
+local frexp = math.frexp or function(x)
+  if x == 0 then return 0, 0 end
+  local e = floor(math.log(abs(x)) / log2 + 1)
+  return x / 2 ^ e, e
+end
+
 local sizes = {
   [4] = {1,  8, 23};
   [8] = {1, 11, 52};
@@ -45,7 +51,7 @@ local function reader(data, size_exp, size_fraction)
   -- Decrease the size of the exponent rather than make the fraction (0.5, 1]
   exponent = exponent - size_fraction
   
-  return sign * math.ldexp(fraction, exponent)
+  return sign * (fraction * 2.0^exponent)
 end
 
 local function writer(value, size_exp, size_fraction)
@@ -78,7 +84,7 @@ local function writer(value, size_exp, size_fraction)
     fraction = 0
     
   else
-    fraction,exponent = math.frexp(value)
+    fraction,exponent = frexp(value)
     
     -- subnormal number
     if exponent+bias <= 1 then

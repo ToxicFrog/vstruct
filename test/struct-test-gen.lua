@@ -77,7 +77,14 @@ local test = require "vstruct.test.common"
 local record = test.record
 local __EOG__ = __EOG__
 
-local ceil,floor,fmod = math.ceil, math.floor, math.fmod
+local ceil,floor,fmod,log = math.ceil, math.floor, math.fmod, math.log
+
+local frexp = math.frexp or function(x)
+  if x == 0 then return 0, 0 end
+  local e = floor(log(abs(x)) / log2 + 1)
+  return x / 2 ^ e, e
+end
+
 local char_ = string.char
 
 local function char(x) return char_(x % 256) end
@@ -125,7 +132,7 @@ function dump.string(s) return ("%q"):format(s) end
 function dump.boolean(b) return tostring(b) end
 
 function dump.number(x)
-  local m, e = math.frexp(x)   --0.5 <= m <= 1, e an int
+  local m, e = frexp(x)   --0.5 <= m <= 1, e an int
   for i=1,53 do      --scale m to an integer
     if floor(m) == m then break end
     m = m*2
@@ -284,8 +291,6 @@ local function make_rand(seed)
     s10,s11,s12,s20,s21,s22 = a,a+1,a+2,a+3,a+4,a+5 -- not all zero
     rand(); rand(); rand(); -- pump out the seed.
   end
-
-  local frexp = math.frexp
 
   local function rand52()
     local hi,lo = rand(), rand()
