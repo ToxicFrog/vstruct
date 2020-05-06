@@ -3,12 +3,8 @@
 local struct = require "vstruct"
 local io   = require "vstruct.io"
 local unpack = table.unpack or unpack
-
-local frexp = math.frexp or function(x)
-  if x == 0 then return 0, 0 end
-  local e = floor(math.log(abs(x)) / log2 + 1)
-  return x / 2 ^ e, e
-end
+local frexp = assert(math.frexp,
+  "math.frexp missing -- please recompile lua with LUA_COMPAT_MATHLIB enabled")
 
 local sizes = {
   [4] = {1,  8, 23};
@@ -19,38 +15,38 @@ local sizes = {
 local function reader(data, size_exp, size_fraction)
   local fraction, exponent, sign
   local endian = io("endianness", "get") == "big" and ">" or "<"
-  
+
   -- Split the unsigned integer into the 3 IEEE fields
   local bits = struct.read(endian.." m"..#data, data)[1]
   local fraction = struct.implode({unpack(bits, 1, size_fraction)}, size_fraction)
   local exponent = struct.implode({unpack(bits, size_fraction+1, size_fraction+size_exp)}, size_exp)
   local sign = bits[#bits] and -1 or 1
-  
+
   -- special case: exponent is all 1s
   if exponent == 2^size_exp-1 then
     -- significand is 0? +- infinity
     if fraction == 0 then
       return sign * math.huge
-    
+
     -- otherwise it's NaN
     else
       return 0/0
     end
   end
-      
+
   -- restore the MSB of the significand, unless it's a subnormal number
   if exponent ~= 0 then
     fraction = fraction + (2 ^ size_fraction)
   else
     exponent = 1
   end
-  
+
   -- remove the exponent bias
   exponent = exponent - 2 ^ (size_exp - 1) + 1
 
   -- Decrease the size of the exponent rather than make the fraction (0.5, 1]
   exponent = exponent - size_fraction
-  
+
   return sign * (fraction * 2.0^exponent)
 end
 
@@ -59,8 +55,8 @@ local function writer(value, size_exp, size_fraction)
   local size = (size_exp + size_fraction + 1)/8
   local endian = io("endianness", "get") == "big" and ">" or "<"
   local bias = 2^(size_exp-1)-1
-  
-  if value < 0 
+
+  if value < 0
   or 1/value == -math.huge then -- handle the case of -0
     sign = true
     value = -value
@@ -72,7 +68,7 @@ local function writer(value, size_exp, size_fraction)
   if value == math.huge then
     exponent = bias+1
     fraction = 0
-  
+
   -- special case: value is NaN
   elseif value ~= value then
     exponent = bias+1
@@ -82,10 +78,10 @@ local function writer(value, size_exp, size_fraction)
   elseif value == 0 then
     exponent = -bias
     fraction = 0
-    
+
   else
     fraction,exponent = frexp(value)
-    
+
     -- subnormal number
     if exponent+bias <= 1 then
       fraction = fraction * 2^(size_fraction+(exponent+bias)-1)
@@ -95,13 +91,13 @@ local function writer(value, size_exp, size_fraction)
       -- remove the most significant bit from the fraction and adjust exponent
       fraction = fraction - 0.5
       exponent = exponent - 1
-      
+
       -- turn the fraction into an integer
       fraction = fraction * 2^(size_fraction+1)
     end
   end
-  
-  
+
+
   -- add the exponent bias
   exponent = exponent + bias
 
@@ -111,7 +107,7 @@ local function writer(value, size_exp, size_fraction)
     bits[size_fraction+i] = bits_exp[i]
   end
   bits[size_fraction+size_exp+1] = sign
-  
+
   return struct.write(endian.."m"..size, {bits})
 end
 
@@ -121,7 +117,7 @@ function f.size(n)
   n = tonumber(n)
   assert(n == 4 or n == 8 or n == 16
     , "format 'f' only supports sizes 4 (float), 8 (double) and 16 (quad)")
-  
+
   return n
 end
 

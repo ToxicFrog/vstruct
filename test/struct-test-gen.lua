@@ -77,13 +77,7 @@ local test = require "vstruct.test.common"
 local record = test.record
 local __EOG__ = __EOG__
 
-local ceil,floor,fmod,log = math.ceil, math.floor, math.fmod, math.log
-
-local frexp = math.frexp or function(x)
-  if x == 0 then return 0, 0 end
-  local e = floor(log(abs(x)) / log2 + 1)
-  return x / 2 ^ e, e
-end
+local abs,ceil,floor,fmod,frexp,log = math.abs, math.ceil, math.floor, math.fmod, math.frexp, math.log
 
 local char_ = string.char
 
