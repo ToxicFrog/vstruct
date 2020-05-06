@@ -2,8 +2,6 @@
 -- Returns a function which, given a source string, returns a table of lexer
 -- operations closed over that source.
 
--- Copyright (c) 2011 Ben "ToxicFrog" Kelly
-
 local lexis = {}
 
 local function lexeme(name)
@@ -32,7 +30,7 @@ return function(source)
   local orig = source
   local index = 1
   local hadwhitespace = false
-  
+
   local function where()
     return ("character %d ('%s')"):format(index, source:sub(1,4))
   end
@@ -50,7 +48,7 @@ return function(source)
     local function aux()
       if #source == 0 then return end
       local match,size = find_match()
-      
+
       if not match.name then
         hadwhitespace = true
         source = source:sub(size+1, -1)
@@ -65,7 +63,7 @@ return function(source)
   local function whitespace()
     return hadwhitespace
   end
-  
+
   local function next()
     eat_whitespace()
 

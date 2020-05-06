@@ -620,7 +620,7 @@ The converse of `writebits`. Each call to `bit()` returns the next bit, MSB firs
 
 ## 8. Credits ##
 
-While most of the library code was written by me (Ben Kelly), the existence of this library owes itself to many others.
+While most of the library code was written by me (Bex Kelly), the existence of this library owes itself to many others.
 
   * The original inspiration came from Roberto Ierusalimschy's "struct" library and Luiz Henrique de Figueiredo's "lpack" library, as well as the "struct" available in Python.
   * The floating point code was contributed by Peter Cawley ("corsix") on lua-l, as was support for Lua 5.2.

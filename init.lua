@@ -1,7 +1,5 @@
 -- vstruct, the versatile struct library
 
--- Copyright (C) 2011 Ben "ToxicFrog" Kelly; see COPYING
-
 local vstruct = {}
 package.loaded.vstruct = vstruct
 

@@ -6,8 +6,6 @@
 -- See ast/*.lua for the implementations of various node types in the AST,
 -- and see lexer.lua for the implementation of the lexer.
 
--- Copyright (c) 2011 Ben "ToxicFrog" Kelly
-
 local vstruct = require "vstruct"
 local lexer  = require "vstruct.lexer"
 
@@ -28,11 +26,11 @@ end
 function ast.parse(source)
   local lex = lexer(source)
   local root = ast.List()
-  
+
   for node in (function() return ast.next(lex) end) do
     root:append(node)
   end
-  
+
   return ast.Root(root)
 end
 
@@ -55,7 +53,7 @@ end
 function ast.raw_io(lex)
   local name = lex.next().text
   local next = lex.peek()
-  
+
   if next and next.type == "number" and not lex.whitespace() then
     return ast.IO(name, lex.next().text)
   else
@@ -66,7 +64,7 @@ end
 function ast.key(lex)
   local name = lex.next().text
   local next = lex.peek()
-  
+
   if next.type == "io" then
     local io = ast.raw_io(lex)
     if not io.hasvalue then
@@ -82,35 +80,35 @@ end
 
 function ast.next(lex)
   local tok = lex.peek()
-  
+
   if tok.type == "EOF" then
     return nil
   end
-  
+
   if tok.type == '(' then
     return ast.group(lex)
-  
+
   elseif tok.type == '{' then
     return ast.table(lex)
-  
+
   elseif tok.type == '[' then
     return ast.bitpack(lex)
-    
+
   elseif tok.type == "io" then
     return ast.io(lex)
-  
+
   elseif tok.type == "key" then
     return ast.key(lex)
-    
+
   elseif tok.type == "number" then
     return ast.repetition(lex)
-    
+
   elseif tok.type == "control" then
     return ast.control(lex)
 
   elseif tok.type == "splice" then
     return ast.splice(lex)
-    
+
   else
     ast.error(lex, "'(', '{', '[', name, number, control, or io specifier")
   end
@@ -123,11 +121,11 @@ function ast.next_until(lex, type)
     if tok.type == 'EOF' then
       ast.error(lex, type)
     end
-    
+
     if tok.type == type then
       return nil
     end
-    
+
     return ast.next(lex)
   end
 end
@@ -152,14 +150,14 @@ end
 
 function ast.group(lex)
   ast.require(lex, '(')
-  
+
   local group = ast.List()
   group.tag = "group"
-  
+
   for next in ast.next_until(lex, ')') do
     group:append(next)
   end
-  
+
   ast.require(lex, ')')
   return group
 end
@@ -170,28 +168,28 @@ end
 
 function ast.raw_table(lex)
   ast.require(lex, '{')
-  
+
   local group = ast.Table()
-  
+
   for next in ast.next_until(lex, '}') do
     group:append(next)
   end
-  
+
   ast.require(lex, '}')
   return group
 end
 
 function ast.bitpack(lex)
   ast.require(lex, "[")
-  
+
   local bitpack = ast.Bitpack(tonumber(ast.require(lex, "number").text))
-  
+
   ast.require(lex, "|")
-  
+
   for next in ast.next_until(lex, ']') do
     bitpack:append(next)
   end
-  
+
   ast.require(lex, "]")
   bitpack:finalize()
   return bitpack
@@ -199,11 +197,11 @@ end
 
 function ast.require(lex, type)
   local t = lex.next()
-  
+
   if t.type ~= type then
     ast.error(lex, type)
   end
-  
+
   return t
 end
 

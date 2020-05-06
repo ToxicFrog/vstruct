@@ -6,8 +6,6 @@
 -- upon which it will attempt to load the handler for that operation from the
 -- module vstruct.io.<type> and call it.
 
--- Copyright (c) 2011 Ben "ToxicFrog" Kelly
-
 local defaults = require "vstruct.io.defaults"
 local mt = { __index = defaults }
 
@@ -19,8 +17,8 @@ local function iorequire(format)
   end
 
   setmetatable(v, mt)
-  
-  return v           
+
+  return v
 end
 
 local controlnames = {
@@ -38,8 +36,8 @@ end
 
 return function(format, method, ...)
   local fmt = iorequire(format)
-  
+
   assert(fmt[method], "No support for method '"..tostring(method).."' in IO module '"..format.."'")
-  
+
   return fmt[method](...)
 end

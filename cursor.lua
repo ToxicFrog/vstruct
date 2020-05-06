@@ -2,8 +2,6 @@
 -- exports: seek read write
 -- read only supports numeric amounts
 
--- Copyright (c) 2011 Ben "ToxicFrog" Kelly; see COPYING
-
 local cursor = {}
 
 -- like fseek

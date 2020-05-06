@@ -1,6 +1,4 @@
--- "basic" test module for vstruct
--- does not test floating point operations - see test/fp-*endian.lua for those
--- Copyright (c) 2011 Ben "ToxicFrog" Kelly; see COPYING
+-- Tests for format compability with vstruct 1.x
 
 local vstruct = require "vstruct"
 local test = require "vstruct.test.common"
