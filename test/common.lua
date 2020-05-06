@@ -18,7 +18,7 @@ end
 
 function test.eq(x, y)
   if type(x) ~= type(y) then return false end
-  
+
   if type(x) == 'table' then
     for k,v in pairs(x) do
       if not test.eq(v, y[k]) then return false end
@@ -41,10 +41,15 @@ end
 -- record the results of the test
 -- test is the name
 -- result is the boolean pass/fail
--- message is an optional string, and will be displayed to the user as 
+-- msg,... are optional and will be string.format()ed and displayed to the user as
 -- "note" or "fail" depending on the value of result
-function test.record(name, result, data, message)
-  table.insert(test.current_group, { name=name, result=result, message=message, data=data })
+function test.record(name, result, data, msg, ...)
+  table.insert(test.current_group, {
+    name=name,
+    result=result,
+    data=data,
+    message=msg and tostring(msg):format(...) or nil,
+  })
 end
 
 -- automatically test writing and reading. obuf and oval are optional,
@@ -57,7 +62,7 @@ end
 function test.autotest(name, format, ibuf, ival, obuf, oval)
   local eq = test.eq
   local record = test.record
-  
+
   obuf = obuf or ibuf
   oval = oval or ival
 
@@ -113,21 +118,23 @@ function test.report()
     for _,test in ipairs(group) do
       if not test.result then
         failed = failed + 1
-        print("FAIL", test.name)
         if type(test.data) == 'string' and test.data:match("%z") then
-          print("", (test.data:gsub("%z", ".")))
+          print("FAIL", test.name, (test.data:gsub("%z", ".")))
         else
-          print("",   test.data)
+          print("", test.name, test.data)
+        end
+        if test.message then
+          print("", test.message or "")
         end
       end
     end
-    
+
     print("\tTotal: ", #group)
     print("\tFailed:", failed)
     print()
     allfailed = allfailed + failed
   end
-  
+
   return allfailed
 end
 
