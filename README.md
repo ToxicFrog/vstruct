@@ -264,7 +264,7 @@ If `unpack` is false or unspecified, it behaves the same as `vstruct.read`.
 A format string consists of a series of *format items*. A format item is:
 
   * a data item, seek control, or endianness control (see section 6)
-  * a repeat marker 'N*' followed by a format item, or a sequence of format items enclosed in '(' and ')'
+  * a repeat marker `N*` followed by a format item, or a sequence of format items enclosed in '(' and ')'
   * a table '{ ... }' enclosing any number of format items
   * a name 'foo:' followed by a data item or table
   * a bitpack '[S| ... ]' enclosing any number of *bitpack-capable* format items
@@ -278,7 +278,7 @@ In general, whitespace may be omitted where the result is unambiguous, and when 
 
 ### 5.1 Repeat markers ###
 
-A repeat marker consists of a decimal number *N*, followed by a *, followed by a format item (or a group of such items enclosed in parentheses). The following item is repeated N times. For example, these three format strings:
+A repeat marker consists of a decimal number *N*, followed by a `*`, followed by a format item (or a group of such items enclosed in parentheses). The following item is repeated N times. For example, these three format strings:
 
     "u4 u4 u4 u4"
     "{ u2 b1 } { u2 b1 }"
@@ -626,4 +626,5 @@ While most of the library code was written by me (Ben Kelly), the existence of t
   * The floating point code was contributed by Peter Cawley ("corsix") on lua-l, as was support for Lua 5.2.
   * sanooj, from #lua on freenode, has done so much testing and bug reporting that at this point he's practically a co-author; the 'struct-test-gen' module in test/ is his work, and has aided in detected many bugs.
   * The overall library design and interface are the result of much discussion with rici, sanooj, Keffo, snogglethorpe, Spark, kozure, Vornicus, McMartin, and probably several others I've forgotten about on IRC (#lua on freenode and #code on nightstar).
+  * Lua 5.3 compatibility was contributed by deepakjois
   * Finally, without Looking Glass Studios to make System Shock, and Team TSSHP (in particular Jim "hairyjim" Cameron) to reverse engineer it, I wouldn't have had a reason to write this library in the first place.
