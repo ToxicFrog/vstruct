@@ -177,7 +177,7 @@ end
 -- List module
 local list
 list = {
-  reverse = 
+  reverse =
     function (t)
       local out = {}
       local n = #t
@@ -288,7 +288,7 @@ local function make_rand(seed)
 
   local function rand52()
     local hi,lo = rand(), rand()
-    local m,e = frexp(hi * 4294967087 + lo) -- 0.5 <= m < 1
+    local m,e = frexp(hi * 4294967087.0 + lo) -- 0.5 <= m < 1
     local t = m*2^53 - 2^52 -- map mantissa to 0 <= t < 2^52 range
     return t
   end
@@ -390,7 +390,7 @@ local function perform_write_test(test, endian)
   if PREFIX_ENDIAN then
     format = "=" .. PREFIX_ENDIAN_SEP .. format
   end
-  
+
   local pcall = pcall
   if not PROTECT_STRUCT then
     pcall = function (f,...) return true, f(...) end
@@ -426,7 +426,7 @@ local function perform_read_test(test, endian)
   if PREFIX_ENDIAN then
     format = "=" .. PREFIX_ENDIAN_SEP .. format
   end
-   
+
   local pcall = pcall
   if not PROTECT_STRUCT then
     pcall = function (f,...) return true, f(...) end
@@ -655,7 +655,8 @@ local LeftRepetitionTest = ProxyTest:new{
       assert(after == before or self.count == 0,
         ("Non-idempotent left repetition for format '%s'"):format(fmt))
       fmt = "("..fmt..")"
-      return self.count..TOKEN_SEP.."*"..TOKEN_SEP..fmt, after
+      return string.format(
+        "%d%s*%s%s", self.count, TOKEN_SEP, TOKEN_SEP, fmt), after
     end,
 
   get_data =
