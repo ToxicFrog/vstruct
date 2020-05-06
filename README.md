@@ -28,7 +28,7 @@
 
 ## 1. Overview ##
 
-VStruct is a library for Lua 5.1 and 5.2 and LuaJIT 2. It provides functions for manipulating binary data, in particular for reading binary files or byte buffers into Lua values and for writing Lua values back into files or buffers. Supported data types include:
+VStruct is a library for Lua 5.1, 5.2, 5.3, and LuaJIT 2. It provides functions for manipulating binary data, in particular for reading binary files or byte buffers into Lua values and for writing Lua values back into files or buffers. Supported data types include:
 
   * signed and unsigned integers of arbitrary size
   * fixed and floating point numbers
