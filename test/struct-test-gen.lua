@@ -26,7 +26,7 @@ local USE = {
 
 -- Non-config
 local PROTECT_STRUCT = true -- If set, wrap calls to struct with pcall.
-local TEST_KIND = nil   --"read"|"write"
+local TEST_KINDS = {}   --"read"|"write"
 
 -- Should every format string explicitly set the endianness at the start?
 -- Setting this to true mask(s|ed?) a bug where the endianness controls leak
@@ -56,7 +56,7 @@ for _,given_arg in ipairs(arg) do
   elseif k == "NONE" then
     for feature,_ in pairs(USE) do USE[feature] = false end
   elseif given_arg == "read" or given_arg == "write" then
-    TEST_KIND = given_arg
+    table.insert(TEST_KINDS, given_arg)
   else
     io.stderr:write(("unknown argument %q\n"):format(given_arg))
     os.exit(1)
@@ -1205,29 +1205,32 @@ local function main_read()
   end
 end
 
-if TEST_KIND == "read" then
-  main_read()
-elseif TEST_KIND == "write" then
-  main_write()
-else
-  local function opt_of_keyword(k)
-    local o = k:lower():gsub("_", "-")
-    return o
-  end
+for _,kind in ipairs(TEST_KINDS) do
+  if kind == "read" then
+    main_read()
+  elseif kind == "write" then
+    main_write()
+  else
+    local function opt_of_keyword(k)
+      local o = k:lower():gsub("_", "-")
+      return o
+    end
 
-  io.write"usage: <features...> <opts..> read|write\n\n"
+    io.write"usage: <features...> <opts..> read|write\n\n"
 
-  io.write"Features:\n"
-  io.write("\tnone")
-  for i,k in ipairs(keys(USE)) do
-    io.write", "
-    if i % 5 == 0 then io.write"\n\t" end
-    io.write(opt_of_keyword(k))
-  end
-  io.write"\n"
+    io.write"Features:\n"
+    io.write("\tnone")
+    for i,k in ipairs(keys(USE)) do
+      io.write", "
+      if i % 5 == 0 then io.write"\n\t" end
+      io.write(opt_of_keyword(k))
+    end
+    io.write"\n"
 
-  io.write"Options:\n"
-  for k, v in pairs(CONF) do
-    io.write("\t",opt_of_keyword(k),"=",tostring(v),"\n")
+    io.write"Options:\n"
+    for k, v in pairs(CONF) do
+      io.write("\t",opt_of_keyword(k),"=",tostring(v),"\n")
+    end
+    break
   end
 end
