@@ -6,6 +6,11 @@
 -- cleanly if all of them passed; if any failed, reports the failed tests
 -- on stdout and then raises an error.
 
+if arg and arg[1] == "DISABLE_FREXP" then
+  table.remove(arg, 1)
+  math.frexp = nil
+end
+
 local ok,test = pcall(require, "vstruct.test.common")
 
 -- maybe we aren't installed, and just need to deduce a custom package.path
@@ -33,6 +38,7 @@ require "vstruct.test.compat1x"
 require "vstruct.test.fp-bigendian"
 require "vstruct.test.fp-littleendian"
 require "vstruct.test.error"
+require "vstruct.test.frexp"
 require "vstruct.test.regression"
 
 if arg and #arg > 0 then
