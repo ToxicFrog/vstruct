@@ -3,8 +3,7 @@
 local struct = require "vstruct"
 local io   = require "vstruct.io"
 local unpack = table.unpack or unpack
-local frexp = assert(math.frexp,
-  "math.frexp missing -- please recompile lua with LUA_COMPAT_MATHLIB enabled")
+local frexp = math.frexp or require "vstruct.frexp"
 
 local sizes = {
   [4] = {1,  8, 23};

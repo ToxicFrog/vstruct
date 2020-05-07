@@ -8,7 +8,7 @@ local CONF = {
   MAX_DEPTH = 5,     -- Limit on nesting depth of test formats.
   COMPOUND_LENGTH = 2,   -- # formats in a sequence.
   SEED = false,    -- Seed for generating tests.
-  
+
   NROF_TESTS = 2^10,  -- number of random test cases to run
 }
 
@@ -77,8 +77,8 @@ local test = require "vstruct.test.common"
 local record = test.record
 local __EOG__ = __EOG__
 
-local abs,ceil,floor,fmod,frexp,log = math.abs, math.ceil, math.floor, math.fmod, math.frexp, math.log
-
+local abs,ceil,floor,fmod = math.abs, math.ceil, math.floor, math.fmod
+local frexp = math.frexp or require "vstruct.frexp"
 local char_ = string.char
 
 local function char(x) return char_(x % 256) end
@@ -136,7 +136,7 @@ function dump.number(x)
   if e == 0 then return ("%.0f"):format(m) end
 
   local op = e < 0 and "/" or "*"
-  e = math.abs(e)
+  e = abs(e)
   local exp = e > 1 and "2^"..e or "2"
   return ("%.0f%s%s"):format(m, op, exp)
 end
