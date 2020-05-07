@@ -53,8 +53,6 @@ Formats not listed above are not subject to this limitation, as they either do n
 
 Lua 5.0 is not supported, as vstruct makes heavy use of features introduced in 5.1.
 
-Lua 5.3 has not been tested but is expected to break at least some features due to changes in number handling and in the math library.
-
 LuaJIT 2.0b7 has a bug in the code generator that affects vstruct. This is fixed in 2.0b9. If you need to run vstruct in 2.0b7, you will need to disable JIT compilation for the `m.read` function:
 
     jit.off(require("vstruct.io.m").read, true)
@@ -76,7 +74,7 @@ luarocks install vstruct
 
 #### From Source ####
 
-vstruct is a pure-lua module, and as such requires no seperate build step; it can be installed as-is. It supports Lua 5.1 and 5.2 and luaJIT, automatically detecting which one you are using as needed; the only difference in installation procedures between these is where you install it to.
+vstruct is a pure-lua module, and as such requires no seperate build step; it can be installed as-is. It automatically detects which version of Lua you're using it and enables compatibility shims as needed, so one installation can be shared by multiple versions of Lua/LuaJIT.
 
 The initializer is `vstruct/init.lua`, so it should be installed in a way that means `require "vstruct"` will load that file, and that `require "vstruct.foo"` will load `vstruct/foo.lua`. In a default install of Lua 5.1 on Linux, you can do this simply by copying the `vstruct/` directory from the vstruct distribution into any of these directories:
 

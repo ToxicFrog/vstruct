@@ -1,15 +1,15 @@
 package = "vstruct"
-version = "2.0.1-1"
+version = "2.1.1-1"
 source = {
    url = "git+https://github.com/ToxicFrog/vstruct.git",
-   tag = "v2.0.1"
+   tag = "v2.1.1"
 }
 description = {
    summary = "Lua library to manipulate binary data",
    homepage = "https://github.com/ToxicFrog/vstruct",
 }
 dependencies = {
-  "lua >= 5.1, < 5.3"
+  "lua >= 5.1, <= 5.3"
 }
 build = {
    type = "builtin",
@@ -26,6 +26,7 @@ build = {
       ["vstruct.ast.Table"] = "ast/Table.lua",
       ["vstruct.compat1x"] = "compat1x.lua",
       ["vstruct.cursor"] = "cursor.lua",
+      ["vstruct.frexp"] = "frexp.lua",
       ["vstruct"] = "init.lua",
       ["vstruct.io"] = "io.lua",
       ["vstruct.io.a"] = "io/a.lua",
