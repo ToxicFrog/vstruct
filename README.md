@@ -434,8 +434,8 @@ The following items perform actual reading and writing of data.
 
     bS    -- Boolean.
 
-Read: as `uS`, but returns true if the result is non-zero and false otherwise.
-Write: as `uS` with input 1 if true and 0 otherwise.
+- Read: as `uS`, but returns true if the result is non-zero and false otherwise.
+- Write: as `uS` with input 1 if true and 0 otherwise.
 
 Note that when writing, the output for true is integer 1, not all bits 1.
 
@@ -443,8 +443,8 @@ Note that when writing, the output for true is integer 1, not all bits 1.
 
     cS    -- Length-prefixed ("counted") string.
 
-Read: `uS` to determine the length of the string `S'`, followed by `sS'`.
-Write: the length of the string as `uS`, followed by the string itself.
+- Read: `uS` to determine the length of the string `S'`, followed by `sS'`.
+- Write: the length of the string as `uS`, followed by the string itself.
 
 The counted string is a common idiom where a string is immediately prefixed with its length, as in:
 
@@ -457,8 +457,7 @@ The counted string format can be used to easily read and write these. The size p
 
     fS    -- IEEE 754 floating point.
 
-Read: a float, double, or quad.
-Write: a float, double, or quad.
+- Read/Write: a float, double, or quad.
 
 Valid sizes are 4 (float) 8 (double) and 16 (quad). Note that quads have more precision than the default lua number format (double), and thus may not read exactly unless you're using a custom lua build.
 
@@ -468,8 +467,7 @@ Affected by endianness.
 
     iS    -- Signed integer.
 
-Read: a signed integer with `S` bytes of precision.
-Write: a signed integer with `S` bytes of precision.
+- Read/Write: a signed integer with `S` bytes of precision.
 
 When writing, floating point values will be truncated, not rounded.
 
@@ -479,8 +477,8 @@ Affected by endianness.
 
     mS    -- Bitmask.
 
-Read: as `uS`, but explodes the result into a list of booleans, one per bit.
-Write: implodes the input value, then writes it as `uS`.
+- Read: as `uS`, but explodes the result into a list of booleans, one per bit.
+- Write: implodes the input value, then writes it as `uS`.
 
 In effect, a `u` that automatically calls `vstruct.implode/explode`; unlike `u`, however, it can operate on fields of arbitrarily large size without loss of precision, regardless of what numeric type lua is using.
 
@@ -490,10 +488,9 @@ Affected by endianness.
 
     pS,F  -- Signed fixed point.
 
-`S` is, as usual, the size of the entire field in *bytes*. `F` is the number of *bits* of fractional precision. Thus, a 24.8 fixed point number (24 bits integer, 8 bits fraction, 32 bits total) would have format `"p4,8"`.
+`S` is, as usual, the size of the entire field in *bytes*. `F` is the number of *bits* of fractional precision. Thus, a 24.8 fixed point number (24 bits integer, 8 bits fraction, 32 bits total) would be written as `"p4,8"`.
 
-Read: a `S`-byte fixed point number with `F` bits of fractional precision.
-Write: a `S`-byte fixed point number long with `F` bits of fractional precision.
+- Read/Write: a `S`-byte fixed point number with `F` bits of fractional precision.
 
 When writing, values which cannot be precisely expressed in the given precision will be truncated, not rounded.
 
@@ -505,17 +502,16 @@ Affected by endianness.
 
 `S` is optional.
 
-Read: reads exactly `S` bytes and returns them as a string. If `S` is omitted, reads until EOF.
-Write: writes exactly `S` bytes; if the given string is too long, it will be truncated, and if too short, it will be nul-padded. If `S` is omitted, it is considered equal to the length of the string (i.e. it will write the contents of the string without truncation or padding).
+- Read: reads exactly `S` bytes and returns them as a string. If `S` is omitted, reads until EOF.
+- Write: writes exactly `S` bytes; if the given string is too long, it will be truncated, and if too short, it will be nul-padded. If `S` is omitted, it is considered equal to the length of the string (i.e. it will write the contents of the string without truncation or padding).
 
 --------
 
     uS    -- Unsigned integer.
 
-Read: an unsigned integer with `S` bytes of precision.
-Write: an unsigned integer with `S` bytes of precision.
+- Read/Write: an unsigned integer with `S` bytes of precision.
 
-On write, non-integer values will be truncated. Negative values will be written in absolute form.
+On write, non-integer values will be truncated. The behaviour of negative numbers is unspecified, but will probably not do what you want; in particular, it usually does not produce the same results as `i`, and may become an error in future versions.
 
 Affected by endianness.
 
@@ -525,8 +521,8 @@ Affected by endianness.
 
 `,V` is optional, and defaults to 0 if omitted.
 
-Read: read and discard the next `S` bytes.
-Write: write `S` bytes with value `V`. Within a bitpack, the only valid values for `V` are 0 or 1.
+- Read: read and discard the next `S` bytes.
+- Write: write `S` bytes with value `V`. Within a bitpack, the only valid values for `V` are 0 or 1.
 
 This format does not consume input data (when writing) or produce output values (when reading). However, unlike the seek controls (`@+-a`), it can be used even when the input or output does not support seeking (e.g. when reading from a pipe or socket).
 
@@ -534,15 +530,14 @@ This format does not consume input data (when writing) or produce output values 
 
     zS,C  -- Nul terminated/nul padded string.
 
-`S` and `C` are both optional. The `,` is mandatory if `C` is present.
+`S` and `,C` are both optional. The `,` is mandatory if `C` is present.
 
 `S`, if present, is the length of the string (in *bytes*, not characters).
 
-`C`, if present, is the size in *bytes* of individual characters in the string. The default is 1.  It is important when operating on wide-character strings to specify `C` correctly, so that sequences like "00 66 00 67" are not incorrectly interpreted as ending the string.
+`C`, if present, is the size *in bytes* of individual characters in the string. The default is 1.  It is important when operating on wide-character strings to specify `C` correctly, so that sequences like "00 66 00 67" are not incorrectly interpreted as ending the string.
 
-Read: reads exactly `S` bytes, and returns everything up to the first nul *character*. If `S` is omitted, reads until it encounters a nul. The nul is read, but not included in the returned string.
-
-Write: writes exactly `S` bytes. If the input is shorter than `S`, nul pads the output; if longer, truncates it to `S - C` bytes and nul terminates it. If `S` is omitted entirely, the string is written out in full and nul terminated.
+- Read: reads exactly `S` bytes, and returns everything up to the first nul *character*. If `S` is omitted, reads until it encounters a nul. The nul is read, but not included in the returned string.
+- Write: writes exactly `S` bytes. If the input is shorter than `S`, nul pads the output; if longer, truncates it to `S - C` bytes and nul terminates it. If `S` is omitted entirely, the string is written out in full and nul terminated.
 
 When nul terminating, or looking for a nul character to detect the end of the string, `C` zero bytes, `C`-aligned relative to the start of the string, are used. In particular, this means that the following 6-byte string:
 
