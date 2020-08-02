@@ -9,7 +9,7 @@ description = {
    homepage = "https://github.com/ToxicFrog/vstruct",
 }
 dependencies = {
-  "lua >= 5.1, <= 5.3"
+  "lua >= 5.1, <= 5.4"
 }
 build = {
    type = "builtin",
